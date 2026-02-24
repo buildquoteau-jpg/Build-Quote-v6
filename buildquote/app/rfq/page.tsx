@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import TopBar from '@/components/ui/TopBar'
 import UploadScreen from '@/components/screens/UploadScreen'
 import RFQScreen from '@/components/screens/RFQScreen'
@@ -30,6 +30,23 @@ export default function RFQPage() {
   const [rfqId, setRfqId] = useState('')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
+
+  // Prefill supplier from URL params e.g. /rfq?supplier=M%26B+Bunbury&email=info@mbsales.net.au
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const supplierName = params.get('supplier') || ''
+    const supplierEmail = params.get('email') || ''
+    if (supplierName || supplierEmail) {
+      setPayload(p => ({
+        ...p,
+        supplier: {
+          ...p.supplier,
+          supplierName,
+          supplierEmail,
+        }
+      }))
+    }
+  }, [])
 
   const handleParsed = (parsed: LineItem[]) => {
     setItems(parsed)

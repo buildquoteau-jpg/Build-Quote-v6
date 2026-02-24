@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import suppliersRaw from '@/data/suppliers.json'
 
 type Supplier = {
@@ -40,12 +40,10 @@ const TYPE_COLOURS: Record<string, string> = {
   Hire: '#c49a6c',
 }
 
-// Slug for demo supplier page
 function toSlug(name: string) {
   return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
 }
 
-// M&B Bunbury is our demo supplier page
 const DEMO_SLUG = 'm-b-trade-centre-bunbury'
 
 function isOpenNow(hours: Record<string, string[]>): boolean | null {
@@ -65,6 +63,13 @@ function isOpenNow(hours: Record<string, string[]>): boolean | null {
   }
   const cur = now.getHours() * 60 + now.getMinutes()
   return cur >= toMins(match[1], match[2]) && cur < toMins(match[3], match[4])
+}
+
+function rfqUrl(s: Supplier) {
+  const params = new URLSearchParams()
+  params.set('supplier', s.name)
+  if (s.email) params.set('email', s.email)
+  return `/rfq?${params.toString()}`
 }
 
 // ── MAIN PAGE ─────────────────────────────────────────────────────────────
@@ -96,7 +101,7 @@ export default function DirectoryPage() {
       <style>{landingCSS}</style>
       <div className="dir">
         <nav className="dir-nav">
-          <a href="/" className="logo">BUILD<span>QUOTE</span></a>
+          <a href="/portfolio" className="logo">BUILD<span>QUOTE</span></a>
           <span className="nav-tag">Southwest WA Supplier Directory</span>
         </nav>
 
@@ -161,6 +166,14 @@ function RegionView({
   const [search, setSearch] = useState('')
   const [filterType, setFilterType] = useState('All')
   const [filterCat, setFilterCat] = useState('All')
+  const [now, setNow] = useState<Date | null>(null)
+
+  // Set time client-side only to avoid SSR mismatch
+  useEffect(() => {
+    setNow(new Date())
+    const interval = setInterval(() => setNow(new Date()), 60000)
+    return () => clearInterval(interval)
+  }, [])
 
   const tradeTypes = ['All', ...Array.from(new Set(suppliers.map(s => s.trade_type))).sort()]
   const categories = ['All', ...Array.from(new Set(suppliers.map(s => s.category))).sort()]
@@ -175,13 +188,15 @@ function RegionView({
     return matchSearch && matchType && matchCat
   })
 
+  const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
   return (
     <>
       <style>{regionCSS}</style>
       <div className="rv">
         <nav className="rv-nav">
           <button className="back-btn" onClick={onBack}>← All Regions</button>
-          <a href="/" className="logo-sm">BUILD<span>QUOTE</span></a>
+          <a href="/portfolio" className="logo-sm">BUILD<span>QUOTE</span></a>
         </nav>
 
         <div className="rv-hero">
@@ -223,9 +238,8 @@ function RegionView({
         <div className="sup-list">
           {filtered.length === 0 && <p className="no-results">No suppliers match your filters.</p>}
           {filtered.map((s, i) => {
-            const open = isOpenNow(s.hours)
-            const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
-            const today = days[new Date().getDay()]
+            const open = now ? isOpenNow(s.hours) : null
+            const today = now ? days[now.getDay()] : days[new Date().getDay()]
             const todayHours = s.hours[today]
             const slug = toSlug(s.name)
             const isDemo = slug === DEMO_SLUG
@@ -257,7 +271,7 @@ function RegionView({
                         📞 {s.phone}
                       </a>
                     )}
-                    <a href="/rfq" className="action-btn rfq-btn">
+                    <a href={rfqUrl(s)} className="action-btn rfq-btn">
                       ✉ Request Quote
                     </a>
                     {isDemo && (
@@ -269,7 +283,7 @@ function RegionView({
                 </div>
 
                 <div className="sup-right">
-                  {open !== null && (
+                  {now && open !== null && (
                     <span className={`open-badge ${open ? 'open' : 'closed'}`}>
                       {open ? '● Open Now' : '● Closed'}
                     </span>
