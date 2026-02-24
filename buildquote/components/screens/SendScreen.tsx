@@ -14,9 +14,10 @@ interface SendScreenProps {
   onBack: () => void
   onSend: () => void
   sending: boolean
+  sendError?: string
 }
 
-export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sending }: SendScreenProps) {
+export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sending, sendError }: SendScreenProps) {
   const setBuilder = (field: keyof BuilderDetails, value: string) =>
     onChange({ ...rfqPayload, builder: { ...rfqPayload.builder, [field]: value } })
 
@@ -85,6 +86,12 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
           onChange={v => onChange({ ...rfqPayload, sendCopyToSelf: v })}
         />
       </Card>
+
+      {sendError && (
+        <div className="bg-red-900/40 border border-red-500/50 rounded-lg px-4 py-3 text-red-400 text-sm">
+          ⚠️ {sendError}
+        </div>
+      )}
 
       <div className="flex gap-3">
         <Button variant="secondary" onClick={onBack} className="flex-1 py-3">← Back</Button>

@@ -29,6 +29,7 @@ export default function RFQPage() {
   const [payload, setPayload] = useState<Omit<RFQPayload, 'rfqId'>>(defaultPayload)
   const [rfqId, setRfqId] = useState('')
   const [sending, setSending] = useState(false)
+  const [sendError, setSendError] = useState('')
 
   const handleParsed = (parsed: LineItem[]) => {
     setItems(parsed)
@@ -36,20 +37,35 @@ export default function RFQPage() {
     setStep(2)
   }
 
+  const handleSkip = () => {
+    setItems([])
+    setPayload(p => ({ ...p, items: [] }))
+    setStep(2)
+  }
+
   const handleSend = async () => {
     setSending(true)
+    setSendError('')
     const id = generateRFQId()
-    setRfqId(id)
     const fullPayload: RFQPayload = { ...payload, items, rfqId: id }
+
     try {
-      await fetch('/api/send', {
+      const res = await fetch('/api/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(fullPayload),
       })
+
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}))
+        throw new Error(data.error || `Server error ${res.status}`)
+      }
+
+      setRfqId(id)
       setStep(4)
-    } catch {
-      alert('Something went wrong sending the RFQ. Please try again.')
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : 'Something went wrong sending the RFQ.'
+      setSendError(msg)
     } finally {
       setSending(false)
     }
@@ -60,13 +76,19 @@ export default function RFQPage() {
     setItems([])
     setPayload(defaultPayload)
     setRfqId('')
+    setSendError('')
   }
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
       <TopBar currentStep={step} />
       <div className="max-w-2xl mx-auto px-4 py-6">
-        {step === 1 && <UploadScreen onNext={handleParsed} />}
+        {step === 1 && (
+          <UploadScreen
+            onNext={handleParsed}
+            onSkip={handleSkip}
+          />
+        )}
         {step === 2 && (
           <RFQScreen
             items={items}
@@ -82,6 +104,7 @@ export default function RFQPage() {
             onBack={() => setStep(2)}
             onSend={handleSend}
             sending={sending}
+            sendError={sendError}
           />
         )}
         {step === 4 && (

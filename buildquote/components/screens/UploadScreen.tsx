@@ -6,9 +6,10 @@ import { LineItem } from '@/lib/types'
 
 interface UploadScreenProps {
   onNext: (items: LineItem[]) => void
+  onSkip: () => void
 }
 
-export default function UploadScreen({ onNext }: UploadScreenProps) {
+export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
   const [files, setFiles] = useState<File[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
@@ -16,18 +17,18 @@ export default function UploadScreen({ onNext }: UploadScreenProps) {
 
   const MAX_FILES = 5
 
-const addFiles = (incoming: FileList | null) => {
-  if (!incoming) return
-  const newFiles = Array.from(incoming)
-  setFiles(prev => {
-    const combined = [...prev, ...newFiles]
-    if (combined.length > MAX_FILES) {
-      setError(`Maximum ${MAX_FILES} files at once.`)
-      return prev
-    }
-    return combined
-  })
-}
+  const addFiles = (incoming: FileList | null) => {
+    if (!incoming) return
+    const newFiles = Array.from(incoming)
+    setFiles(prev => {
+      const combined = [...prev, ...newFiles]
+      if (combined.length > MAX_FILES) {
+        setError(`Maximum ${MAX_FILES} files at once.`)
+        return prev
+      }
+      return combined
+    })
+  }
 
   const removeFile = (i: number) => setFiles(prev => prev.filter((_, idx) => idx !== i))
 
@@ -97,6 +98,21 @@ const addFiles = (incoming: FileList | null) => {
       <Button onClick={handleParse} disabled={files.length === 0} className="w-full py-3">
         Continue →
       </Button>
+
+      {/* Divider */}
+      <div className="flex items-center gap-3">
+        <div className="flex-1 h-px bg-gray-700" />
+        <span className="text-gray-500 text-xs uppercase tracking-widest font-mono">or</span>
+        <div className="flex-1 h-px bg-gray-700" />
+      </div>
+
+      {/* Skip to manual entry */}
+      <button
+        onClick={onSkip}
+        className="w-full py-3 rounded-lg border border-gray-700 text-gray-400 text-sm font-semibold hover:border-gray-500 hover:text-gray-300 transition-colors"
+      >
+        ✏️ I don't have a list yet — add items manually
+      </button>
     </div>
   )
 }
