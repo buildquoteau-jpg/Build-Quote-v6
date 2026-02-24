@@ -40,6 +40,14 @@ const TYPE_COLOURS: Record<string, string> = {
   Hire: '#c49a6c',
 }
 
+// Slug for demo supplier page
+function toSlug(name: string) {
+  return name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '')
+}
+
+// M&B Bunbury is our demo supplier page
+const DEMO_SLUG = 'm-b-trade-centre-bunbury'
+
 function isOpenNow(hours: Record<string, string[]>): boolean | null {
   if (!hours || Object.keys(hours).length === 0) return null
   const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
@@ -179,9 +187,7 @@ function RegionView({
         <div className="rv-hero">
           <p className="eyebrow">Southwest WA Supplier Directory</p>
           <h1 className="rv-title">{region}</h1>
-          <p className="rv-count">
-            {filtered.length} of {suppliers.length} suppliers
-          </p>
+          <p className="rv-count">{filtered.length} of {suppliers.length} suppliers</p>
         </div>
 
         <div className="filters">
@@ -198,14 +204,8 @@ function RegionView({
                 key={t}
                 className={`pill${filterType === t ? ' active' : ''}`}
                 onClick={() => setFilterType(t)}
-                style={
-                  filterType === t && t !== 'All'
-                    ? { borderColor: TYPE_COLOURS[t], color: TYPE_COLOURS[t] }
-                    : {}
-                }
-              >
-                {t}
-              </button>
+                style={filterType === t && t !== 'All' ? { borderColor: TYPE_COLOURS[t], color: TYPE_COLOURS[t] } : {}}
+              >{t}</button>
             ))}
           </div>
           <div className="filter-pills">
@@ -215,36 +215,33 @@ function RegionView({
                 key={c}
                 className={`pill${filterCat === c ? ' active' : ''}`}
                 onClick={() => setFilterCat(c)}
-              >
-                {c}
-              </button>
+              >{c}</button>
             ))}
           </div>
         </div>
 
         <div className="sup-list">
-          {filtered.length === 0 && (
-            <p className="no-results">No suppliers match your filters.</p>
-          )}
+          {filtered.length === 0 && <p className="no-results">No suppliers match your filters.</p>}
           {filtered.map((s, i) => {
             const open = isOpenNow(s.hours)
             const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
             const today = days[new Date().getDay()]
             const todayHours = s.hours[today]
+            const slug = toSlug(s.name)
+            const isDemo = slug === DEMO_SLUG
 
             return (
               <div key={i} className="sup-item">
                 <div className="sup-main">
                   <div className="sup-header">
-                    <h2 className="sup-name">{s.name}</h2>
+                    <h2 className="sup-name">
+                      {isDemo
+                        ? <a href={`/directory/supplier/${DEMO_SLUG}`} className="sup-name-link">{s.name}</a>
+                        : s.name
+                      }
+                    </h2>
                     <div className="sup-badges">
-                      <span
-                        className="badge type-badge"
-                        style={{
-                          borderColor: TYPE_COLOURS[s.trade_type] || '#4a8fa0',
-                          color: TYPE_COLOURS[s.trade_type] || '#4a8fa0',
-                        }}
-                      >
+                      <span className="badge type-badge" style={{ borderColor: TYPE_COLOURS[s.trade_type] || '#4a8fa0', color: TYPE_COLOURS[s.trade_type] || '#4a8fa0' }}>
                         {s.trade_type}
                       </span>
                       <span className="badge cat-badge">{s.category}</span>
@@ -260,12 +257,12 @@ function RegionView({
                         📞 {s.phone}
                       </a>
                     )}
-                    {s.email && (
-                      <a
-                        href={`mailto:${s.email.split(';')[0].trim()}`}
-                        className="action-btn email-btn"
-                      >
-                        ✉ Email
+                    <a href="/rfq" className="action-btn rfq-btn">
+                      ✉ Request Quote
+                    </a>
+                    {isDemo && (
+                      <a href={`/directory/supplier/${DEMO_SLUG}`} className="action-btn profile-btn">
+                        View Profile →
                       </a>
                     )}
                   </div>
@@ -277,18 +274,14 @@ function RegionView({
                       {open ? '● Open Now' : '● Closed'}
                     </span>
                   )}
-                  {todayHours && (
-                    <span className="hours-today">Today: {todayHours[0]}</span>
-                  )}
+                  {todayHours && <span className="hours-today">Today: {todayHours[0]}</span>}
                 </div>
               </div>
             )
           })}
         </div>
 
-        <footer className="rv-footer">
-          © 2025 BuildQuote · Southwest WA Supplier Directory
-        </footer>
+        <footer className="rv-footer">© 2025 BuildQuote · Southwest WA Supplier Directory</footer>
       </div>
     </>
   )
@@ -360,6 +353,8 @@ const regionCSS = `
   .sup-item:hover::before{height:100%}
   .sup-header{display:flex;flex-wrap:wrap;align-items:center;gap:0.5rem;margin-bottom:0.45rem}
   .sup-name{font-family:'Barlow Condensed',sans-serif;font-size:1.12rem;font-weight:700;letter-spacing:0.04em;text-transform:uppercase;color:var(--white)}
+  .sup-name-link{color:var(--white);text-decoration:none;border-bottom:1px solid rgba(140,184,196,0.4);transition:border-color 0.2s}
+  .sup-name-link:hover{border-color:var(--accent);color:var(--accent)}
   .sup-badges{display:flex;gap:0.35rem;flex-wrap:wrap}
   .badge{font-family:'Barlow Condensed',sans-serif;font-size:0.56rem;letter-spacing:0.16em;text-transform:uppercase;padding:0.18rem 0.5rem;border:1px solid}
   .cat-badge{border-color:rgba(245,242,237,0.14);color:rgba(245,242,237,0.35)}
@@ -369,8 +364,10 @@ const regionCSS = `
   .action-btn{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;letter-spacing:0.14em;text-transform:uppercase;padding:0.38rem 0.85rem;border:1px solid;text-decoration:none;transition:all 0.18s;display:inline-flex;align-items:center;gap:0.3rem}
   .phone-btn{border-color:rgba(126,200,160,0.38);color:#7ec8a0}
   .phone-btn:hover{background:rgba(126,200,160,0.1);border-color:#7ec8a0}
-  .email-btn{border-color:rgba(140,184,196,0.28);color:var(--accent)}
-  .email-btn:hover{background:rgba(140,184,196,0.1);border-color:var(--accent)}
+  .rfq-btn{border-color:rgba(140,184,196,0.5);color:var(--accent);background:rgba(140,184,196,0.08)}
+  .rfq-btn:hover{background:rgba(140,184,196,0.18);border-color:var(--accent)}
+  .profile-btn{border-color:rgba(184,169,138,0.4);color:#b8a98a}
+  .profile-btn:hover{background:rgba(184,169,138,0.1);border-color:#b8a98a}
   .sup-right{display:flex;flex-direction:column;align-items:flex-end;gap:0.45rem;min-width:90px}
   .open-badge{font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;letter-spacing:0.16em;text-transform:uppercase;padding:0.22rem 0.55rem;white-space:nowrap}
   .open-badge.open{color:#7ec8a0;border:1px solid rgba(126,200,160,0.32);background:rgba(126,200,160,0.07)}

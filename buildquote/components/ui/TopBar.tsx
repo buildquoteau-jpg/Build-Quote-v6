@@ -1,3 +1,5 @@
+'use client'
+
 interface TopBarProps {
   currentStep: 1 | 2 | 3 | 4
 }
@@ -13,7 +15,12 @@ export default function TopBar({ currentStep }: TopBarProps) {
   return (
     <div className="sticky top-0 z-50 bg-gray-900 border-b border-gray-800 px-4 py-3">
       <div className="max-w-2xl mx-auto flex items-center justify-between">
-        <span className="text-orange-500 font-bold text-lg tracking-tight">BuildQuote</span>
+        <div className="flex items-center gap-3">
+          <a href="/portfolio" className="text-gray-500 hover:text-gray-300 text-xs tracking-widest uppercase transition-colors">
+            &larr; Portfolio
+          </a>
+          <span className="text-orange-500 font-bold text-lg tracking-tight">BuildQuote</span>
+        </div>
         <div className="flex gap-2">
           {steps.map(({ n, label }) => (
             <div
