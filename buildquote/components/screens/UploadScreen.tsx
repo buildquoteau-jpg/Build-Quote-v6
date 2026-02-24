@@ -14,10 +14,20 @@ export default function UploadScreen({ onNext }: UploadScreenProps) {
   const [error, setError] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const addFiles = (incoming: FileList | null) => {
-    if (!incoming) return
-    setFiles(prev => [...prev, ...Array.from(incoming)])
-  }
+  const MAX_FILES = 5
+
+const addFiles = (incoming: FileList | null) => {
+  if (!incoming) return
+  const newFiles = Array.from(incoming)
+  setFiles(prev => {
+    const combined = [...prev, ...newFiles]
+    if (combined.length > MAX_FILES) {
+      setError(`Maximum ${MAX_FILES} files at once.`)
+      return prev
+    }
+    return combined
+  })
+}
 
   const removeFile = (i: number) => setFiles(prev => prev.filter((_, idx) => idx !== i))
 

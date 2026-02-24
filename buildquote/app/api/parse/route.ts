@@ -11,6 +11,15 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file') as File
     if (!file) return NextResponse.json({ items: [] })
 
+// Guardrails
+const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+if (file.size > MAX_FILE_SIZE) {
+  return NextResponse.json(
+    { items: [], error: 'File too large. Maximum size is 5MB.' },
+    { status: 400 }
+  )
+}
+
     const bytes = await file.arrayBuffer()
     const buffer = Buffer.from(bytes)
     const base64 = buffer.toString('base64')
@@ -39,11 +48,16 @@ export async function POST(req: NextRequest) {
       content = `${PROMPT}\n\n${text}`
     }
 
-    const message = await client.messages.create({
-      model: 'claude-sonnet-4-6',
-      max_tokens: 4096,
-      messages: [{ role: 'user', content }],
-    })
+   const message = await Promise.race([
+  client.messages.create({
+    model: 'claude-sonnet-4-6',
+    max_tokens: 1024,
+    messages: [{ role: 'user', content }],
+  }),
+  new Promise((_, reject) =>
+    setTimeout(() => reject(new Error('Parse timeout')), 30000)
+  ),
+]) as Anthropic.Message
 
     const responseText = message.content[0].type === 'text' ? message.content[0].text : ''
     const jsonMatch = responseText.match(/\[[\s\S]*\]/)
