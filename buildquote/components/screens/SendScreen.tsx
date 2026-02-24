@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import Card from '../ui/Card'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
@@ -18,13 +18,73 @@ interface SendScreenProps {
 }
 
 export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sending, sendError }: SendScreenProps) {
+  const [listening, setListening] = useState(false)
+  const [voiceError, setVoiceError] = useState('')
+  const recognitionRef = useRef<any>(null)
+  const committedRef = useRef<string>('')
+
   const setBuilder = (field: keyof BuilderDetails, value: string) =>
     onChange({ ...rfqPayload, builder: { ...rfqPayload.builder, [field]: value } })
 
   const setSupplier = (field: keyof SupplierDetails, value: string) =>
     onChange({ ...rfqPayload, supplier: { ...rfqPayload.supplier, [field]: value } })
 
-  const listening = false
+  const toggleVoice = () => {
+    if (listening) {
+      recognitionRef.current?.stop()
+      setListening(false)
+      return
+    }
+
+    const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
+    if (!SR) {
+      setVoiceError('Voice not supported in this browser. Try Chrome or Safari.')
+      return
+    }
+
+    setVoiceError('')
+
+    // Seed committed text with whatever is already in the box
+    committedRef.current = rfqPayload.message
+
+    const recognition: any = new SR()
+    recognition.continuous = true
+    recognition.interimResults = true  // real-time as you speak
+    recognition.lang = 'en-AU'
+
+    recognition.onresult = (e: any) => {
+      let interim = ''
+      for (let i = e.resultIndex; i < e.results.length; i++) {
+        const transcript = e.results[i][0].transcript
+        if (e.results[i].isFinal) {
+          // Lock in the final word/phrase
+          committedRef.current += (committedRef.current ? ' ' : '') + transcript
+        } else {
+          // Show live interim in real time
+          interim = transcript
+        }
+      }
+      onChange({
+        ...rfqPayload,
+        message: committedRef.current + (interim ? ' ' + interim : ''),
+      })
+    }
+
+    recognition.onerror = (e: any) => {
+      if (e.error === 'not-allowed') {
+        setVoiceError('Microphone access denied. Allow microphone in your browser settings.')
+      } else if (e.error !== 'aborted') {
+        setVoiceError('Voice error: ' + e.error)
+      }
+      setListening(false)
+    }
+
+    recognition.onend = () => setListening(false)
+
+    recognitionRef.current = recognition
+    recognition.start()
+    setListening(true)
+  }
 
   return (
     <div className="flex flex-col gap-4">
@@ -61,25 +121,30 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
             onChange={e => onChange({ ...rfqPayload, message: e.target.value })}
             placeholder="Any additional notes for the supplier..."
             rows={4}
-            className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 w-full resize-none"
+            className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 w-full resize-none pr-10"
           />
           <button
-            onClick={() => {}}
-            className={`absolute bottom-3 right-3 text-xl ${listening ? 'text-red-400 animate-pulse' : 'text-gray-500 hover:text-orange-500'}`}
-            title="Voice to text"
+            type="button"
+            onClick={toggleVoice}
+            className={`absolute bottom-3 right-3 text-xl transition-colors ${
+              listening ? 'text-red-400 animate-pulse' : 'text-gray-500 hover:text-orange-500'
+            }`}
+            title={listening ? 'Tap to stop' : 'Tap to dictate'}
           >
             🎤
           </button>
         </div>
+        {listening && (
+          <p className="text-orange-400 text-xs animate-pulse">🔴 Listening... tap mic to stop</p>
+        )}
+        {voiceError && (
+          <p className="text-red-400 text-xs">{voiceError}</p>
+        )}
       </Card>
 
       <Card className="flex flex-col gap-1">
         <SectionLabel>Send Options</SectionLabel>
-        <CheckRow
-          label="Send RFQ to Supplier"
-          checked={true}
-          onChange={() => {}}
-        />
+        <CheckRow label="Send RFQ to Supplier" checked={true} onChange={() => {}} />
         <CheckRow
           label="Send a copy to myself"
           checked={rfqPayload.sendCopyToSelf}
