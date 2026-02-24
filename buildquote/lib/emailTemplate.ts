@@ -45,10 +45,11 @@ export function buildEmailHtml(payload: RFQPayload): string {
           </table>
 
           <div style="background:#f9fafb;border-radius:8px;padding:16px;margin-bottom:24px;">
-            <p style="margin:0;color:#6b7280;font-size:14px;">
-              <strong>Delivery:</strong> ${delivery === 'delivery' ? 'Delivery required' : 'Store pick-up'} &nbsp;|&nbsp;
-              <strong>Date Required:</strong> ${dateRequired || 'ASAP'}
-            </p>
+           <p style="margin:0;color:#6b7280;font-size:14px;">
+  <strong>Delivery:</strong> ${delivery === 'delivery' ? 'Delivery Required' : 'Store Pick-up'}
+  ${delivery === 'delivery' && payload.siteAddress ? `&nbsp;|&nbsp;<strong>Site Address:</strong> ${payload.siteAddress}` : ''}
+  &nbsp;|&nbsp;<strong>Date Required:</strong> ${dateRequired || 'ASAP'}
+</p>
           </div>
 
           <p style="color:#f97316;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;">Line Items</p>

@@ -46,6 +46,9 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
       <Card className="flex flex-col gap-3">
         <SectionLabel>Delivery</SectionLabel>
         <Toggle value={rfqPayload.delivery} onChange={v => onChange({ ...rfqPayload, delivery: v })} />
+        {rfqPayload.delivery === 'delivery' && (
+          <Input label="Site Address" value={rfqPayload.siteAddress || ''} onChange={v => onChange({ ...rfqPayload, siteAddress: v })} placeholder="123 Site Road, Dunsborough" />
+        )}
         <Input label="Date Required" value={rfqPayload.dateRequired} onChange={v => onChange({ ...rfqPayload, dateRequired: v })} type="date" />
       </Card>
 
