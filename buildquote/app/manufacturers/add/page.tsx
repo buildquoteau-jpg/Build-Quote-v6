@@ -150,7 +150,7 @@ function AddSystemContent() {
                 <p className="choose-desc">Paste a product page URL and AI extracts the component card for you to review.</p>
                 <span className="choose-tag">Recommended · 2 min</span>
               </button>
-              
+              <a
                 className="choose-card"
                 href={mfr?.website || 'https://www.google.com/search?q=' + encodeURIComponent((mfr?.name || '') + ' products')}
                 target="_blank"
