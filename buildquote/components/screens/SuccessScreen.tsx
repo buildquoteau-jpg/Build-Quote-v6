@@ -51,6 +51,13 @@ export default function SuccessScreen({ rfqId, payload, onReset }: SuccessScreen
         + Start Another RFQ
       </Button>
 
+      <div className="w-full flex gap-3 items-start bg-gray-900 border border-gray-700 rounded-lg p-4 text-left">
+        <span className="text-yellow-500 text-sm mt-0.5 flex-shrink-0">⚠</span>
+        <p className="text-gray-400 text-xs leading-relaxed">
+          BuildQuote does not track builder to supplier Requests for Quotation. Please call your preferred supplier to confirm receipt and product availability.
+        </p>
+      </div>
+
       <div className="flex gap-3 w-full">
         <a
           href="/directory"
