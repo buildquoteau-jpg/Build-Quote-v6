@@ -19,7 +19,10 @@ export default function TopBar({ currentStep }: TopBarProps) {
           <a href="/portfolio" className="text-gray-500 hover:text-gray-300 text-xs tracking-widest uppercase transition-colors">
             &larr; Portfolio
           </a>
-          <span className="text-orange-500 font-bold text-lg tracking-tight">BuildQuote</span>
+          <div className="flex flex-col">
+            <span className="text-orange-500 font-bold text-lg tracking-tight leading-tight">BuildQuote</span>
+            <span className="text-gray-500 text-xs leading-tight">Request for Quotation, Made Simple</span>
+          </div>
         </div>
         <div className="flex gap-2">
           {steps.map(({ n, label }) => (
