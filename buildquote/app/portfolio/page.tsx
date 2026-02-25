@@ -1,20 +1,47 @@
 'use client'
 
+const flow = [
+  {
+    num: '01',
+    app: 'SW Supplier Directory',
+    action: 'Find your local supplier',
+    desc: 'Browse 105 suppliers across Southwest WA. Filter by region, trade type and category.',
+    href: '/directory',
+    cta: 'Browse Directory',
+  },
+  {
+    num: '02',
+    app: 'Manufacturer Portal',
+    action: 'Build your material list',
+    desc: 'Search systems from leading manufacturers. Select components and send directly to your RFQ.',
+    href: '/manufacturers',
+    cta: 'Browse Products',
+  },
+  {
+    num: '03',
+    app: 'BuildQuote RFQ',
+    action: 'Send your quote request',
+    desc: 'Review your line items, add your details and send a professional RFQ to your supplier in minutes.',
+    href: '/rfq',
+    cta: 'Start a Quote',
+  },
+]
+
 const projects = [
   {
     num: '01', tag: 'Core Platform', title: 'BuildQuote',
-    desc: 'AI-native quote request platform. Stage-based material coordination connecting builders and suppliers across Southwest WA.',
+    desc: 'AI-native RFQ platform. Upload a materials list or build one manually. Send professional quote requests to suppliers across Southwest WA.',
     status: 'active', statusLabel: 'Active Development', href: '/rfq',
   },
   {
     num: '02', tag: 'Directory', title: 'SW Supplier Directory',
-    desc: 'Comprehensive supplier directory for the Southwest WA construction industry. SEO-driven with BuildQuote integration.',
-    status: 'building', statusLabel: 'Building', href: '/directory',
+    desc: 'Supplier directory for the Southwest WA construction industry. 105 suppliers across 10 regions with BuildQuote RFQ integration.',
+    status: 'active', statusLabel: 'Active Development', href: '/directory',
   },
   {
-    num: '03', tag: 'Portal', title: 'Manufacturers Portal',
-    desc: 'Dedicated portal for manufacturers to manage listings, respond to quotes, and connect with builders directly.',
-    status: 'building', statusLabel: 'Building', href: '#',
+    num: '03', tag: 'Portal', title: 'Manufacturer Portal',
+    desc: 'Product intelligence hub. Browse systems and component cards from leading manufacturers. Add directly to a BuildQuote RFQ.',
+    status: 'active', statusLabel: 'Active Development', href: '/manufacturers',
   },
   {
     num: '04', tag: 'Fabrication', title: 'Southwest Shelters',
@@ -40,6 +67,8 @@ export default function PortfolioPage() {
         }
         html, body { background: #0f1e26; }
         .dash { background: #0f1e26; min-height: 100vh; font-family: 'Barlow', sans-serif; color: var(--white); }
+
+        /* NAV */
         .dash-nav {
           display: flex; justify-content: space-between; align-items: center;
           padding: 2rem 3rem;
@@ -58,12 +87,50 @@ export default function PortfolioPage() {
           transition: color 0.2s; text-decoration: none;
         }
         .dash-exit:hover { color: var(--accent); }
+
+        /* HERO */
         .dash-hero { padding: 5rem 3rem 3rem; max-width: 900px; }
         .dash-eyebrow { font-family: 'Barlow Condensed', sans-serif; font-size: 0.7rem; letter-spacing: 0.4em; color: var(--accent); text-transform: uppercase; margin-bottom: 1rem; }
         .dash-title { font-family: 'Barlow Condensed', sans-serif; font-size: clamp(2.5rem, 6vw, 5rem); font-weight: 800; line-height: 0.95; text-transform: uppercase; margin-bottom: 1.5rem; }
         .dash-desc { font-size: 0.95rem; font-weight: 300; color: rgba(245,242,237,0.6); line-height: 1.7; max-width: 480px; }
+
+        /* USER FLOW */
+        .flow-section { padding: 3rem 3rem 1rem; }
+        .flow-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem; }
+        .section-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem; letter-spacing: 0.4em; color: rgba(245,242,237,0.3); text-transform: uppercase; padding-bottom: 0.8rem; border-bottom: 1px solid rgba(74,143,160,0.15); width: 100%; }
+        .start-btn {
+          font-family: 'Barlow Condensed', sans-serif; font-size: 0.72rem; letter-spacing: 0.22em;
+          text-transform: uppercase; padding: 0.6rem 1.4rem;
+          background: var(--teal); border: none; color: var(--white);
+          cursor: pointer; text-decoration: none;
+          transition: background 0.2s; display: inline-block;
+        }
+        .start-btn:hover { background: var(--teal-light); }
+        .flow-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; position: relative; }
+        .flow-step {
+          background: rgba(30,58,74,0.5); border: 1px solid rgba(74,143,160,0.15);
+          padding: 2rem 1.75rem; position: relative;
+        }
+        .flow-num { font-family: 'Barlow Condensed', sans-serif; font-size: 0.62rem; letter-spacing: 0.3em; color: var(--accent); text-transform: uppercase; margin-bottom: 0.6rem; }
+        .flow-app { font-family: 'Barlow Condensed', sans-serif; font-size: 1.1rem; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; margin-bottom: 0.4rem; color: var(--white); }
+        .flow-action { font-size: 0.78rem; font-weight: 400; color: rgba(245,242,237,0.5); line-height: 1.5; margin-bottom: 1rem; }
+        .flow-cta {
+          font-family: 'Barlow Condensed', sans-serif; font-size: 0.62rem; letter-spacing: 0.18em;
+          text-transform: uppercase; padding: 0.4rem 0.9rem;
+          border: 1px solid rgba(140,184,196,0.4); color: var(--accent);
+          text-decoration: none; transition: all 0.18s; display: inline-block;
+          background: rgba(140,184,196,0.06);
+        }
+        .flow-cta:hover { background: rgba(140,184,196,0.16); border-color: var(--accent); }
+        .flow-arrow {
+          position: absolute; right: -18px; top: 50%; transform: translateY(-50%);
+          font-size: 1.2rem; color: rgba(74,143,160,0.4); z-index: 2;
+          display: flex; align-items: center; justify-content: center;
+          width: 36px;
+        }
+
+        /* PROJECTS */
         .projects-section { padding: 2rem 3rem 5rem; }
-        .section-label { font-family: 'Barlow Condensed', sans-serif; font-size: 0.65rem; letter-spacing: 0.4em; color: rgba(245,242,237,0.3); text-transform: uppercase; margin-bottom: 2rem; padding-bottom: 0.8rem; border-bottom: 1px solid rgba(74,143,160,0.15); }
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 1.5px; }
         .card {
           background: rgba(30,58,74,0.4); border: 1px solid rgba(74,143,160,0.12);
@@ -84,8 +151,17 @@ export default function PortfolioPage() {
         .dot.building { background: var(--sand); }
         .card-arrow { position: absolute; bottom: 1.5rem; right: 1.5rem; font-size: 1.4rem; color: rgba(245,242,237,0.15); transition: color 0.2s, transform 0.2s; }
         .card:hover .card-arrow { color: var(--accent); transform: translate(3px, -3px); }
+
+        /* MOBILE */
         @media (max-width: 680px) {
-          .dash-nav, .projects-section, .dash-hero { padding-left: 1.5rem; padding-right: 1.5rem; }
+          .dash-nav, .projects-section, .dash-hero, .flow-section { padding-left: 1.5rem; padding-right: 1.5rem; }
+          .flow-steps { grid-template-columns: 1fr; }
+          .flow-arrow { display: none; }
+          .flow-step { border-left: 3px solid rgba(74,143,160,0.3); }
+        }
+        @media (max-width: 900px) and (min-width: 681px) {
+          .flow-steps { grid-template-columns: 1fr; }
+          .flow-arrow { display: none; }
         }
       `}</style>
 
@@ -104,8 +180,28 @@ export default function PortfolioPage() {
           <p className="dash-desc">A collection of AI-native tools being built for the Australian construction industry. Each app is independently developed and progressively integrated.</p>
         </div>
 
+        {/* USER FLOW */}
+        <div className="flow-section">
+          <p className="section-label">User Flow — How the apps connect</p>
+          <div className="flow-steps">
+            {flow.map((step, i) => (
+              <div key={step.num} className="flow-step">
+                <p className="flow-num">Step {step.num}</p>
+                <p className="flow-app">{step.app}</p>
+                <p className="flow-action">{step.desc}</p>
+                <a href={step.href} className="flow-cta">{step.cta} ↗</a>
+                {i < flow.length - 1 && <span className="flow-arrow">→</span>}
+              </div>
+            ))}
+          </div>
+          <div style={{ marginTop: '1.5rem' }}>
+            <a href="/directory" className="start-btn">▶ Start Here — Browse Suppliers</a>
+          </div>
+        </div>
+
+        {/* PROJECTS */}
         <div className="projects-section">
-          <p className="section-label">Projects — 2025</p>
+          <p className="section-label" style={{ marginBottom: '2rem' }}>Projects — 2025</p>
           <div className="grid">
             {projects.map(p => (
               <a key={p.num} href={p.href} className="card">
