@@ -31,9 +31,10 @@ export default function RFQPage() {
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
 
-  // Prefill supplier from URL params e.g. /rfq?supplier=M%26B+Bunbury&email=info@mbsales.net.au
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
+
+    // Prefill supplier from directory
     const supplierName = params.get('supplier') || ''
     const supplierEmail = params.get('email') || ''
     if (supplierName || supplierEmail) {
@@ -45,6 +46,29 @@ export default function RFQPage() {
           supplierEmail,
         }
       }))
+    }
+
+    // Prefill items from manufacturer portal — each item gets a fresh unique id
+    const itemsParam = params.get('items')
+    if (itemsParam) {
+      try {
+        const parsed = JSON.parse(decodeURIComponent(itemsParam))
+        const withIds: LineItem[] = parsed.map((item: any) => ({
+          id: crypto.randomUUID(),
+          name: item.description || '',
+          sku: item.code || '',
+          productId: '',
+          desc: '',
+          uom: item.unit || '',
+          qty: item.qty ? String(item.qty) : '',
+        }))
+        setItems(withIds)
+        setPayload(p => ({ ...p, items: withIds }))
+        // Skip straight to review screen if items are prefilled
+        setStep(2)
+      } catch (e) {
+        console.error('Failed to parse items from URL', e)
+      }
     }
   }, [])
 
