@@ -96,6 +96,7 @@ export default function ManufacturerPage({ params }: { params: Promise<{ manufac
               <div className="systems-grid">
                 {filtered.map((sys: any) => (
                   <a key={sys.slug} href={`/manufacturers/${mfr.slug}/${sys.slug}`} className="sys-card">
+
                     <div className="sys-card-top">
                       <span className="sys-app" style={{ color: APPLICATION_COLOURS[sys.application] || '#4a8fa0', borderColor: APPLICATION_COLOURS[sys.application] || '#4a8fa0' }}>
                         {sys.application}
@@ -114,6 +115,13 @@ export default function ManufacturerPage({ params }: { params: Promise<{ manufac
                     </div>
                   </a>
                 ))}
+                <a href={`/manufacturers/add?manufacturer=${mfr.slug}`} className="sys-card add-system-card">
+                  <div className="add-system-inner">
+                    <div className="empty-icon">+</div>
+                    <h3 className="add-system-title">Add a System</h3>
+                    <p className="add-system-desc">Know a {mfr.name} product system? Add it to the portal.</p>
+                  </div>
+                </a>
               </div>
             </>
           ) : (
@@ -198,6 +206,12 @@ const css = `
   .empty-link:hover{text-decoration:underline}
   .add-btn{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.6rem 1.4rem;border:1px solid rgba(74,143,160,0.4);color:var(--accent);background:rgba(74,143,160,0.08);text-decoration:none;transition:all 0.18s;margin-top:0.5rem}
   .add-btn:hover{background:rgba(74,143,160,0.18);border-color:var(--accent)}
+
+  .add-system-card{border-style:dashed!important;opacity:0.55;justify-content:center}
+  .add-system-card:hover{opacity:1}
+  .add-system-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.75rem;padding:1rem 0}
+  .add-system-title{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(245,242,237,0.5)}
+  .add-system-desc{font-size:0.75rem;font-weight:300;color:rgba(245,242,237,0.35);line-height:1.6}
   @media(max-width:680px){
     .jh-nav,.jh-hero,.systems-section,.jh-footer{padding-left:1.5rem;padding-right:1.5rem}
     .systems-grid{grid-template-columns:1fr}
