@@ -18,7 +18,7 @@ export async function POST(req: NextRequest) {
     const to = [payload.supplier.supplierEmail]
     const cc = payload.sendCopyToSelf ? [payload.builder.email] : []
 
-    await resend.emails.send({
+    const { data, error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'rfq@buildquote.com.au',
       to,
       cc,
@@ -37,9 +37,21 @@ export async function POST(req: NextRequest) {
       ],
     })
 
-    return NextResponse.json({ success: true, rfqId: payload.rfqId })
+    // Resend returns an error object rather than throwing — check it explicitly
+    if (error) {
+      console.error('Resend error:', error)
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: 500 }
+      )
+    }
+
+    console.log('Email sent:', data?.id)
+    return NextResponse.json({ success: true, rfqId: payload.rfqId, emailId: data?.id })
+
   } catch (e) {
-    console.error(e)
-    return NextResponse.json({ success: false }, { status: 500 })
+    const msg = e instanceof Error ? e.message : 'Unknown error'
+    console.error('Send route error:', msg)
+    return NextResponse.json({ success: false, error: msg }, { status: 500 })
   }
 }
