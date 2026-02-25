@@ -39,11 +39,7 @@ function AddSystemContent() {
 
   async function handleParse() {
     if (!url.trim()) { setError('Please enter a URL'); return }
-
-    // Guardrail: must be a real URL
     try { new URL(url) } catch { setError('Please enter a valid URL including https://'); return }
-
-    // Guardrail: warn if URL doesn't look like the manufacturer's domain
     if (mfr?.website) {
       const mfrDomain = new URL(mfr.website).hostname.replace('www.', '')
       const inputDomain = new URL(url).hostname.replace('www.', '')
@@ -54,37 +50,48 @@ function AddSystemContent() {
         if (!proceed) return
       }
     }
-
     setLoading(true)
     setError('')
     setParsed(null)
-
     try {
-
       const res = await fetch('/api/parse-manufacturer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ url, manufacturerName: mfr?.name || '' })
       })
-
       const result = await res.json()
-
       if (result.error) {
         setError(result.error + ' — try a more specific product page URL.')
       } else {
         setParsed({ ...result, sourceUrl: url })
       }
-    } catch (e) {
+    } catch {
       setError('Could not parse this page. Try a more specific product page URL, or use the manufacturer website directly.')
     } finally {
       setLoading(false)
     }
   }
 
-  function handleSubmit() {
-    // In production this would POST to an API route that writes to Vercel Blob / Supabase
-    // For now we just show success
-    setSubmitted(true)
+  async function handleSubmit() {
+    if (!parsed) return
+    setLoading(true)
+    try {
+      const res = await fetch('/api/save-system', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ manufacturerSlug: mfrSlug, system: parsed })
+      })
+      const data = await res.json()
+      if (data.error) {
+        setError(data.error)
+      } else {
+        setSubmitted(true)
+      }
+    } catch {
+      setError('Failed to save. Please try again.')
+    } finally {
+      setLoading(false)
+    }
   }
 
   return (
@@ -102,13 +109,11 @@ function AddSystemContent() {
           <p className="eyebrow">{mfr ? mfr.category : 'Manufacturer Portal'}</p>
           <h1 className="add-title">Add a System</h1>
           {mfr && <p className="add-sub">Adding to <strong>{mfr.name}</strong></p>}
-          <p className="add-desc">
-            Help other builders by adding a product system you use. Takes 2 minutes.
-          </p>
+          <p className="add-desc">Help other builders by adding a product system you use. Takes 2 minutes.</p>
           <div className="disclaimer">
             <span className="disc-icon">⚠</span>
             <p>AI-parsed component cards go live immediately and are tagged as community-added.
-            Always verify product codes and specifications on the manufacturer&apos;s website
+            Always verify product codes and specifications on the manufacturer's website
             before use. You are responsible for checking accuracy before submitting.</p>
           </div>
         </div>
@@ -145,36 +150,17 @@ function AddSystemContent() {
                 <p className="choose-desc">Paste a product page URL and AI extracts the component card for you to review.</p>
                 <span className="choose-tag">Recommended · 2 min</span>
               </button>
-              <a
+              
                 className="choose-card"
                 href={mfr?.website || 'https://www.google.com/search?q=' + encodeURIComponent((mfr?.name || '') + ' products')}
                 target="_blank"
                 rel="noopener noreferrer"
-                onClick={() => setMode('website')}
               >
                 <div className="choose-icon">↗</div>
                 <h3 className="choose-title">Visit Manufacturer Website</h3>
-                <p className="choose-desc">
-                  Go directly to {mfr?.name || 'the manufacturer'}&apos;s website to find product pages, brochures and install guides.
-                </p>
+                <p className="choose-desc">Go directly to {mfr?.name || 'the manufacturer'}&apos;s website to find product pages, brochures and install guides.</p>
                 {mfr?.website && <span className="choose-tag website-tag">{mfr.website.replace('https://', '')}</span>}
               </a>
-            </div>
-          </div>
-
-        ) : mode === 'website' ? (
-          <div className="add-body">
-            <div className="website-card">
-              <p className="wc-label">Opening {mfr?.name} website…</p>
-              <p className="wc-desc">Find the product page you want to add, then come back and use AI Parse to extract it automatically.</p>
-              <div className="wc-actions">
-                <a href={mfr?.website} target="_blank" rel="noopener noreferrer" className="add-btn primary">
-                  Open {mfr?.website?.replace('https://', '')} ↗
-                </a>
-                <button className="add-btn secondary" onClick={() => setMode('ai')}>
-                  Use AI Parse instead
-                </button>
-              </div>
             </div>
           </div>
 
@@ -192,7 +178,6 @@ function AddSystemContent() {
                   </>
                 )}
               </p>
-
               <div className="url-row">
                 <input
                   className="url-input"
@@ -206,23 +191,19 @@ function AddSystemContent() {
                   {loading ? 'Parsing…' : 'Parse ✦'}
                 </button>
               </div>
-
               {error && <p className="parse-error">{error}</p>}
-
               {loading && (
                 <div className="loading-state">
                   <div className="loading-dot" />
                   <p>AI is reading the product page and extracting component data…</p>
                 </div>
               )}
-
               <div className="parse-tips">
                 <p className="tips-label">Tips for best results</p>
                 <p className="tips-item">· Use the specific product system page, not the homepage</p>
                 <p className="tips-item">· Pages with a product table or spec sheet work best</p>
                 <p className="tips-item">· Always verify the output before submitting</p>
               </div>
-
               <button className="back-link" onClick={() => setMode('choose')}>← Back</button>
             </div>
           </div>
@@ -234,9 +215,7 @@ function AddSystemContent() {
                 <div>
                   <p className="review-label">Review AI Output — verify before submitting</p>
                   <h2 className="review-title">{parsed.name}</h2>
-                  <p className="review-source">
-                    Parsed from: <a href={parsed.sourceUrl} target="_blank" rel="noopener noreferrer" className="cs-link">{parsed.sourceUrl}</a>
-                  </p>
+                  <p className="review-source">Parsed from: <a href={parsed.sourceUrl} target="_blank" rel="noopener noreferrer" className="cs-link">{parsed.sourceUrl}</a></p>
                   {parsed.sourceNote && <p className="review-note">{parsed.sourceNote}</p>}
                 </div>
                 <div className="review-meta">
@@ -245,15 +224,12 @@ function AddSystemContent() {
                   {parsed.warranty && <span className="meta-pill">{parsed.warranty} warranty</span>}
                 </div>
               </div>
-
               <p className="review-desc">{parsed.description}</p>
-
               <div className="review-disclaimer">
                 <span>⚠</span>
-                <p>Check every row below against the manufacturer&apos;s website before submitting.
+                <p>Check every row below against the manufacturer's website before submitting.
                 Amber rows <span className="amber-label">?</span> indicate fields the AI was uncertain about.</p>
               </div>
-
               {parsed.panels.length > 0 && (
                 <div className="review-section">
                   <p className="review-section-label">Panels — {parsed.panels.length} SKUs</p>
@@ -272,7 +248,6 @@ function AddSystemContent() {
                   </table>
                 </div>
               )}
-
               {parsed.accessories.length > 0 && (
                 <div className="review-section">
                   <p className="review-section-label">Accessories — {parsed.accessories.length} SKUs</p>
@@ -291,18 +266,16 @@ function AddSystemContent() {
                   </table>
                 </div>
               )}
-
               <div className="review-actions">
-                <button className="add-btn secondary" onClick={() => { setParsed(null); setError('') }}>
-                  ← Re-parse
-                </button>
+                <button className="add-btn secondary" onClick={() => { setParsed(null); setError('') }}>← Re-parse</button>
                 <a href={parsed.sourceUrl} target="_blank" rel="noopener noreferrer" className="add-btn secondary">
                   Verify on {new URL(parsed.sourceUrl).hostname} ↗
                 </a>
-                <button className="add-btn primary" onClick={handleSubmit}>
-                  Looks Good — Submit ✓
+                <button className="add-btn primary" onClick={handleSubmit} disabled={loading}>
+                  {loading ? 'Saving…' : 'Looks Good — Submit ✓'}
                 </button>
               </div>
+              {error && <p className="parse-error">{error}</p>}
             </div>
           </div>
         )}
@@ -314,17 +287,13 @@ function AddSystemContent() {
 }
 
 export default function AddSystemPage() {
-  return (
-    <Suspense>
-      <AddSystemContent />
-    </Suspense>
-  )
+  return <Suspense><AddSystemContent /></Suspense>
 }
 
 const css = `
   @import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@300;400;700;800&family=Barlow:wght@300;400&display=swap');
   *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  :root{--teal-l:#4a8fa0;--accent:#8cb8c4;--white:#f5f2ed;--bg:#0f1e26;--sand:#b8a98a;--orange:#f97316}
+  :root{--teal-l:#4a8fa0;--accent:#8cb8c4;--white:#f5f2ed;--bg:#0f1e26;--sand:#b8a98a}
   body{background:var(--bg)}
   .add{min-height:100vh;background:var(--bg);font-family:'Barlow',sans-serif;color:var(--white)}
   .add-nav{display:flex;justify-content:space-between;align-items:center;padding:1.2rem 3rem;border-bottom:1px solid rgba(74,143,160,0.2);position:sticky;top:0;background:rgba(15,30,38,0.96);backdrop-filter:blur(10px);z-index:100}
@@ -342,8 +311,6 @@ const css = `
   .disc-icon{font-size:0.9rem;color:var(--sand);flex-shrink:0;margin-top:0.05rem}
   .disclaimer p{font-size:0.75rem;color:rgba(245,242,237,0.45);line-height:1.6}
   .add-body{padding:2rem 3rem 4rem;max-width:760px}
-
-  /* Choose mode */
   .choose-label{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;letter-spacing:0.35em;text-transform:uppercase;color:rgba(245,242,237,0.3);margin-bottom:1.25rem}
   .choose-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px}
   .choose-card{background:rgba(30,58,74,0.4);border:1px solid rgba(74,143,160,0.15);padding:2rem;display:flex;flex-direction:column;gap:0.75rem;cursor:pointer;text-align:left;color:var(--white);text-decoration:none;transition:background 0.2s,border-color 0.2s;position:relative;overflow:hidden}
@@ -355,14 +322,6 @@ const css = `
   .choose-desc{font-size:0.8rem;font-weight:300;color:rgba(245,242,237,0.45);line-height:1.6;flex:1}
   .choose-tag{font-family:'Barlow Condensed',sans-serif;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;color:var(--accent);padding:0.2rem 0.5rem;border:1px solid rgba(74,143,160,0.3);background:rgba(74,143,160,0.08);align-self:flex-start}
   .website-tag{color:rgba(245,242,237,0.35);border-color:rgba(245,242,237,0.12);background:transparent}
-
-  /* Website mode */
-  .website-card{background:rgba(30,58,74,0.4);border:1px solid rgba(74,143,160,0.15);padding:2rem;display:flex;flex-direction:column;gap:1rem}
-  .wc-label{font-family:'Barlow Condensed',sans-serif;font-size:0.65rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--accent)}
-  .wc-desc{font-size:0.85rem;font-weight:300;color:rgba(245,242,237,0.5);line-height:1.6}
-  .wc-actions{display:flex;gap:0.75rem;flex-wrap:wrap;margin-top:0.5rem}
-
-  /* Parse mode */
   .parse-card{background:rgba(30,58,74,0.4);border:1px solid rgba(74,143,160,0.15);padding:2rem;display:flex;flex-direction:column;gap:1.25rem}
   .parse-title{font-family:'Barlow Condensed',sans-serif;font-size:1.3rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase}
   .parse-desc{font-size:0.82rem;font-weight:300;color:rgba(245,242,237,0.5);line-height:1.6}
@@ -382,8 +341,6 @@ const css = `
   .tips-item{font-size:0.75rem;color:rgba(245,242,237,0.35);line-height:1.5}
   .back-link{background:none;border:none;color:rgba(245,242,237,0.35);font-family:'Barlow Condensed',sans-serif;font-size:0.7rem;letter-spacing:0.2em;text-transform:uppercase;cursor:pointer;text-align:left;padding:0;transition:color 0.2s}
   .back-link:hover{color:var(--accent)}
-
-  /* Review mode */
   .review-card{background:rgba(30,58,74,0.4);border:1px solid rgba(74,143,160,0.15);padding:2rem;display:flex;flex-direction:column;gap:1.5rem}
   .review-label{font-family:'Barlow Condensed',sans-serif;font-size:0.6rem;letter-spacing:0.3em;text-transform:uppercase;color:var(--sand);margin-bottom:0.4rem}
   .review-header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem;flex-wrap:wrap}
@@ -402,21 +359,17 @@ const css = `
   .review-table td{padding:0.5rem 0.6rem;color:rgba(245,242,237,0.65);border-bottom:1px solid rgba(74,143,160,0.07)}
   .review-table tr.uncertain td{background:rgba(251,191,36,0.04);border-left:2px solid rgba(251,191,36,0.25)}
   .review-actions{display:flex;gap:0.75rem;flex-wrap:wrap;padding-top:0.5rem;border-top:1px solid rgba(74,143,160,0.1)}
-
-  /* Shared buttons */
   .add-btn{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;letter-spacing:0.18em;text-transform:uppercase;padding:0.6rem 1.2rem;border:1px solid;cursor:pointer;text-decoration:none;transition:all 0.18s;display:inline-block}
   .add-btn.primary{border-color:rgba(74,143,160,0.5);color:var(--accent);background:rgba(74,143,160,0.1)}
   .add-btn.primary:hover{background:rgba(74,143,160,0.22);border-color:var(--accent)}
   .add-btn.secondary{border-color:rgba(245,242,237,0.15);color:rgba(245,242,237,0.45);background:transparent}
   .add-btn.secondary:hover{border-color:rgba(245,242,237,0.3);color:rgba(245,242,237,0.7)}
-
-  /* Success */
+  .add-btn:disabled{opacity:0.5;cursor:default}
   .success-card{background:rgba(30,58,74,0.4);border:1px solid rgba(74,143,160,0.2);padding:2.5rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem;max-width:480px}
   .success-icon{width:52px;height:52px;border-radius:50%;background:rgba(74,143,160,0.15);border:1px solid rgba(74,143,160,0.3);display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--accent)}
   .success-title{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;letter-spacing:0.05em;text-transform:uppercase}
   .success-desc{font-size:0.82rem;font-weight:300;color:rgba(245,242,237,0.5);line-height:1.6}
   .success-actions{display:flex;gap:0.75rem;flex-wrap:wrap;justify-content:center;margin-top:0.5rem}
-
   .cs-link{color:var(--accent);text-decoration:none}
   .cs-link:hover{text-decoration:underline}
   .add-footer{padding:1.2rem 3rem;border-top:1px solid rgba(74,143,160,0.1);font-size:0.6rem;letter-spacing:0.14em;color:rgba(245,242,237,0.2);text-transform:uppercase}
@@ -424,6 +377,6 @@ const css = `
     .add-nav,.add-hero,.add-body,.add-footer{padding-left:1.5rem;padding-right:1.5rem}
     .choose-grid{grid-template-columns:1fr}
     .url-row{flex-direction:column}
-    .review-actions,.success-actions,.wc-actions{flex-direction:column}
+    .review-actions,.success-actions{flex-direction:column}
   }
 `

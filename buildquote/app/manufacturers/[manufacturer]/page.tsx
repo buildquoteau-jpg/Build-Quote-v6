@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { use } from 'react'
 import manufacturersData from '@/data/manufacturers.json'
 
@@ -15,6 +15,14 @@ export default function ManufacturerPage({ params }: { params: Promise<{ manufac
   const { manufacturer: slug } = use(params)
   const mfr = manufacturers.find(m => m.slug === slug)
   const [query, setQuery] = useState('')
+  const [communitySystems, setCommunitySystems] = useState<any[]>([])
+
+  useEffect(() => {
+    fetch('/api/save-system')
+      .then(r => r.json())
+      .then(data => setCommunitySystems(data.filter((s: any) => s.manufacturerSlug === slug)))
+      .catch(() => {})
+  }, [slug])
 
   if (!mfr) {
     return (
@@ -36,15 +44,15 @@ export default function ManufacturerPage({ params }: { params: Promise<{ manufac
     )
   }
 
+  const allSystems = [...(mfr.systems || []), ...communitySystems]
   const filtered = query.trim()
-    ? mfr.systems.filter((s: any) =>
+    ? allSystems.filter((s: any) =>
         s.name.toLowerCase().includes(query.toLowerCase()) ||
         s.application?.toLowerCase().includes(query.toLowerCase()) ||
         s.description?.toLowerCase().includes(query.toLowerCase())
       )
-    : mfr.systems
-
-  const hasSystems = mfr.systems.length > 0
+    : allSystems
+  const hasSystems = allSystems.length > 0
 
   return (
     <>
@@ -61,14 +69,10 @@ export default function ManufacturerPage({ params }: { params: Promise<{ manufac
           <p className="jh-desc">{mfr.description}</p>
           <div className="jh-links">
             {mfr.website && (
-              <a href={mfr.website} target="_blank" rel="noopener noreferrer" className="jh-link-btn primary">
-                Visit Website ↗
-              </a>
+              <a href={mfr.website} target="_blank" rel="noopener noreferrer" className="jh-link-btn primary">Visit Website ↗</a>
             )}
             {mfr.phone && (
-              <a href={`tel:${mfr.phone}`} className="jh-link-btn secondary">
-                📞 {mfr.phone}
-              </a>
+              <a href={`tel:${mfr.phone}`} className="jh-link-btn secondary">📞 {mfr.phone}</a>
             )}
           </div>
           <div className="disclaimer">
@@ -83,7 +87,7 @@ export default function ManufacturerPage({ params }: { params: Promise<{ manufac
         <div className="systems-section">
           {hasSystems ? (
             <>
-              <p className="section-label">Systems — {filtered.length} of {mfr.systems.length} available</p>
+              <p className="section-label">Systems — {filtered.length} of {allSystems.length} available</p>
               <div className="jh-search">
                 <input
                   className="jh-search-input"
@@ -96,20 +100,22 @@ export default function ManufacturerPage({ params }: { params: Promise<{ manufac
               <div className="systems-grid">
                 {filtered.map((sys: any) => (
                   <a key={sys.slug} href={`/manufacturers/${mfr.slug}/${sys.slug}`} className="sys-card">
-
                     <div className="sys-card-top">
                       <span className="sys-app" style={{ color: APPLICATION_COLOURS[sys.application] || '#4a8fa0', borderColor: APPLICATION_COLOURS[sys.application] || '#4a8fa0' }}>
                         {sys.application}
                       </span>
-                      <span className="sys-warranty">{sys.warranty} warranty</span>
+                      <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:'0.25rem'}}>
+                        {sys.communityAdded && <span className="community-badge">Community</span>}
+                        {sys.warranty && <span className="sys-warranty">{sys.warranty} warranty</span>}
+                      </div>
                     </div>
                     <h2 className="sys-name">{sys.name}</h2>
                     <p className="sys-desc">{sys.description}</p>
                     <div className="sys-card-foot">
                       <div className="sys-stats">
-                        <span className="sys-stat"><span className="stat-label">Thickness</span>{sys.thickness}</span>
-                        <span className="sys-stat"><span className="stat-label">Panels</span>{sys.panels.length} SKUs</span>
-                        <span className="sys-stat"><span className="stat-label">Accessories</span>{sys.accessories.length} SKUs</span>
+                        {sys.thickness && <span className="sys-stat"><span className="stat-label">Thickness</span>{sys.thickness}</span>}
+                        {sys.panels && <span className="sys-stat"><span className="stat-label">Panels</span>{sys.panels.length} SKUs</span>}
+                        {sys.accessories && <span className="sys-stat"><span className="stat-label">Accessories</span>{sys.accessories.length} SKUs</span>}
                       </div>
                       <span className="sys-arrow">↗</span>
                     </div>
@@ -136,9 +142,7 @@ export default function ManufacturerPage({ params }: { params: Promise<{ manufac
                     <> Visit <a href={mfr.website} target="_blank" rel="noopener noreferrer" className="empty-link">{mfr.website.replace('https://', '')}</a> to find product pages and brochures.</>
                   )}
                 </p>
-                <a href={`/manufacturers/add?manufacturer=${mfr.slug}`} className="add-btn">
-                  + Add a System
-                </a>
+                <a href={`/manufacturers/add?manufacturer=${mfr.slug}`} className="add-btn">+ Add a System</a>
               </div>
             </div>
           )}
@@ -184,6 +188,7 @@ const css = `
   .sys-card-top{display:flex;justify-content:space-between;align-items:center}
   .sys-app{font-family:'Barlow Condensed',sans-serif;font-size:0.58rem;letter-spacing:0.18em;text-transform:uppercase;padding:0.2rem 0.5rem;border:1px solid}
   .sys-warranty{font-family:'Barlow Condensed',sans-serif;font-size:0.58rem;letter-spacing:0.14em;text-transform:uppercase;color:rgba(245,242,237,0.28)}
+  .community-badge{font-family:'Barlow Condensed',sans-serif;font-size:0.55rem;letter-spacing:0.18em;text-transform:uppercase;padding:0.15rem 0.4rem;border:1px solid rgba(126,200,160,0.4);color:#7ec8a0;background:rgba(126,200,160,0.08)}
   .sys-name{font-family:'Barlow Condensed',sans-serif;font-size:1.6rem;font-weight:800;letter-spacing:0.04em;text-transform:uppercase;line-height:1}
   .sys-desc{font-size:0.78rem;font-weight:300;color:rgba(245,242,237,0.45);line-height:1.6;flex:1}
   .sys-card-foot{display:flex;justify-content:space-between;align-items:flex-end;margin-top:0.5rem}
@@ -192,11 +197,11 @@ const css = `
   .stat-label{font-family:'Barlow Condensed',sans-serif;font-size:0.58rem;letter-spacing:0.14em;text-transform:uppercase;color:rgba(245,242,237,0.22);min-width:70px}
   .sys-arrow{font-size:1.2rem;color:rgba(245,242,237,0.15);transition:color 0.2s,transform 0.2s;align-self:flex-end}
   .sys-card:hover .sys-arrow{color:var(--accent);transform:translate(3px,-3px)}
-  .jh-footer{padding:1.2rem 3rem;border-top:1px solid rgba(74,143,160,0.1);font-size:0.6rem;letter-spacing:0.14em;color:rgba(245,242,237,0.2);text-transform:uppercase}
-  .jh-search{margin-bottom:1.5rem}
-  .jh-search-input{width:100%;max-width:400px;background:rgba(30,58,74,0.5);border:1px solid rgba(74,143,160,0.2);color:var(--white);font-family:'Barlow',sans-serif;font-size:0.88rem;padding:0.65rem 1rem;outline:none;transition:border-color 0.2s}
-  .jh-search-input::placeholder{color:rgba(245,242,237,0.25)}
-  .jh-search-input:focus{border-color:var(--accent)}
+  .add-system-card{border-style:dashed!important;opacity:0.55;justify-content:center}
+  .add-system-card:hover{opacity:1}
+  .add-system-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.75rem;padding:1rem 0}
+  .add-system-title{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(245,242,237,0.5)}
+  .add-system-desc{font-size:0.75rem;font-weight:300;color:rgba(245,242,237,0.35);line-height:1.6}
   .empty-state{max-width:500px}
   .empty-card{background:rgba(30,58,74,0.3);border:1px dashed rgba(74,143,160,0.25);padding:2.5rem;display:flex;flex-direction:column;align-items:center;text-align:center;gap:1rem}
   .empty-icon{width:48px;height:48px;border:1px dashed rgba(74,143,160,0.3);display:flex;align-items:center;justify-content:center;font-size:1.5rem;color:rgba(245,242,237,0.2)}
@@ -206,16 +211,14 @@ const css = `
   .empty-link:hover{text-decoration:underline}
   .add-btn{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;letter-spacing:0.2em;text-transform:uppercase;padding:0.6rem 1.4rem;border:1px solid rgba(74,143,160,0.4);color:var(--accent);background:rgba(74,143,160,0.08);text-decoration:none;transition:all 0.18s;margin-top:0.5rem}
   .add-btn:hover{background:rgba(74,143,160,0.18);border-color:var(--accent)}
-
-  .add-system-card{border-style:dashed!important;opacity:0.55;justify-content:center}
-  .add-system-card:hover{opacity:1}
-  .add-system-inner{display:flex;flex-direction:column;align-items:center;text-align:center;gap:0.75rem;padding:1rem 0}
-  .add-system-title{font-family:'Barlow Condensed',sans-serif;font-size:1.1rem;font-weight:700;letter-spacing:0.06em;text-transform:uppercase;color:rgba(245,242,237,0.5)}
-  .add-system-desc{font-size:0.75rem;font-weight:300;color:rgba(245,242,237,0.35);line-height:1.6}
+  .jh-search{margin-bottom:1.5rem}
+  .jh-search-input{width:100%;max-width:400px;background:rgba(30,58,74,0.5);border:1px solid rgba(74,143,160,0.2);color:var(--white);font-family:'Barlow',sans-serif;font-size:0.88rem;padding:0.65rem 1rem;outline:none;transition:border-color 0.2s}
+  .jh-search-input::placeholder{color:rgba(245,242,237,0.25)}
+  .jh-search-input:focus{border-color:var(--accent)}
+  .jh-footer{padding:1.2rem 3rem;border-top:1px solid rgba(74,143,160,0.1);font-size:0.6rem;letter-spacing:0.14em;color:rgba(245,242,237,0.2);text-transform:uppercase}
   @media(max-width:680px){
     .jh-nav,.jh-hero,.systems-section,.jh-footer{padding-left:1.5rem;padding-right:1.5rem}
     .systems-grid{grid-template-columns:1fr}
     .jh-links{flex-direction:column}
-    .jh-link-btn{text-align:center}
   }
 `
