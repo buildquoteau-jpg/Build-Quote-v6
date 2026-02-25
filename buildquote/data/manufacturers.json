@@ -1,0 +1,194 @@
+[
+  {
+    "slug": "james-hardie",
+    "name": "James Hardie",
+    "description": "Australia's leading manufacturer of fibre cement cladding, flooring and lining products. Built for Australian conditions with a 25-year warranty.",
+    "website": "https://www.jameshardie.com.au",
+    "phone": "13 11 03",
+    "country": "Australian Made",
+    "systems": [
+      {
+        "slug": "easylap",
+        "name": "EasyLap Panel",
+        "description": "A versatile fibre cement sheet panel system for exterior cladding. Available in multiple sheet sizes for various wall heights and applications.",
+        "thickness": "8.5mm",
+        "application": "External Cladding",
+        "warranty": "15 years",
+        "panels": [
+          {
+            "code": "404186",
+            "name": "EasyLap Panel 3000×900",
+            "length": 3000,
+            "width": 900,
+            "thickness": 8.5,
+            "uom": "EA"
+          },
+          {
+            "code": "404184",
+            "name": "EasyLap Panel 2440×1200",
+            "length": 2440,
+            "width": 1200,
+            "thickness": 8.5,
+            "uom": "EA"
+          },
+          {
+            "code": "404185",
+            "name": "EasyLap Panel 3000×1200",
+            "length": 3000,
+            "width": 1200,
+            "thickness": 8.5,
+            "uom": "EA"
+          },
+          {
+            "code": "404980",
+            "name": "EasyLap Panel 3600×1200",
+            "length": 3600,
+            "width": 1200,
+            "thickness": 8.5,
+            "uom": "EA"
+          }
+        ],
+        "accessories": [
+          {
+            "code": "306100",
+            "name": "Hardie 9mm Alum Ext Square Corner 3000mm",
+            "length": 3000,
+            "uom": "EA"
+          },
+          {
+            "code": "305520",
+            "name": "Hardie 9mm Alum Int Corner 3000mm",
+            "length": 3000,
+            "uom": "EA"
+          },
+          {
+            "code": "305564",
+            "name": "Hardie 75×75 COLORBOND Corner Flashing 3000mm",
+            "length": 3000,
+            "uom": "EA"
+          },
+          {
+            "code": "306104",
+            "name": "Hardie Horiz Express Jointer 3000mm",
+            "length": 3000,
+            "uom": "EA"
+          },
+          {
+            "code": "306110",
+            "name": "Hardie Horiz Express Connector",
+            "length": null,
+            "uom": "EA"
+          },
+          {
+            "code": "306105",
+            "name": "Hardie Base Trim 3000mm",
+            "length": 3000,
+            "uom": "EA"
+          },
+          {
+            "code": "306111",
+            "name": "Hardie Base Trim Connector",
+            "length": null,
+            "uom": "EA"
+          },
+          {
+            "code": "304560",
+            "name": "Hardie 50mm Foam Back Sealing Tape 25m",
+            "length": null,
+            "uom": "EA"
+          }
+        ]
+      },
+      {
+        "slug": "stria-cladding",
+        "name": "Stria Cladding",
+        "description": "Stackable fibre cement boards creating clean horizontal or vertical lines. Available in Smooth and Fine Texture finishes, 325mm and 405mm widths.",
+        "thickness": "14mm",
+        "application": "External Cladding",
+        "warranty": "25 years",
+        "panels": [
+          {
+            "code": "405504",
+            "name": "Stria Smooth 325mm 3000mm",
+            "length": 3000,
+            "width": 325,
+            "thickness": 14,
+            "texture": "Smooth",
+            "uom": "EA"
+          },
+          {
+            "code": "404063",
+            "name": "Stria Smooth 325mm 4200mm",
+            "length": 4200,
+            "width": 325,
+            "thickness": 14,
+            "texture": "Smooth",
+            "uom": "EA"
+          },
+          {
+            "code": "405505",
+            "name": "Stria Smooth 405mm 3000mm",
+            "length": 3000,
+            "width": 405,
+            "thickness": 14,
+            "texture": "Smooth",
+            "uom": "EA"
+          },
+          {
+            "code": "404413",
+            "name": "Stria Smooth 405mm 4200mm",
+            "length": 4200,
+            "width": 405,
+            "thickness": 14,
+            "texture": "Smooth",
+            "uom": "EA"
+          },
+          {
+            "code": "405571",
+            "name": "Stria Fine Texture 325mm 3000mm",
+            "length": 3000,
+            "width": 325,
+            "thickness": 14,
+            "texture": "Fine Texture",
+            "uom": "EA"
+          },
+          {
+            "code": "405570",
+            "name": "Stria Fine Texture 325mm 4200mm",
+            "length": 4200,
+            "width": 325,
+            "thickness": 14,
+            "texture": "Fine Texture",
+            "uom": "EA"
+          }
+        ],
+        "accessories": [
+          {
+            "code": "305519",
+            "name": "Hardie 14mm Alum External Corner 3000mm",
+            "length": 3000,
+            "uom": "EA"
+          },
+          {
+            "code": "305518",
+            "name": "Hardie 14mm Alum Internal Corner 3000mm",
+            "length": 3000,
+            "uom": "EA"
+          },
+          {
+            "code": "306128",
+            "name": "Hardie 14mm Alum Trimline Joint Flashing 3000mm",
+            "length": 3000,
+            "uom": "EA"
+          },
+          {
+            "code": "304560",
+            "name": "Hardie 50mm Foam Back Sealing Tape 25m",
+            "length": null,
+            "uom": "EA"
+          }
+        ]
+      }
+    ]
+  }
+]
