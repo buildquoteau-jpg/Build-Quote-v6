@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import manufacturersData from '@/data/manufacturers.json'
 
 const jh = (manufacturersData as any[]).find(m => m.slug === 'james-hardie')
@@ -10,6 +11,15 @@ const APPLICATION_COLOURS: Record<string, string> = {
 }
 
 export default function JamesHardiePage() {
+  const [query, setQuery] = useState('')
+  const filtered = query.trim()
+    ? jh.systems.filter((s: any) =>
+        s.name.toLowerCase().includes(query.toLowerCase()) ||
+        s.application?.toLowerCase().includes(query.toLowerCase()) ||
+        s.description?.toLowerCase().includes(query.toLowerCase())
+      )
+    : jh.systems
+
   return (
     <>
       <style>{css}</style>
@@ -41,9 +51,18 @@ export default function JamesHardiePage() {
         </div>
 
         <div className="systems-section">
-          <p className="section-label">Systems — {jh.systems.length} available</p>
+          <p className="section-label">Systems — {filtered.length} of {jh.systems.length} available</p>
+          <div className="jh-search">
+            <input
+              className="jh-search-input"
+              type="text"
+              placeholder="Search systems..."
+              value={query}
+              onChange={e => setQuery(e.target.value)}
+            />
+          </div>
           <div className="systems-grid">
-            {jh.systems.map((sys: any) => (
+            {filtered.map((sys: any) => (
               <a key={sys.slug} href={`/manufacturers/james-hardie/${sys.slug}`} className="sys-card">
                 <div className="sys-card-top">
                   <span className="sys-app" style={{ color: APPLICATION_COLOURS[sys.application] || '#4a8fa0', borderColor: APPLICATION_COLOURS[sys.application] || '#4a8fa0' }}>
@@ -115,6 +134,11 @@ const css = `
   .sys-arrow{font-size:1.2rem;color:rgba(245,242,237,0.15);transition:color 0.2s,transform 0.2s;align-self:flex-end}
   .sys-card:hover .sys-arrow{color:var(--accent);transform:translate(3px,-3px)}
   .jh-footer{padding:1.2rem 3rem;border-top:1px solid rgba(74,143,160,0.1);font-size:0.6rem;letter-spacing:0.14em;color:rgba(245,242,237,0.2);text-transform:uppercase}
+
+  .jh-search{margin-bottom:1.5rem}
+  .jh-search-input{width:100%;max-width:400px;background:rgba(30,58,74,0.5);border:1px solid rgba(74,143,160,0.2);color:var(--white);font-family:'Barlow',sans-serif;font-size:0.88rem;padding:0.65rem 1rem;outline:none;transition:border-color 0.2s}
+  .jh-search-input::placeholder{color:rgba(245,242,237,0.25)}
+  .jh-search-input:focus{border-color:var(--accent)}
   @media(max-width:680px){
     .jh-nav,.jh-hero,.systems-section,.jh-footer{padding-left:1.5rem;padding-right:1.5rem}
     .systems-grid{grid-template-columns:1fr}

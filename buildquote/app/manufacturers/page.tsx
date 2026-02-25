@@ -1,9 +1,21 @@
 'use client'
+import { useState } from 'react'
 import manufacturersData from '@/data/manufacturers.json'
 
 const manufacturers = manufacturersData as any[]
 
 export default function ManufacturersPage() {
+  const [query, setQuery] = useState('')
+  const filtered = query.trim()
+    ? manufacturers.filter(m =>
+        m.name.toLowerCase().includes(query.toLowerCase()) ||
+        m.systems.some((s: any) =>
+          s.name.toLowerCase().includes(query.toLowerCase()) ||
+          s.application?.toLowerCase().includes(query.toLowerCase())
+        )
+      )
+    : manufacturers
+
   return (
     <>
       <style>{css}</style>
@@ -29,8 +41,18 @@ export default function ManufacturersPage() {
           </div>
         </div>
 
+        <div className="mfr-search">
+          <input
+            className="mfr-search-input"
+            type="text"
+            placeholder="Search manufacturers or systems..."
+            value={query}
+            onChange={e => setQuery(e.target.value)}
+          />
+        </div>
+
         <div className="mfr-grid">
-          {manufacturers.map(m => (
+          {filtered.map(m => (
             <a key={m.slug} href={`/manufacturers/${m.slug}`} className="mfr-card">
               <div className="mfr-card-top">
                 <div className="mfr-logo-placeholder">
@@ -107,6 +129,12 @@ const css = `
   .mfr-arrow{font-size:1.2rem;color:rgba(245,242,237,0.15);transition:color 0.2s,transform 0.2s}
   .mfr-card:hover .mfr-arrow{color:var(--accent);transform:translate(3px,-3px)}
   .mfr-footer{display:flex;justify-content:space-between;padding:1.2rem 3rem;border-top:1px solid rgba(74,143,160,0.12);font-size:0.6rem;letter-spacing:0.18em;color:rgba(245,242,237,0.22);text-transform:uppercase}
+
+  .mfr-search{padding:0 3rem 1rem}
+  .mfr-search-input{width:100%;max-width:480px;background:rgba(30,58,74,0.5);border:1px solid rgba(74,143,160,0.2);color:var(--white);font-family:'Barlow',sans-serif;font-size:0.88rem;padding:0.65rem 1rem;outline:none;transition:border-color 0.2s}
+  .mfr-search-input::placeholder{color:rgba(245,242,237,0.25)}
+  .mfr-search-input:focus{border-color:var(--accent)}
+  @media(max-width:680px){.mfr-search{padding-left:1.5rem;padding-right:1.5rem}}
   @media(max-width:680px){
     .mfr-nav,.mfr-hero,.mfr-grid,.mfr-footer{padding-left:1.5rem;padding-right:1.5rem}
     .nav-tag{display:none}

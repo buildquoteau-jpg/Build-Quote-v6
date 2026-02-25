@@ -48,18 +48,19 @@ export default function RFQPage() {
       }))
     }
 
-    // Prefill items from manufacturer portal — each item gets a fresh unique id
+    // Prefill items from manufacturer portal — items arrive already shaped as LineItem
     const itemsParam = params.get('items')
     if (itemsParam) {
       try {
-        const parsed = JSON.parse(decodeURIComponent(itemsParam))
+        const parsed: LineItem[] = JSON.parse(decodeURIComponent(itemsParam))
+        // Ensure every item has a unique id in case it's missing
         const withIds: LineItem[] = parsed.map((item: any) => ({
-          id: crypto.randomUUID(),
-          name: item.description || '',
-          sku: item.code || '',
-          productId: '',
-          desc: '',
-          uom: item.unit || '',
+          id: item.id || crypto.randomUUID(),
+          name: item.name || '',
+          sku: item.sku || '',
+          productId: item.productId || '',
+          desc: item.desc || '',
+          uom: item.uom || '',
           qty: item.qty ? String(item.qty) : '',
         }))
         setItems(withIds)

@@ -65,9 +65,13 @@ export default function SystemPage({ params }: { params: Promise<{ system: strin
     const selected = items.filter(i => i.checked && i.qty > 0)
     if (selected.length === 0) return
     const lineItems = selected.map(i => ({
-      description: `${i.name} [${i.code}]`,
-      qty: i.qty,
-      unit: i.uom,
+      id: crypto.randomUUID(),
+      name: i.name,
+      sku: i.code,
+      productId: '',
+      desc: formatDimensions(i) || '',
+      uom: i.uom,
+      qty: String(i.qty),
     }))
     const encoded = encodeURIComponent(JSON.stringify(lineItems))
     setAdded(true)
