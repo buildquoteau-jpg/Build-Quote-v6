@@ -84,6 +84,14 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
         </div>
       )}
 
+      {/* Upload tip */}
+      <div className="flex gap-3 bg-gray-800/60 border border-gray-700 rounded-lg px-4 py-3">
+        <span className="text-xl flex-shrink-0">💡</span>
+        <p className="text-gray-400 text-sm leading-relaxed">
+          <span className="text-gray-200 font-medium">No fancy format needed.</span> We accept PDF, Excel, Word, CSV — or even a photo of a handwritten note. Just lay your list on a flat surface, snap a photo, and upload it. We'll read it and sort everything out for you.
+        </p>
+      </div>
+
       {error && <p className="text-red-400 text-sm">{error}</p>}
 
       {loading && (
