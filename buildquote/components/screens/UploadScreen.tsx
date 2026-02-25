@@ -32,7 +32,7 @@ type MfrItem = {
 function buildMfrItems(system: any): MfrItem[] {
   return [
     ...system.panels.map((p: any) => ({ ...p, qty: 0, checked: false, isPanel: true })),
-    ...system.accessories.map((a: any) => ({ ...a, qty: 0, checked: true, isPanel: false })),
+    ...system.accessories.map((a: any) => ({ ...a, qty: 0, checked: false, isPanel: false })),
   ]
 }
 
@@ -216,6 +216,17 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
                 placeholder="e.g. EasyLap, Stria, James Hardie..."
                 className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 text-sm w-full"
               />
+              <div className="flex items-center justify-between">
+                <p className="text-gray-500 text-xs">{filteredSystems.length} system{filteredSystems.length !== 1 ? 's' : ''} available</p>
+                <a
+                  href="/manufacturers"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-xs text-blue-400 hover:text-blue-300 underline"
+                >
+                  Browse full Manufacturer Portal ↗
+                </a>
+              </div>
               <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
                 {filteredSystems.length === 0 && (
                   <p className="text-gray-500 text-sm py-2">No systems found.</p>
