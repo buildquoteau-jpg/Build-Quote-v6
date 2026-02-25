@@ -60,43 +60,14 @@ function AddSystemContent() {
     setParsed(null)
 
     try {
-      const prompt = `You are a building products data extractor. Extract structured product system data from this manufacturer product page URL: ${url}
 
-Return ONLY a JSON object with this exact structure — no markdown, no explanation:
-{
-  "name": "system name",
-  "application": "External Cladding|Internal Lining|Flooring|Roofing|Insulation|Structural|Decking|Screening|Fasteners|Membranes|Other",
-  "thickness": "e.g. 8.5mm or null",
-  "warranty": "e.g. 15 years or null",
-  "description": "1-2 sentence description of the system",
-  "sourceNote": "Brief note about where this data was found, e.g. 'Parsed from James Hardie EasyLap product page'",
-  "panels": [
-    { "code": "product code or empty string", "name": "product name", "dimensions": "LxWxTmm or length mm", "uom": "EA", "confident": true }
-  ],
-  "accessories": [
-    { "code": "product code or empty string", "name": "accessory name", "dimensions": "length mm or null", "uom": "EA", "confident": true }
-  ]
-}
-
-Set confident: false for any field you are uncertain about.
-If you cannot extract meaningful product data, return: { "error": "Could not extract product data from this URL" }
-Do not invent product codes. Leave code as empty string if not found.
-Do not include pricing.`
-
-      const res = await fetch('https://api.anthropic.com/v1/messages', {
+      const res = await fetch('/api/parse-manufacturer', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          model: 'claude-sonnet-4-20250514',
-          max_tokens: 1000,
-          messages: [{ role: 'user', content: prompt }]
-        })
+        body: JSON.stringify({ url, manufacturerName: mfr?.name || '' })
       })
 
-      const data = await res.json()
-      const text = data.content?.map((b: any) => b.text || '').join('') || ''
-      const clean = text.replace(/```json|```/g, '').trim()
-      const result = JSON.parse(clean)
+      const result = await res.json()
 
       if (result.error) {
         setError(result.error + ' — try a more specific product page URL.')
