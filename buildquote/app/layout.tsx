@@ -17,9 +17,6 @@ const barlowCondensed = Barlow_Condensed({
 export const metadata: Metadata = {
   title: "BuildQuote — Southwest WA Construction Tech",
   description: "AI-native tools for the Australian construction industry. Smarter quoting, supplier connections, and material coordination built for Southwest WA builders.",
-  icons: {
-    icon: "/favicon.svg",
-  },
   openGraph: {
     title: "BuildQuote — Southwest WA Construction Tech",
     description: "AI-native tools for the Australian construction industry.",
