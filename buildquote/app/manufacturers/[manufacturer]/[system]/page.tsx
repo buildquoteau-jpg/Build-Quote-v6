@@ -3,7 +3,6 @@ import { useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import manufacturersData from '@/data/manufacturers.json'
 
-const jh = (manufacturersData as any[]).find(m => m.slug === 'james-hardie')
 
 type Item = {
   code: string
@@ -19,7 +18,7 @@ type Item = {
 
 function buildItems(system: any): Item[] {
   const panels = system.panels.map((p: any) => ({ ...p, qty: 0, checked: false }))
-  const accessories = system.accessories.map((a: any) => ({ ...a, qty: 0, checked: true }))
+  const accessories = system.accessories.map((a: any) => ({ ...a, qty: 0, checked: false }))
   return [...panels, ...accessories]
 }
 
@@ -30,10 +29,11 @@ function formatDimensions(item: any) {
   return null
 }
 
-export default function SystemPage({ params }: { params: Promise<{ system: string }> }) {
-  const { system: systemSlug } = use(params)
+export default function SystemPage({ params }: { params: Promise<{ manufacturer: string; system: string }> }) {
+  const { manufacturer: mfrSlug, system: systemSlug } = use(params)
   const router = useRouter()
-  const system = jh?.systems.find((s: any) => s.slug === systemSlug)
+  const mfr = (manufacturersData as any[]).find(m => m.slug === mfrSlug)
+  const system = mfr?.systems.find((s: any) => s.slug === systemSlug)
 
   const [items, setItems] = useState<Item[]>(() => system ? buildItems(system) : [])
   const [added, setAdded] = useState(false)
@@ -42,7 +42,7 @@ export default function SystemPage({ params }: { params: Promise<{ system: strin
     return (
       <div style={{ color: '#f5f2ed', padding: '3rem', background: '#0f1e26', minHeight: '100vh' }}>
         <p>System not found.</p>
-        <a href="/manufacturers/james-hardie" style={{ color: '#8cb8c4', marginTop: '1rem', display: 'block' }}>← Back to James Hardie</a>
+        <a href={`/manufacturers/${mfrSlug}`} style={{ color: '#8cb8c4', marginTop: '1rem', display: 'block' }}>← Back to Manufacturer</a>
       </div>
     )
   }
@@ -85,20 +85,20 @@ export default function SystemPage({ params }: { params: Promise<{ system: strin
       <style>{css}</style>
       <div className="sys">
         <nav className="sys-nav">
-          <button className="back-btn" onClick={() => window.history.back()}>← {jh.name}</button>
+          <button className="back-btn" onClick={() => window.history.back()}>← {mfr?.name}</button>
           <a href="/portfolio" className="logo-sm">BUILD<span>QUOTE</span></a>
         </nav>
 
         <div className="sys-hero">
-          <p className="eyebrow">{jh.name} · {system.application}</p>
+          <p className="eyebrow">{mfr?.name} · {system.application}</p>
           <h1 className="sys-title">{system.name}</h1>
           <p className="sys-desc">{system.description}</p>
           <div className="sys-meta">
             <span className="meta-pill">Thickness: {system.thickness}</span>
             <span className="meta-pill">Warranty: {system.warranty}</span>
           </div>
-          <a href={jh.website} target="_blank" rel="noopener noreferrer" className="mfr-link">
-            View on {jh.name} website ↗
+          <a href={mfr?.website} target="_blank" rel="noopener noreferrer" className="mfr-link">
+            View on {mfr?.name} website ↗
           </a>
         </div>
 
