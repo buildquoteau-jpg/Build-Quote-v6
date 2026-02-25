@@ -1,5 +1,5 @@
 'use client'
-import { useState } from 'react'
+import { useState, use } from 'react'
 import { useRouter } from 'next/navigation'
 import manufacturersData from '@/data/manufacturers.json'
 
@@ -18,46 +18,37 @@ type Item = {
 }
 
 function buildItems(system: any): Item[] {
-  const panels = system.panels.map((p: any) => ({
-    ...p,
-    qty: 0,
-    checked: false,
-  }))
-  const accessories = system.accessories.map((a: any) => ({
-    ...a,
-    qty: 0,
-    checked: true,
-  }))
+  const panels = system.panels.map((p: any) => ({ ...p, qty: 0, checked: false }))
+  const accessories = system.accessories.map((a: any) => ({ ...a, qty: 0, checked: true }))
   return [...panels, ...accessories]
 }
 
 function formatDimensions(item: any) {
-  if (item.length && item.width && item.thickness) {
-    return `${item.length}×${item.width}×${item.thickness}mm`
-  }
-  if (item.length && item.thickness) {
-    return `${item.length}×${item.thickness}mm`
-  }
-  if (item.length) {
-    return `${item.length}mm`
-  }
+  if (item.length && item.width && item.thickness) return `${item.length}×${item.width}×${item.thickness}mm`
+  if (item.length && item.thickness) return `${item.length}×${item.thickness}mm`
+  if (item.length) return `${item.length}mm`
   return null
 }
 
-export default function SystemPage({ params }: { params: { system: string } }) {
+export default function SystemPage({ params }: { params: Promise<{ system: string }> }) {
+  const { system: systemSlug } = use(params)
   const router = useRouter()
-  const system = jh?.systems.find((s: any) => s.slug === params.system)
+  const system = jh?.systems.find((s: any) => s.slug === systemSlug)
 
-  const [items, setItems] = useState<Item[]>(() => buildItems(system))
+  const [items, setItems] = useState<Item[]>(() => system ? buildItems(system) : [])
   const [added, setAdded] = useState(false)
 
   if (!system) {
-    return <div style={{ color: '#f5f2ed', padding: '3rem' }}>System not found.</div>
+    return (
+      <div style={{ color: '#f5f2ed', padding: '3rem', background: '#0f1e26', minHeight: '100vh' }}>
+        <p>System not found.</p>
+        <a href="/manufacturers/james-hardie" style={{ color: '#8cb8c4', marginTop: '1rem', display: 'block' }}>← Back to James Hardie</a>
+      </div>
+    )
   }
 
   const panels = items.filter(i => system.panels.some((p: any) => p.code === i.code))
   const accessories = items.filter(i => system.accessories.some((a: any) => a.code === i.code))
-
   const selectedCount = items.filter(i => i.checked && i.qty > 0).length
 
   function toggleItem(code: string) {
@@ -65,19 +56,19 @@ export default function SystemPage({ params }: { params: { system: string } }) {
   }
 
   function setQty(code: string, qty: number) {
-    setItems(prev => prev.map(i => i.code === code ? { ...i, qty: Math.max(0, qty), checked: qty > 0 ? true : i.checked } : i))
+    setItems(prev => prev.map(i =>
+      i.code === code ? { ...i, qty: Math.max(0, qty), checked: qty > 0 ? true : i.checked } : i
+    ))
   }
 
   function addToRFQ() {
     const selected = items.filter(i => i.checked && i.qty > 0)
     if (selected.length === 0) return
-
     const lineItems = selected.map(i => ({
       description: `${i.name} [${i.code}]`,
       qty: i.qty,
       unit: i.uom,
     }))
-
     const encoded = encodeURIComponent(JSON.stringify(lineItems))
     setAdded(true)
     setTimeout(() => {
@@ -117,7 +108,6 @@ export default function SystemPage({ params }: { params: { system: string } }) {
 
         <div className="components">
 
-          {/* PANELS */}
           <div className="component-section">
             <p className="comp-label">Panels — select size and enter quantity</p>
             <div className="comp-table">
@@ -158,7 +148,6 @@ export default function SystemPage({ params }: { params: { system: string } }) {
             </div>
           </div>
 
-          {/* ACCESSORIES */}
           <div className="component-section">
             <p className="comp-label">Accessories — pre-selected, enter quantities</p>
             <div className="comp-table">
@@ -201,7 +190,6 @@ export default function SystemPage({ params }: { params: { system: string } }) {
 
         </div>
 
-        {/* STICKY ADD TO RFQ BAR */}
         <div className="rfq-bar">
           <div className="rfq-bar-inner">
             <span className="rfq-count">
@@ -267,8 +255,6 @@ const css = `
   .check-btn{width:28px;height:28px;background:none;border:1px solid rgba(74,143,160,0.22);color:rgba(245,242,237,0.3);font-size:0.8rem;cursor:pointer;display:flex;align-items:center;justify-content:center;transition:all 0.15s}
   .check-btn.on{background:rgba(74,143,160,0.2);border-color:var(--accent);color:var(--accent)}
   .check-btn:hover{border-color:var(--accent);color:var(--accent)}
-
-  /* STICKY RFQ BAR */
   .rfq-bar{position:fixed;bottom:0;left:0;right:0;background:rgba(15,30,38,0.97);border-top:1px solid rgba(74,143,160,0.25);backdrop-filter:blur(12px);z-index:200;padding:1rem 3rem}
   .rfq-bar-inner{max-width:900px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:1rem}
   .rfq-count{font-family:'Barlow Condensed',sans-serif;font-size:0.72rem;letter-spacing:0.16em;text-transform:uppercase;color:rgba(245,242,237,0.35)}
@@ -276,8 +262,6 @@ const css = `
   .rfq-btn:hover:not(.disabled){background:rgba(140,184,196,0.22);border-color:var(--accent)}
   .rfq-btn.disabled{opacity:0.3;cursor:default}
   .rfq-btn.done{background:rgba(126,200,160,0.15);border-color:#7ec8a0;color:#7ec8a0}
-
-  /* MOBILE */
   @media(max-width:768px){
     .sys-nav,.sys-hero,.components,.rfq-bar{padding-left:1.25rem;padding-right:1.25rem}
     .disclaimer{margin-left:1.25rem;margin-right:1.25rem}
