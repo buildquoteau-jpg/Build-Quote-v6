@@ -1,5 +1,6 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
+import { randomUUID } from 'crypto'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -42,7 +43,6 @@ export async function POST(req: NextRequest) {
     let content: Anthropic.MessageParam['content']
 
     if (isImage) {
-      // Images use the 'image' block type
       const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
       const mediaType = validImageTypes.includes(file.type)
         ? (file.type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp')
@@ -56,7 +56,6 @@ export async function POST(req: NextRequest) {
         { type: 'text', text: PROMPT },
       ]
     } else if (isPDF) {
-      // PDFs use the 'document' block type — NOT 'image'
       content = [
         {
           type: 'document',
@@ -65,7 +64,6 @@ export async function POST(req: NextRequest) {
         { type: 'text', text: PROMPT },
       ]
     } else {
-      // Text-based files (CSV, Excel exported as text, Word, etc.)
       const text = buffer.toString('utf-8')
       content = `${PROMPT}\n\nDocument:\n${text}`
     }
@@ -88,7 +86,14 @@ export async function POST(req: NextRequest) {
     const end = responseText.lastIndexOf(']')
     if (start === -1 || end === -1) return NextResponse.json({ items: [] })
 
-    const items = JSON.parse(responseText.slice(start, end + 1))
+    const parsed = JSON.parse(responseText.slice(start, end + 1))
+
+    // Give every item a unique id so delete works correctly in RFQScreen
+    const items = parsed.map((item: any) => ({
+      id: randomUUID(),
+      ...item,
+    }))
+
     return NextResponse.json({ items })
 
   } catch (e) {

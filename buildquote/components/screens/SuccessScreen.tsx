@@ -47,9 +47,24 @@ export default function SuccessScreen({ rfqId, payload, onReset }: SuccessScreen
         </Button>
       </Card>
 
-      <Button onClick={onReset} variant="ghost" className="w-full py-3">
-        Start New RFQ
+      <Button onClick={onReset} className="w-full py-3">
+        + Start Another RFQ
       </Button>
+
+      <div className="flex gap-3 w-full">
+        <a
+          href="/directory"
+          className="flex-1 py-3 rounded-lg border border-gray-700 text-gray-400 text-sm font-semibold hover:border-gray-500 hover:text-gray-300 transition-colors text-center"
+        >
+          ← Back to Directory
+        </a>
+        <a
+          href="/portfolio"
+          className="flex-1 py-3 rounded-lg border border-gray-700 text-gray-400 text-sm font-semibold hover:border-gray-500 hover:text-gray-300 transition-colors text-center"
+        >
+          ↖ Portfolio
+        </a>
+      </div>
     </div>
   )
 }
