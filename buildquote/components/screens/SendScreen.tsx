@@ -1,5 +1,5 @@
 'use client'
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import Card from '../ui/Card'
 import Button from '../ui/Button'
 import Input from '../ui/Input'
@@ -7,6 +7,7 @@ import CheckRow from '../ui/CheckRow'
 import SectionLabel from '../ui/SectionLabel'
 import Toggle from '../ui/Toggle'
 import { BuilderDetails, SupplierDetails, RFQPayload } from '@/lib/types'
+import { SUPPLIERS, SupplierEntry } from '@/lib/suppliers'
 
 interface SendScreenProps {
   rfqPayload: Omit<RFQPayload, 'rfqId'>
@@ -23,6 +24,46 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
   const recognitionRef = useRef<any>(null)
   const committedRef = useRef<string>('')
 
+  const [supplierQuery, setSupplierQuery] = useState(rfqPayload.supplier.supplierName)
+  const [showSuggestions, setShowSuggestions] = useState(false)
+  const [selectedFromList, setSelectedFromList] = useState(false)
+  const supplierInputRef = useRef<HTMLDivElement>(null)
+
+  const filteredSuppliers = supplierQuery.trim().length >= 2 && !selectedFromList
+    ? SUPPLIERS.filter(s => s.name.toLowerCase().includes(supplierQuery.toLowerCase())).slice(0, 6)
+    : []
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (supplierInputRef.current && !supplierInputRef.current.contains(e.target as Node)) {
+        setShowSuggestions(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
+
+  const selectSupplier = (s: SupplierEntry) => {
+    setSupplierQuery(s.name)
+    setSelectedFromList(true)
+    setShowSuggestions(false)
+    onChange({
+      ...rfqPayload,
+      supplier: {
+        supplierName: s.name,
+        supplierEmail: s.email,
+        accountNumber: rfqPayload.supplier.accountNumber,
+      }
+    })
+  }
+
+  const handleSupplierNameChange = (val: string) => {
+    setSupplierQuery(val)
+    setSelectedFromList(false)
+    setShowSuggestions(true)
+    onChange({ ...rfqPayload, supplier: { ...rfqPayload.supplier, supplierName: val } })
+  }
+
   const setBuilder = (field: keyof BuilderDetails, value: string) =>
     onChange({ ...rfqPayload, builder: { ...rfqPayload.builder, [field]: value } })
 
@@ -35,41 +76,29 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
       setListening(false)
       return
     }
-
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
     if (!SR) {
       setVoiceError('Voice not supported in this browser. Try Chrome or Safari.')
       return
     }
-
     setVoiceError('')
-
-    // Seed committed text with whatever is already in the box
     committedRef.current = rfqPayload.message
-
     const recognition: any = new SR()
     recognition.continuous = true
-    recognition.interimResults = true  // real-time as you speak
+    recognition.interimResults = true
     recognition.lang = 'en-AU'
-
     recognition.onresult = (e: any) => {
       let interim = ''
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const transcript = e.results[i][0].transcript
         if (e.results[i].isFinal) {
-          // Lock in the final word/phrase
           committedRef.current += (committedRef.current ? ' ' : '') + transcript
         } else {
-          // Show live interim in real time
           interim = transcript
         }
       }
-      onChange({
-        ...rfqPayload,
-        message: committedRef.current + (interim ? ' ' + interim : ''),
-      })
+      onChange({ ...rfqPayload, message: committedRef.current + (interim ? ' ' + interim : '') })
     }
-
     recognition.onerror = (e: any) => {
       if (e.error === 'not-allowed') {
         setVoiceError('Microphone access denied. Allow microphone in your browser settings.')
@@ -78,9 +107,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
       }
       setListening(false)
     }
-
     recognition.onend = () => setListening(false)
-
     recognitionRef.current = recognition
     recognition.start()
     setListening(true)
@@ -99,7 +126,31 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
 
       <Card className="flex flex-col gap-3">
         <SectionLabel>Supplier Details</SectionLabel>
-        <Input label="Supplier Name" value={rfqPayload.supplier.supplierName} onChange={v => setSupplier('supplierName', v)} />
+        <div className="relative" ref={supplierInputRef}>
+          <label className="text-gray-400 text-xs uppercase tracking-widest block mb-1">Supplier Name</label>
+          <input
+            type="text"
+            value={supplierQuery}
+            onChange={e => handleSupplierNameChange(e.target.value)}
+            onFocus={() => { if (!selectedFromList && supplierQuery.length >= 2) setShowSuggestions(true) }}
+            placeholder="Start typing a supplier name..."
+            className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 w-full text-sm"
+          />
+          {showSuggestions && filteredSuppliers.length > 0 && (
+            <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-gray-800 border border-gray-600 rounded-lg overflow-hidden shadow-xl">
+              {filteredSuppliers.map(s => (
+                <button
+                  key={s.name}
+                  onMouseDown={e => { e.preventDefault(); selectSupplier(s) }}
+                  className="w-full text-left px-4 py-3 hover:bg-gray-700 border-b border-gray-700 last:border-0 transition-colors"
+                >
+                  <p className="text-white text-sm font-medium">{s.name}</p>
+                  <p className="text-gray-500 text-xs mt-0.5">{s.email}{s.phone ? \` · \${s.phone}\` : ''}</p>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
         <Input label="Supplier Email" value={rfqPayload.supplier.supplierEmail} onChange={v => setSupplier('supplierEmail', v)} type="email" />
         <Input label="Account Number (if known)" value={rfqPayload.supplier.accountNumber} onChange={v => setSupplier('accountNumber', v)} />
       </Card>
@@ -126,9 +177,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
           <button
             type="button"
             onClick={toggleVoice}
-            className={`absolute bottom-3 right-3 text-xl transition-colors ${
-              listening ? 'text-red-400 animate-pulse' : 'text-gray-500 hover:text-orange-500'
-            }`}
+            className={`absolute bottom-3 right-3 text-xl transition-colors ${listening ? 'text-red-400 animate-pulse' : 'text-gray-500 hover:text-orange-500'}`}
             title={listening ? 'Tap to stop' : 'Tap to dictate'}
           >
             🎤
