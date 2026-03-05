@@ -72,16 +72,37 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
   y -= 22
 
   // Table rows
+  const wrapText = (text: string, maxChars: number): string[] => {
+    if (text.length <= maxChars) return [text]
+    const words = text.split(' ')
+    const lines: string[] = []
+    let line = ''
+    for (const word of words) {
+      if ((line + ' ' + word).trim().length > maxChars) {
+        if (line) lines.push(line.trim())
+        line = word
+      } else {
+        line = (line + ' ' + word).trim()
+      }
+    }
+    if (line) lines.push(line.trim())
+    return lines
+  }
+
   items.forEach((item, i) => {
-    if (y < 80) return // prevent overflow for now
+    if (y < 80) return
+    const nameLines = wrapText(item.name, 36)
+    const rowHeight = Math.max(18, nameLines.length * 11 + 8)
     const bg = i % 2 === 0 ? white : lightgrey
-    page.drawRectangle({ x: 32, y: y - 8, width: width - 64, height: 18, color: bg })
+    page.drawRectangle({ x: 32, y: y - rowHeight + 10, width: width - 64, height: rowHeight, color: bg })
     page.drawText(`${i + 1}`, { x: 38, y: y - 2, size: 8, font: regular, color: grey })
-    page.drawText(item.name.substring(0, 38), { x: 58, y: y - 2, size: 8, font: regular, color: dark })
-    page.drawText(item.sku.substring(0, 14), { x: 290, y: y - 2, size: 8, font: regular, color: grey })
+    nameLines.forEach((line, li) => {
+      page.drawText(line, { x: 58, y: y - 2 - li * 11, size: 8, font: regular, color: dark })
+    })
+    page.drawText(item.sku.substring(0, 12), { x: 290, y: y - 2, size: 8, font: regular, color: grey })
     page.drawText(item.uom.substring(0, 8), { x: 370, y: y - 2, size: 8, font: regular, color: grey })
     page.drawText(item.qty.substring(0, 8), { x: 430, y: y - 2, size: 8, font: regular, color: grey })
-    y -= 18
+    y -= rowHeight
   })
 
   y -= 20
