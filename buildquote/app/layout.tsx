@@ -15,11 +15,11 @@ const barlowCondensed = Barlow_Condensed({
 });
 
 export const metadata: Metadata = {
-  title: "BuildQuote — Southwest WA Construction Tech",
-  description: "AI-native tools for the Australian construction industry. Smarter quoting, supplier connections, and material coordination built for Southwest WA builders.",
+  title: "BuildQuote — Request for Quotation, Made Simple",
+  description: "Upload your Bill of Materials and we'll turn it into a professional RFQ sent directly to your suppliers. Built for Southwest WA builders.",
   openGraph: {
-    title: "BuildQuote — Southwest WA Construction Tech",
-    description: "AI-native tools for the Australian construction industry.",
+    title: "BuildQuote — Request for Quotation, Made Simple",
+    description: "Upload your Bill of Materials and we'll turn it into a professional RFQ sent directly to your suppliers.",
     url: "https://buildquote.com.au",
     siteName: "BuildQuote",
     locale: "en_AU",

@@ -57,21 +57,6 @@ export default function SuccessScreen({ rfqId, payload, onReset }: SuccessScreen
           BuildQuote does not track builder to supplier Requests for Quotation. Please call your preferred supplier to confirm receipt and product availability.
         </p>
       </div>
-
-      <div className="flex gap-3 w-full">
-        <a
-          href="/directory"
-          className="flex-1 py-3 rounded-lg border border-gray-700 text-gray-400 text-sm font-semibold hover:border-gray-500 hover:text-gray-300 transition-colors text-center"
-        >
-          ← Back to Directory
-        </a>
-        <a
-          href="/portfolio"
-          className="flex-1 py-3 rounded-lg border border-gray-700 text-gray-400 text-sm font-semibold hover:border-gray-500 hover:text-gray-300 transition-colors text-center"
-        >
-          ↖ Portfolio
-        </a>
-      </div>
     </div>
   )
 }
