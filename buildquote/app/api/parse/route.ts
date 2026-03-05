@@ -80,7 +80,7 @@ export async function POST(req: NextRequest) {
         messages: [{ role: 'user', content }],
       }),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Parse timeout')), 30000)
+        setTimeout(() => reject(new Error('Parse timeout')), 60000)
       ),
     ]) as Anthropic.Message
 
