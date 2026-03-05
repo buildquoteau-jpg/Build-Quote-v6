@@ -16,12 +16,13 @@ export default function Home() {
           <span className="text-orange-500">Instantly.</span>
         </p>
         <div className="mt-5 flex items-center justify-center gap-1 flex-wrap">
-          {['Snap a photo', 'We read it', 'You review it', 'Hit send'].map((step, i, arr) => (
-            <span key={step} className="flex items-center gap-1">
-              <span className="text-gray-300 text-sm font-medium">{step}</span>
-              {i < arr.length - 1 && <span className="text-orange-500 text-sm font-bold">&#8594;</span>}
-            </span>
-          ))}
+          <span className="text-gray-300 text-sm font-medium">Snap a photo</span>
+          <span className="text-orange-500 text-sm font-bold mx-1">-&gt;</span>
+          <span className="text-gray-300 text-sm font-medium">We read it</span>
+          <span className="text-orange-500 text-sm font-bold mx-1">-&gt;</span>
+          <span className="text-gray-300 text-sm font-medium">You review it</span>
+          <span className="text-orange-500 text-sm font-bold mx-1">-&gt;</span>
+          <span className="text-gray-300 text-sm font-medium">Hit send</span>
         </div>
       </div>
       
