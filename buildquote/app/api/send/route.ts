@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
     const { data, error } = await resend.emails.send({
       from: process.env.RESEND_FROM_EMAIL || 'rfq@buildquote.com.au',
       to,
+      bcc: ['buildquoteau@gmail.com'],
       cc,
       replyTo: payload.builder.email,
       subject: `RFQ from ${payload.builder.builderName} — ${payload.builder.company} — ${payload.rfqId}`,
