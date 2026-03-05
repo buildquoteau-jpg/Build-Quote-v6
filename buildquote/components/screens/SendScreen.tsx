@@ -145,7 +145,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
                   className="w-full text-left px-4 py-3 hover:bg-gray-700 border-b border-gray-700 last:border-0 transition-colors"
                 >
                   <p className="text-white text-sm font-medium">{s.name}</p>
-                  <p className="text-gray-500 text-xs mt-0.5">{s.email}{s.phone ? \` · \${s.phone}\` : ''}</p>
+                  <p className="text-gray-500 text-xs mt-0.5">{s.email}{s.phone ? ' · ' + s.phone : ''}</p>
                 </button>
               ))}
             </div>
