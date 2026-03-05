@@ -30,6 +30,7 @@ export interface RFQPayload {
   items: LineItem[]
   delivery: 'delivery' | 'pickup'
   siteAddress?: string
+  siteSuburb?: string
   dateRequired: string
   message: string
   sendCopyToSelf: boolean

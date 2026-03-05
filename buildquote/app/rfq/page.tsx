@@ -20,7 +20,7 @@ const defaultPayload: Omit<RFQPayload, 'rfqId'> = {
   delivery: 'delivery',
   dateRequired: '',
   message: '',
-  sendCopyToSelf: false,
+  sendCopyToSelf: true,
 }
 
 export default function RFQPage() {

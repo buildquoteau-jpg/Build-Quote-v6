@@ -18,18 +18,39 @@ interface SendScreenProps {
   sendError?: string
 }
 
+const today = new Date().toISOString().split('T')[0]
+
+function validatePhone(v: string) {
+  if (!v) return ''
+  const digits = v.replace(/\D/g, '')
+  if (digits.length < 8) return 'Looks too short for a phone number'
+  return ''
+}
+
+function validateEmail(v: string) {
+  if (!v) return ''
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) return 'This doesn\'t look like a valid email address'
+  return ''
+}
+
 export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sending, sendError }: SendScreenProps) {
   const [listening, setListening] = useState(false)
   const [voiceError, setVoiceError] = useState('')
+  const [liveTranscript, setLiveTranscript] = useState('')
   const recognitionRef = useRef<any>(null)
   const committedRef = useRef<string>('')
+
   const [supplierQuery, setSupplierQuery] = useState(rfqPayload.supplier.supplierName)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedFromList, setSelectedFromList] = useState(false)
   const supplierInputRef = useRef<HTMLDivElement>(null)
+
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [previewError, setPreviewError] = useState('')
+
+  const phoneError = validatePhone(rfqPayload.builder.phone)
+  const builderEmailError = validateEmail(rfqPayload.builder.email)
 
   const filteredSuppliers = supplierQuery.trim().length >= 2 && !selectedFromList
     ? SUPPLIERS.filter(s => s.name.toLowerCase().includes(supplierQuery.toLowerCase())).slice(0, 6)
@@ -99,9 +120,17 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
   }
 
   const toggleVoice = () => {
-    if (listening) { recognitionRef.current?.stop(); setListening(false); return }
+    if (listening) {
+      recognitionRef.current?.stop()
+      setListening(false)
+      setLiveTranscript('')
+      return
+    }
     const SR = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition
-    if (!SR) { setVoiceError('Voice not supported in this browser. Try Chrome or Safari.'); return }
+    if (!SR) {
+      setVoiceError('Voice not supported in this browser. Try Chrome.')
+      return
+    }
     setVoiceError('')
     committedRef.current = rfqPayload.message
     const recognition: any = new SR()
@@ -112,17 +141,23 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
       let interim = ''
       for (let i = e.resultIndex; i < e.results.length; i++) {
         const transcript = e.results[i][0].transcript
-        if (e.results[i].isFinal) committedRef.current += (committedRef.current ? ' ' : '') + transcript
-        else interim = transcript
+        if (e.results[i].isFinal) {
+          committedRef.current += (committedRef.current ? ' ' : '') + transcript
+          setLiveTranscript('')
+        } else {
+          interim = transcript
+          setLiveTranscript(interim)
+        }
       }
       onChange({ ...rfqPayload, message: committedRef.current + (interim ? ' ' + interim : '') })
     }
     recognition.onerror = (e: any) => {
-      if (e.error === 'not-allowed') setVoiceError('Microphone access denied.')
+      if (e.error === 'not-allowed') setVoiceError('Microphone access denied. Check browser settings.')
       else if (e.error !== 'aborted') setVoiceError('Voice error: ' + e.error)
       setListening(false)
+      setLiveTranscript('')
     }
-    recognition.onend = () => setListening(false)
+    recognition.onend = () => { setListening(false); setLiveTranscript('') }
     recognitionRef.current = recognition
     recognition.start()
     setListening(true)
@@ -163,8 +198,14 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
           <Input label="Builder Name" value={rfqPayload.builder.builderName} onChange={v => setBuilder('builderName', v)} />
           <Input label="Company Name" value={rfqPayload.builder.company} onChange={v => setBuilder('company', v)} />
           <Input label="ABN / ACN" value={rfqPayload.builder.abn} onChange={v => setBuilder('abn', v)} />
-          <Input label="Phone" value={rfqPayload.builder.phone} onChange={v => setBuilder('phone', v)} type="tel" />
-          <Input label="Email" value={rfqPayload.builder.email} onChange={v => setBuilder('email', v)} type="email" />
+          <div>
+            <Input label="Phone" value={rfqPayload.builder.phone} onChange={v => setBuilder('phone', v)} type="tel" />
+            {phoneError && <p className="text-red-400 text-xs mt-1">⚠️ {phoneError}</p>}
+          </div>
+          <div>
+            <Input label="Email" value={rfqPayload.builder.email} onChange={v => setBuilder('email', v)} type="email" />
+            {builderEmailError && <p className="text-red-400 text-xs mt-1">⚠️ {builderEmailError}</p>}
+          </div>
         </Card>
 
         <Card className="flex flex-col gap-3">
@@ -192,42 +233,107 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
             )}
           </div>
           <Input label="Supplier Email" value={rfqPayload.supplier.supplierEmail} onChange={v => setSupplier('supplierEmail', v)} type="email" />
-          <Input label="Account Number (if known)" value={rfqPayload.supplier.accountNumber} onChange={v => setSupplier('accountNumber', v)} />
+          <div>
+            <label className="text-gray-400 text-xs uppercase tracking-widest block mb-1">Account Number</label>
+            <input
+              type="text"
+              value={rfqPayload.supplier.accountNumber}
+              onChange={e => setSupplier('accountNumber', e.target.value)}
+              placeholder="e.g. 10045231 (leave blank if unknown)"
+              className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 w-full text-sm"
+            />
+          </div>
         </Card>
 
         <Card className="flex flex-col gap-3">
           <SectionLabel>Delivery</SectionLabel>
           <Toggle value={rfqPayload.delivery} onChange={v => onChange({ ...rfqPayload, delivery: v })} />
           {rfqPayload.delivery === 'delivery' && (
-            <Input label="Site Address" value={rfqPayload.siteAddress || ''} onChange={v => onChange({ ...rfqPayload, siteAddress: v })} placeholder="123 Site Road, Dunsborough" />
+            <>
+              <Input
+                label="Street Address"
+                value={rfqPayload.siteAddress || ''}
+                onChange={v => onChange({ ...rfqPayload, siteAddress: v })}
+                placeholder="e.g. 14 Karrinyup Road"
+              />
+              <Input
+                label="Suburb"
+                value={(rfqPayload as any).siteSuburb || ''}
+                onChange={v => onChange({ ...rfqPayload, siteSuburb: v } as any)}
+                placeholder="e.g. Dunsborough"
+              />
+            </>
           )}
-          <Input label="Date Required" value={rfqPayload.dateRequired} onChange={v => onChange({ ...rfqPayload, dateRequired: v })} type="date" />
+          <div>
+            <label className="text-gray-400 text-xs uppercase tracking-widest block mb-1">Date Required</label>
+            <input
+              type="date"
+              min={today}
+              value={rfqPayload.dateRequired}
+              onChange={e => onChange({ ...rfqPayload, dateRequired: e.target.value })}
+              className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-orange-500 w-full text-sm"
+            />
+            <p className="text-gray-500 text-xs mt-1">Approximate date these goods will be required on site</p>
+          </div>
         </Card>
 
         <Card className="flex flex-col gap-3">
           <SectionLabel>Message</SectionLabel>
+
+          {!listening && (
+            <div className="bg-gray-700/50 border border-gray-600 rounded-lg px-3 py-2.5 flex items-center gap-3">
+              <span className="text-2xl">🎤</span>
+              <div className="flex-1">
+                <p className="text-gray-300 text-xs font-medium">Tap the mic to dictate your message</p>
+                <p className="text-gray-500 text-xs mt-0.5">Speak naturally — your words will appear in real time</p>
+              </div>
+              <button
+                type="button"
+                onClick={toggleVoice}
+                className="bg-gray-600 hover:bg-orange-500 text-white text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Start
+              </button>
+            </div>
+          )}
+
+          {listening && (
+            <div className="bg-red-500/10 border border-red-500/40 rounded-lg px-3 py-2.5 flex items-center gap-3">
+              <span className="text-red-400 text-xl animate-pulse">🔴</span>
+              <div className="flex-1">
+                <p className="text-red-300 text-xs font-medium animate-pulse">Listening... speak now</p>
+                {liveTranscript && <p className="text-orange-300 text-xs mt-0.5 italic">"{liveTranscript}"</p>}
+              </div>
+              <button
+                type="button"
+                onClick={toggleVoice}
+                className="bg-red-500/30 hover:bg-red-500/50 text-red-300 text-xs font-medium px-3 py-1.5 rounded-lg transition-colors"
+              >
+                Stop
+              </button>
+            </div>
+          )}
+
           <div className="relative">
             <textarea
               value={rfqPayload.message}
               onChange={e => onChange({ ...rfqPayload, message: e.target.value })}
               placeholder="Any additional notes for the supplier..."
               rows={4}
-              className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 w-full resize-none pr-10"
+              className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white placeholder-gray-500 focus:outline-none focus:border-orange-500 w-full resize-none"
             />
-            <button type="button" onClick={toggleVoice}
-              className={'absolute bottom-3 right-3 text-xl transition-colors ' + (listening ? 'text-red-400 animate-pulse' : 'text-gray-500 hover:text-orange-500')}
-              title={listening ? 'Tap to stop' : 'Tap to dictate'}>
-              🎤
-            </button>
           </div>
-          {listening && <p className="text-orange-400 text-xs animate-pulse">🔴 Listening... tap mic to stop</p>}
-          {voiceError && <p className="text-red-400 text-xs">{voiceError}</p>}
+          {voiceError && <p className="text-red-400 text-xs">⚠️ {voiceError}</p>}
         </Card>
 
         <Card className="flex flex-col gap-1">
           <SectionLabel>Send Options</SectionLabel>
           <CheckRow label="Send RFQ to Supplier" checked={true} onChange={() => {}} />
-          <CheckRow label="Send a copy to myself" checked={rfqPayload.sendCopyToSelf} onChange={v => onChange({ ...rfqPayload, sendCopyToSelf: v })} />
+          <CheckRow
+            label="Send a copy to myself"
+            checked={rfqPayload.sendCopyToSelf}
+            onChange={v => onChange({ ...rfqPayload, sendCopyToSelf: v })}
+          />
         </Card>
 
         {sendError && (

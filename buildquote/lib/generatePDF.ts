@@ -2,7 +2,7 @@ import { PDFDocument, rgb, StandardFonts } from 'pdf-lib'
 import { RFQPayload } from './types'
 
 export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
-  const { builder, supplier, items, delivery, dateRequired, message, rfqId } = payload
+  const { builder, supplier, items, delivery, siteAddress, siteSuburb, dateRequired, message, rfqId } = payload
 
   const doc = await PDFDocument.create()
   const page = doc.addPage([595, 842]) // A4
@@ -46,7 +46,10 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
 
   // Delivery bar
   page.drawRectangle({ x: 32, y: y - 10, width: width - 64, height: 24, color: lightgrey })
-  page.drawText(`Delivery: ${delivery === 'delivery' ? 'Delivery Required' : 'Store Pick-up'}   |   Date Required: ${dateRequired || 'ASAP'}`, {
+  const deliveryLine = delivery === 'delivery'
+    ? `Delivery Required${siteAddress ? ' | ' + siteAddress : ''}${siteSuburb ? ', ' + siteSuburb : ''}   |   Date Required: ${dateRequired || 'ASAP'}`
+    : `Store Pick-up   |   Date Required: ${dateRequired || 'ASAP'}`
+  page.drawText(deliveryLine.substring(0, 90), {
     x: 40, y: y - 4, size: 9, font: regular, color: grey
   })
   y -= 28
