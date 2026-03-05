@@ -1,51 +1,64 @@
 export interface SupplierEntry {
   name: string
   email: string
-  accountNumberLabel?: string
-  phone?: string
+  phone: string
 }
 
 export const SUPPLIERS: SupplierEntry[] = [
-  // Bunnings
-  { name: 'Bunnings Busselton', email: 'busselton@bunnings.com.au', phone: '08 9754 7000' },
-  { name: 'Bunnings Bunbury', email: 'bunbury@bunnings.com.au', phone: '08 9721 7000' },
-  { name: 'Bunnings Margaret River', email: 'margaretriver@bunnings.com.au', phone: '08 9758 7000' },
-  { name: 'Bunnings Albany', email: 'albany@bunnings.com.au', phone: '08 9842 7000' },
-  { name: 'Bunnings Mandurah', email: 'mandurah@bunnings.com.au', phone: '08 9581 7000' },
-
-  // Midalia Steel
-  { name: 'Midalia Steel Bunbury', email: 'bunbury@midalia.com.au', phone: '08 9721 5000' },
-  { name: 'Midalia Steel Mandurah', email: 'mandurah@midalia.com.au', phone: '08 9581 5000' },
-
-  // BGC
-  { name: 'BGC Building Products Bunbury', email: 'bunbury.sales@bgc.com.au', phone: '08 9726 5000' },
-  { name: 'BGC Building Products Perth', email: 'perth.sales@bgc.com.au', phone: '08 9377 4000' },
-
-  // Bowens / Timber suppliers
-  { name: 'Namba Timber Busselton', email: 'sales@nambatimber.com.au', phone: '08 9754 8000' },
-  { name: 'Carter Holt Harvey Bunbury', email: 'bunbury@chh.com.au', phone: '08 9721 6000' },
-
-  // Plumbing
-  { name: 'Reece Plumbing Busselton', email: 'busselton@reece.com.au', phone: '08 9754 9000' },
-  { name: 'Reece Plumbing Bunbury', email: 'bunbury@reece.com.au', phone: '08 9721 9000' },
-  { name: 'Tradelink Bunbury', email: 'bunbury@tradelink.com.au', phone: '08 9721 8500' },
-
-  // Electrical
-  { name: 'Rexel Bunbury', email: 'bunbury@rexel.com.au', phone: '08 9721 3000' },
-  { name: 'Middy\'s Busselton', email: 'busselton@middys.com.au', phone: '08 9754 3000' },
-
-  // Bricks & Masonry
-  { name: 'Brikmakers Bunbury', email: 'bunbury@brikmakers.com.au', phone: '08 9725 5000' },
-  { name: 'Austral Bricks Bunbury', email: 'bunbury@australbricks.com.au', phone: '08 9721 4000' },
-
-  // Roofing
-  { name: 'Stramit Bunbury', email: 'bunbury@stramit.com.au', phone: '08 9721 2000' },
-  { name: 'Lysaght Bunbury', email: 'bunbury@lysaght.com.au', phone: '08 9726 3000' },
-
-  // Hardware & Trade
-  { name: 'M&B Trade Centre Bunbury', email: 'sales@mbtradecentre.com.au', phone: '08 9721 1000' },
-  { name: 'Total Tools Bunbury', email: 'bunbury@totaltools.com.au', phone: '08 9721 7500' },
-
-  // Insulation
-  { name: 'CSR Bradford Bunbury', email: 'bunbury@bradford.com.au', phone: '08 9721 5500' },
+  { name: 'Bunnings Busselton', email: 'busselton@bunnings.com.au', phone: '+61 8 9752 6100' },
+  { name: 'Bunnings Bunbury', email: 'bunbury@bunnings.com.au', phone: '+61 8 9722 2500' },
+  { name: 'Bunnings Margaret River', email: 'margaretriver@bunnings.com.au', phone: '+61 8 9758 7000' },
+  { name: 'Bunnings Albany', email: 'albany@bunnings.com.au', phone: '+61 8 6821 1200' },
+  { name: 'Bunnings Australind', email: 'australind@bunnings.com.au', phone: '+61 8 9797 4600' },
+  { name: 'Reece Plumbing Busselton', email: 'busselton.wa@reece.com.au', phone: '+61 8 9752 9810' },
+  { name: 'Reece Plumbing Bunbury', email: 'bunbury.wa@reece.com.au', phone: '+61 8 9724 3510' },
+  { name: 'Reece Plumbing Margaret River', email: 'margaretriver.wa@reece.com.au', phone: '+61 8 9757 8910' },
+  { name: 'M&B Trade Centre Bunbury', email: 'bunbury@mbsales.net.au', phone: '+61 8 9724 8900' },
+  { name: 'M&B Trade Centre Busselton', email: 'busselton@mbsales.net.au', phone: '+61 8 9752 7900' },
+  { name: 'M&B Trade Centre Albany', email: 'albany@mbsales.net.au', phone: '+61 8 9844 5200' },
+  { name: 'BGC Cement', email: 'sales@bgc.com.au', phone: '+61 8 9311 8000' },
+  { name: 'Midalia Steel', email: 'sales@midaliasteel.com.au', phone: '+61 8 9302 2700' },
+  { name: 'Stratco Bunbury', email: 'bunbury@stratco.com.au', phone: '+61 1300 699 128' },
+  { name: 'Stratco Busselton', email: 'busselton@stratco.com.au', phone: '+61 1300 699 128' },
+  { name: 'Tradelink Bunbury', email: 'bunbury@tradelink.com.au', phone: '+61 8 9729 4300' },
+  { name: 'Tradelink Busselton', email: 'busselton@tradelink.com.au', phone: '+61 8 9752 3126' },
+  { name: 'Gyprock Trade Bunbury', email: 'gtcsupport@csr.com.au', phone: '+61 8 9745 1100' },
+  { name: 'Gyprock Trade Albany', email: 'gtcsupport@csr.com.au', phone: '+61 8 6819 5700' },
+  { name: 'Project Building Supplies South West', email: 'sales@projectbuildingsupplies.com.au', phone: '+61 428 726 452' },
+  { name: 'Busselton Building Products', email: 'dispatch@busseltonbuilding.com.au', phone: '+61 8 9752 1733' },
+  { name: 'Easy Concrete Supply Perth', email: 'info@easyconcretesupply.com.au', phone: '+61 8 6157 1133' },
+  { name: 'WA Premix', email: 'adam.a@walimestone.com', phone: '+61 8 9405 9232' },
+  { name: 'Roof Top Industries', email: 'rooftopindustries@bigpond.com', phone: '+61 8 9309 3993' },
+  { name: 'Metroll', email: 'paul.rodgers@perth.metroll.com.au', phone: '+61 8 9365 5444' },
+  { name: 'Perth Concrete Supplies', email: 'sales@oxide.com.au', phone: '+61 1300 655 853' },
+  { name: 'Roof Plumbers Warehouse & Building Supplies', email: 'info@roofplumberswarehouse.com.au', phone: '+61 8 9390 4626' },
+  { name: 'Statewide Building Products', email: 'admin@statewidebuildingproducts.com.au', phone: '+61 8 9399 3276' },
+  { name: 'Heidelberg Materials - Harvey Concrete', email: '', phone: '+61 8 9729 1372' },
+  { name: 'Beyond Bricks', email: 'glenn.march@beyondbrickswa.com.au', phone: '+61 8 9721 9777' },
+  { name: 'Galvins Plumbing Supplies', email: 'yanchep@galvins.com.au', phone: '+61 8 9752 7800' },
+  { name: 'Galvins Bunbury', email: 'yanchep@galvins.com.au', phone: '+61 8 9726 7600' },
+  { name: 'The Sink Warehouse', email: 'daniel@sinkwarehouse.com.au', phone: '+61 8 9792 4224' },
+  { name: 'Fielders', email: 'gporter@fielders.com.au', phone: '+61 8 9213 8905' },
+  { name: 'Hanson Construction Materials', email: 'charlotte.hobbs@hanson.com', phone: '+61 8 9726 0233' },
+  { name: 'Australind Pre-Mix', email: 'dean.baker@australindpremix.com.au', phone: '+61 8 9725 8787' },
+  { name: 'Bridgetown Timber & Hardware', email: '', phone: '+61 8 9761 2525' },
+  { name: 'P A Doust & Co', email: 'craig@padoust.com.au', phone: '+61 8 9761 1423' },
+  { name: 'Manjimup Building Supplies', email: 'mbs@mjpbuild.com.au', phone: '+61 8 9771 1999' },
+  { name: 'Manjimup Mitre 10', email: '', phone: '+61 8 9771 1020' },
+  { name: 'Nevs Steel', email: 'sales@nevsteel.com.au', phone: '+61 8 9777 1299' },
+  { name: 'Premium Building Supplies Busselton', email: 'premiumbuilding@westnet.com.au', phone: '+61 8 9754 2193' },
+  { name: 'Geographe Timber & Hardware', email: 'geohware@highway1.com.au', phone: '+61 8 9752 1408' },
+  { name: 'Geographe Timber Yard', email: 'geohware@highway1.com.au', phone: '+61 8 9752 4322' },
+  { name: 'Heidelberg Materials - Busselton Concrete', email: '', phone: '+61 8 9752 2034' },
+  { name: 'Bristile Roofing', email: '', phone: '+61 8 9754 4866' },
+  { name: 'aRc SHEDS', email: 'info@arcsheds.com.au', phone: '+61 427 251 958' },
+  { name: 'Rockcraft Australia', email: 'patsy@rockcraft.com.au', phone: '+61 401 479 867' },
+  { name: 'Margaret River Mitre 10', email: '', phone: '+61 8 9757 2455' },
+  { name: 'Podmore\'s Building Supplies', email: '', phone: '+61 8 9757 2422' },
+  { name: 'Neville\'s Hardware & Building Supplies', email: '', phone: '+61 8 9842 5333' },
+  { name: 'Albany Plasterboard', email: 'admin@albanyplasterboard.com.au', phone: '+61 8 9842 8448' },
+  { name: 'Sugg\'s Timber Machining & Joinery', email: 'suggstm@iinet.net.au', phone: '+61 8 9842 2173' },
+  { name: 'Walpole Hardware & Rural Supplies', email: 'theburrahardware@westnet.com.au', phone: '+61 8 9840 1177' },
+  { name: 'Mobile Concreting Solutions', email: 'rjc@mobileconcrete.com.au', phone: '+61 8 9923 3033' },
+  { name: 'Lincoln Sentry', email: 'phebinger@lincolnsentry.com.au', phone: '+61 8 9261 5303' },
 ]
