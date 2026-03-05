@@ -8,19 +8,29 @@ const PROMPT = `You are a construction materials expert helping an Australian bu
 
 Rules:
 - Include EVERY orderable item, even if quantities are vague (e.g. "approx 42", "maybe 2")
-- Skip notes, instructions, phone numbers, names, and non-material lines
+- Include items marked "supply only" or "install separate" — they are still orderable materials
+- Include ALL fixings, hardware, bolts, screws, anchors, hangers — even if described casually
+- Include windows, doors, and openings — even if installer is separate
+- Skip notes, phone numbers, names, dates, and non-material lines
 - Skip crossed out or cancelled items
 - If quantity is uncertain, use the higher estimate
-- Treat informal descriptions as valid items (e.g. "just get a box" = qty 1 BOX)
+- Treat informal quantities as valid (e.g. "just get a box" = qty "1", "a couple" = qty "2")
+
+Confidence rules — set confidence to "low" if ANY of these apply:
+- Quantity is vague, estimated, or uncertain
+- Product name is incomplete or uses "or similar" / "or equivalent"
+- Dimensions or grade are missing
+- Item uses informal language
 
 Return ONLY a raw JSON array. No markdown, no code fences, no explanation. First character must be [
 Each object must have exactly these keys:
-  "name"      - product name e.g. "H2 Framing Timber 190x35"
-  "sku"       - supplier SKU if visible, else ""
-  "productId" - manufacturer ID if visible, else ""
-  "desc"      - full description including dimensions, grade, treatment, length
-  "uom"       - unit of measure inferred from context: EA, LM, m2, BAG, SHEET, ROLL etc
-  "qty"       - quantity as a string, use best estimate if vague e.g. "42" or "85"
+  "name"       - product name e.g. "H2 Framing Timber 190x35"
+  "sku"        - supplier SKU if visible, else ""
+  "productId"  - manufacturer ID if visible, else ""
+  "desc"       - full description including dimensions, grade, treatment, length
+  "uom"        - unit of measure inferred from context: EA, LM, m2, BAG, SHEET, ROLL, BOX etc
+  "qty"        - quantity as a string, use best estimate if vague e.g. "42" or "85"
+  "confidence" - "high" if item is clearly specified, "low" if uncertain in any way
 Respond with ONLY the JSON array starting with [`
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB

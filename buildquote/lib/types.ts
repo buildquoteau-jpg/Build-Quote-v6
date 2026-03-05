@@ -6,6 +6,7 @@ export interface LineItem {
   desc: string
   uom: string
   qty: string
+  confidence?: 'high' | 'low'
 }
 
 export interface BuilderDetails {
