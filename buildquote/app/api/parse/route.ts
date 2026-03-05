@@ -6,16 +6,21 @@ const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
 const PROMPT = `You are a construction materials expert helping an Australian builder create a Request for Quotation. Extract ALL material line items from this Bill of Materials.
 
-Return ONLY a raw JSON array. No markdown, no code fences, no explanation. First character must be [
+Rules:
+- Include EVERY orderable item, even if quantities are vague (e.g. "approx 42", "maybe 2")
+- Skip notes, instructions, phone numbers, names, and non-material lines
+- Skip crossed out or cancelled items
+- If quantity is uncertain, use the higher estimate
+- Treat informal descriptions as valid items (e.g. "just get a box" = qty 1 BOX)
 
+Return ONLY a raw JSON array. No markdown, no code fences, no explanation. First character must be [
 Each object must have exactly these keys:
   "name"      - product name e.g. "H2 Framing Timber 190x35"
   "sku"       - supplier SKU if visible, else ""
   "productId" - manufacturer ID if visible, else ""
   "desc"      - full description including dimensions, grade, treatment, length
   "uom"       - unit of measure inferred from context: EA, LM, m2, BAG, SHEET, ROLL etc
-  "qty"       - preserve the full quantity detail exactly as written e.g. "2 @ 3.6" or "2 @ 3.6, 1 @ 4.8" — do not calculate or simplify
-
+  "qty"       - quantity as a string, use best estimate if vague e.g. "42" or "85"
 Respond with ONLY the JSON array starting with [`
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
