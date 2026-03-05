@@ -21,7 +21,7 @@ export function buildEmailHtml(payload: RFQPayload): string {
         
         <div style="background:#1f2937;padding:24px 32px;">
           <h1 style="color:#f97316;margin:0;font-size:24px;font-weight:800;letter-spacing:-0.5px;">BuildQuote</h1>
-          <p style="color:#9ca3af;margin:4px 0 0;font-size:14px;">Request for Quote</p>
+          <p style="color:#9ca3af;margin:4px 0 0;font-size:14px;">Request for Quotation</p>
         </div>
 
         <div style="padding:32px;">
@@ -80,8 +80,15 @@ export function buildEmailHtml(payload: RFQPayload): string {
 
         </div>
 
-        <div style="background:#f9fafb;padding:16px 32px;text-align:center;">
-          <p style="margin:0;color:#9ca3af;font-size:12px;">Sent via <strong style="color:#f97316;">BuildQuote</strong> — Southwest WA Builder Tools</p>
+        <div style="background:#fff8f0;border-top:2px solid #f97316;padding:24px 32px;">
+          <p style="color:#f97316;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 10px;">What Happens Next</p>
+          <p style="margin:0 0 8px;color:#374151;font-size:13px;">This RFQ has been sent directly to <strong>${supplier.supplierName}</strong>. All further communication regarding pricing, availability, lead times, and order confirmation should take place directly between the builder and the supplier.</p>
+          <p style="margin:0;color:#374151;font-size:13px;">The supplier will respond directly to <strong>${builder.email}</strong>. Please review the supplier's quote carefully before placing any order.</p>
+        </div>
+
+        <div style="background:#f9fafb;border-top:1px solid #e5e7eb;padding:20px 32px;">
+          <p style="margin:0 0 8px;color:#9ca3af;font-size:11px;line-height:1.5;"><strong style="color:#6b7280;">Disclaimer:</strong> BuildQuote assists with structuring material quote requests only. It does not make engineering, compliance, quantity, or suitability decisions. All line items, quantities, specifications and descriptions in this document must be independently reviewed and confirmed by the builder and relevant professionals before any order is placed. BuildQuote accepts no liability for errors, omissions, or AI parsing inaccuracies.</p>
+          <p style="margin:0;color:#9ca3af;font-size:11px;">Sent via <strong style="color:#f97316;">BuildQuote</strong> — buildquote.com.au</p>
         </div>
 
       </div>
