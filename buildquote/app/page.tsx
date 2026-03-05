@@ -25,7 +25,7 @@ export default function Home() {
           <span className="text-gray-300 text-sm font-medium">Hit send</span>
         </div>
       </div>
-      
+      <a
         href="/rfq"
         className="bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white font-bold text-lg px-8 py-4 rounded-2xl transition-colors w-full max-w-xs text-center shadow-lg shadow-orange-500/20"
       >
