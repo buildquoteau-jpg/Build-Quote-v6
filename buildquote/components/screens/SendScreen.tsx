@@ -177,7 +177,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
           <button
             type="button"
             onClick={toggleVoice}
-            className={`absolute bottom-3 right-3 text-xl transition-colors ${listening ? 'text-red-400 animate-pulse' : 'text-gray-500 hover:text-orange-500'}`}
+            className={'absolute bottom-3 right-3 text-xl transition-colors ' + (listening ? 'text-red-400 animate-pulse' : 'text-gray-500 hover:text-orange-500')}
             title={listening ? 'Tap to stop' : 'Tap to dictate'}
           >
             🎤
