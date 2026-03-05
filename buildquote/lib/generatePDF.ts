@@ -21,8 +21,10 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
 
   // Header background
   page.drawRectangle({ x: 0, y: height - 70, width, height: 70, color: dark })
-  page.drawText('BuildQuote', { x: 32, y: height - 40, size: 22, font: bold, color: orange })
-  page.drawText('Request for Quote', { x: 32, y: height - 58, size: 10, font: regular, color: rgb(0.6, 0.6, 0.6) })
+  const companyDisplay = (builder.company || builder.builderName || 'Builder').substring(0, 42)
+  page.drawText(companyDisplay, { x: 32, y: height - 40, size: 20, font: bold, color: white })
+  page.drawText('REQUEST FOR QUOTATION', { x: 32, y: height - 58, size: 9, font: bold, color: orange })
+  page.drawText('via BuildQuote', { x: width - 105, y: height - 44, size: 8, font: regular, color: rgb(0.4, 0.4, 0.5) })
 
   y = height - 90
 
@@ -37,6 +39,7 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
   if (supplier.accountNumber) page.drawText(`Account: ${supplier.accountNumber}`, { x: 300, y, size: 10, font: regular, color: grey })
   y -= 12
   page.drawText(`ABN: ${builder.abn}`, { x: 32, y, size: 10, font: regular, color: grey })
+  if (supplier.supplierEmail) page.drawText(supplier.supplierEmail, { x: 300, y, size: 9, font: regular, color: grey })
   y -= 12
   page.drawText(builder.phone, { x: 32, y, size: 10, font: regular, color: grey })
   y -= 12
@@ -105,9 +108,18 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
   }
 
   // Footer
-  page.drawRectangle({ x: 0, y: 0, width, height: 40, color: lightgrey })
-  page.drawText(`RFQ Reference: ${rfqId}   |   Sent: ${new Date().toLocaleDateString('en-AU')}   |   Sent via BuildQuote`, {
-    x: 32, y: 14, size: 8, font: regular, color: grey
+  page.drawRectangle({ x: 0, y: 0, width, height: 56, color: lightgrey })
+  page.drawText('DISCLAIMER: BuildQuote assists with structuring material quote requests only. It does not make engineering, compliance,', {
+    x: 32, y: 44, size: 6.5, font: regular, color: rgb(0.55, 0.55, 0.58)
+  })
+  page.drawText('quantity, or suitability decisions. All items, quantities and specifications must be reviewed and confirmed by the builder', {
+    x: 32, y: 34, size: 6.5, font: regular, color: rgb(0.55, 0.55, 0.58)
+  })
+  page.drawText('and relevant professionals before ordering. BuildQuote accepts no liability for errors, omissions, or AI parsing inaccuracies.', {
+    x: 32, y: 24, size: 6.5, font: regular, color: rgb(0.55, 0.55, 0.58)
+  })
+  page.drawText(`RFQ Reference: ${rfqId}   |   Sent: ${new Date().toLocaleDateString('en-AU')}   |   buildquote.com.au`, {
+    x: 32, y: 10, size: 7, font: regular, color: grey
   })
 
   const pdfBytes = await doc.save()
