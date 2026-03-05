@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
 
     const message = await Promise.race([
       client.messages.create({
-        model: 'claude-sonnet-4-5-20251001',
+        model: 'claude-sonnet-4-5',
         max_tokens: 4096,
         messages: [{ role: 'user', content }],
       }),
