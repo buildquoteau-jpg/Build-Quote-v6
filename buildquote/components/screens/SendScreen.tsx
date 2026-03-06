@@ -177,7 +177,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
             <button onClick={closePreview} className="text-gray-400 hover:text-white text-2xl leading-none px-2">✕</button>
           </div>
           <div className="flex-1 overflow-hidden">
-            <iframe src={previewUrl} className="w-full h-full border-0" title="RFQ Preview" />
+            <iframe src={previewUrl} className="w-full h-full border-0" title="RFQ Preview" style={{ maxWidth: '100%', display: 'block' }} />
           </div>
           <div className="flex gap-3 px-4 py-4 bg-gray-900 border-t border-gray-700 shrink-0">
             <button onClick={closePreview} className="flex-1 py-3 rounded-xl border border-gray-600 text-gray-300 font-medium text-sm hover:bg-gray-800 transition-colors">
@@ -283,7 +283,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
               min={today}
               value={rfqPayload.dateRequired}
               onChange={e => onChange({ ...rfqPayload, dateRequired: e.target.value })}
-              className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-orange-500 w-full text-sm"
+              className="bg-gray-700 border border-gray-600 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-orange-500 w-full max-w-full text-sm box-border"
             />
             <p className="text-gray-500 text-xs mt-1">Approximate date these goods will be required on site</p>
           </div>

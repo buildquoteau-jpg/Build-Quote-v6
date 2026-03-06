@@ -57,6 +57,15 @@ export default function SuccessScreen({ rfqId, payload, onReset }: SuccessScreen
           BuildQuote does not track builder to supplier Requests for Quotation. Please call your preferred supplier to confirm receipt and product availability.
         </p>
       </div>
+
+      <div className="w-full bg-gray-900 border border-orange-500/30 rounded-xl p-4 text-left flex flex-col gap-3">
+        <p className="text-white text-sm font-semibold">More features coming to BuildQuote soon.</p>
+        <p className="text-gray-400 text-xs leading-relaxed">Supplier directory, saved builder profiles, component libraries and more — built for Southwest WA builders.</p>
+        <label className="flex items-start gap-3 cursor-pointer">
+          <input type="checkbox" className="mt-0.5 accent-orange-500 shrink-0" />
+          <span className="text-gray-300 text-xs leading-relaxed">Keep me in the loop — join the BuildQuote community</span>
+        </label>
+      </div>
     </div>
   )
 }
