@@ -33,5 +33,7 @@ export interface RFQPayload {
   siteSuburb?: string
   dateRequired: string
   message: string
+  projectReference?: string
+  sendToSupplier: boolean
   sendCopyToSelf: boolean
 }

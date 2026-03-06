@@ -32,6 +32,10 @@ export default function Home() {
         Start your RFQ
       </a>
       <p className="text-gray-600 text-xs mt-2">Takes about 60 seconds</p>
+      <div className="mt-6 text-center max-w-xs">
+        <p className="text-white text-sm font-semibold">Built for busy builders.</p>
+        <p className="text-gray-400 text-xs mt-1 leading-relaxed">Send clear building materials quote requests to your trusted suppliers in seconds.</p>
+      </div>
     </main>
   )
 }

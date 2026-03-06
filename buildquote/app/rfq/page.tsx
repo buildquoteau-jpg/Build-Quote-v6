@@ -20,6 +20,8 @@ const defaultPayload: Omit<RFQPayload, 'rfqId'> = {
   delivery: 'delivery',
   dateRequired: '',
   message: '',
+  projectReference: '',
+  sendToSupplier: true,
   sendCopyToSelf: true,
 }
 

@@ -246,6 +246,16 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
         </Card>
 
         <Card className="flex flex-col gap-3">
+          <SectionLabel>Project Reference</SectionLabel>
+          <Input
+            label="Project Reference"
+            value={rfqPayload.projectReference || ''}
+            onChange={v => onChange({ ...rfqPayload, projectReference: v })}
+            placeholder="e.g. Smith Residence — Waff Framing Stage"
+          />
+        </Card>
+
+        <Card className="flex flex-col gap-3">
           <SectionLabel>Delivery</SectionLabel>
           <Toggle value={rfqPayload.delivery} onChange={v => onChange({ ...rfqPayload, delivery: v })} />
           {rfqPayload.delivery === 'delivery' && (
@@ -328,7 +338,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
 
         <Card className="flex flex-col gap-1">
           <SectionLabel>Send Options</SectionLabel>
-          <CheckRow label="Send RFQ to Supplier" checked={true} onChange={() => {}} />
+          <CheckRow label="Send RFQ to Supplier" checked={rfqPayload.sendToSupplier !== false} onChange={v => onChange({ ...rfqPayload, sendToSupplier: v })} />
           <CheckRow
             label="Send a copy to myself"
             checked={rfqPayload.sendCopyToSelf}
