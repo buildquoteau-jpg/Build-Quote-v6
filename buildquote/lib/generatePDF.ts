@@ -19,12 +19,15 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
 
   let y = height
 
-  // Header background
-  page.drawRectangle({ x: 0, y: height - 70, width, height: 70, color: dark })
+  // Header — clean, no dark banner, company as hero
   const companyDisplay = (builder.company || builder.builderName || 'Builder').substring(0, 42)
-  page.drawText(companyDisplay, { x: 32, y: height - 40, size: 20, font: bold, color: white })
-  page.drawText('REQUEST FOR QUOTATION', { x: 32, y: height - 58, size: 9, font: bold, color: orange })
-  page.drawText('via BuildQuote', { x: width - 105, y: height - 44, size: 8, font: regular, color: rgb(0.4, 0.4, 0.5) })
+  page.drawText(companyDisplay, { x: 32, y: height - 36, size: 22, font: bold, color: dark })
+  page.drawText('REQUEST FOR QUOTATION', { x: 32, y: height - 54, size: 9, font: bold, color: orange })
+  page.drawRectangle({ x: 32, y: height - 59, width: 190, height: 2, color: orange })
+  page.drawText(rfqId, { x: width - 140, y: height - 36, size: 9, font: bold, color: orange })
+  const dateStr = new Date().toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })
+  page.drawText(dateStr, { x: width - 140, y: height - 50, size: 8, font: regular, color: grey })
+  page.drawRectangle({ x: 32, y: height - 68, width: width - 64, height: 1, color: rgb(0.88, 0.88, 0.88) })
 
   y = height - 90
 
@@ -49,9 +52,10 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
 
   // Delivery bar
   page.drawRectangle({ x: 32, y: y - 10, width: width - 64, height: 24, color: lightgrey })
+  const projectRef = payload.projectReference ? `  |  Ref: ${payload.projectReference}` : ''
   const deliveryLine = delivery === 'delivery'
-    ? `Delivery Required${siteAddress ? ' | ' + siteAddress : ''}${siteSuburb ? ', ' + siteSuburb : ''}   |   Date Required: ${dateRequired || 'ASAP'}`
-    : `Store Pick-up   |   Date Required: ${dateRequired || 'ASAP'}`
+    ? `Delivery${siteAddress ? ': ' + siteAddress : ''}${siteSuburb ? ', ' + siteSuburb : ''}   |   Date: ${dateRequired || 'ASAP'}${projectRef}`
+    : `Store Pick-up   |   Date: ${dateRequired || 'ASAP'}${projectRef}`
   page.drawText(deliveryLine.substring(0, 90), {
     x: 40, y: y - 4, size: 9, font: regular, color: grey
   })
