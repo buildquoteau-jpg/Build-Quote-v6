@@ -45,6 +45,8 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
   const [selectedFromList, setSelectedFromList] = useState(false)
   const supplierInputRef = useRef<HTMLDivElement>(null)
 
+  const [showConfirm, setShowConfirm] = useState(false)
+  const [termsConfirmed, setTermsConfirmed] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [previewError, setPreviewError] = useState('')
@@ -182,7 +184,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
               ← Edit
             </button>
             <button
-              onClick={() => { closePreview(); onSend() }}
+              onClick={() => { closePreview(); setShowConfirm(true) }}
               disabled={sending || !rfqPayload.supplier.supplierEmail || !rfqPayload.builder.email}
               className="flex-1 py-3 rounded-xl bg-orange-500 hover:bg-orange-600 disabled:bg-orange-900 disabled:text-orange-700 text-white font-semibold text-sm transition-colors"
             >
@@ -359,11 +361,69 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
             className="flex-1 py-3 rounded-xl border border-orange-500 text-orange-400 hover:bg-orange-500/10 disabled:opacity-50 font-medium text-sm transition-colors">
             {previewLoading ? 'Loading...' : '👁 Preview'}
           </button>
-          <Button onClick={onSend} disabled={sending || !rfqPayload.supplier.supplierEmail || !rfqPayload.builder.email} className="flex-1 py-3">
+          <Button onClick={() => setShowConfirm(true)} disabled={sending || !rfqPayload.supplier.supplierEmail || !rfqPayload.builder.email} className="flex-1 py-3">
             {sending ? 'Sending...' : 'Send →'}
           </Button>
         </div>
       </div>
+      {/* Confirmation Modal */}
+      {showConfirm && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 px-4 pb-4 sm:pb-0">
+          <div className="bg-[#1a1a1a] border border-gray-700 rounded-2xl w-full max-w-sm p-5 flex flex-col gap-4 shadow-2xl">
+
+            <div>
+              <h2 className="text-white font-bold text-lg">Send request to supplier</h2>
+            </div>
+
+            <div className="bg-gray-800/60 rounded-xl p-3 border border-gray-700">
+              <p className="text-gray-400 text-xs mb-1">You are sending this quote request to:</p>
+              <p className="text-orange-400 text-sm font-bold">
+                {rfqPayload.supplier.supplierName || 'Selected Supplier'}
+              </p>
+              {rfqPayload.supplier.supplierEmail && (
+                <p className="text-gray-400 text-xs mt-0.5">{rfqPayload.supplier.supplierEmail}</p>
+              )}
+            </div>
+
+            <p className="text-gray-300 text-xs leading-relaxed">
+              This request contains the materials and quantities you have reviewed and approved. Product specifications, pack sizes, availability and pricing may vary between suppliers. Please confirm all product details and suitability directly with the supplier before placing an order. Any updates or changes should be communicated directly between you and your preferred supplier.
+            </p>
+
+            <p className="text-gray-500 text-xs leading-relaxed">
+              BuildQuote provides a tool for creating and sending quote requests. BuildQuote does not verify product specifications, availability, pricing or suitability for your project.
+            </p>
+
+            <label className="flex items-start gap-3 cursor-pointer">
+              <input
+                type="checkbox"
+                checked={termsConfirmed}
+                onChange={e => setTermsConfirmed(e.target.checked)}
+                className="mt-0.5 accent-orange-500 shrink-0"
+              />
+              <span className="text-gray-300 text-xs leading-relaxed">
+                I understand that I must confirm all materials and specifications directly with the supplier.
+              </span>
+            </label>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => { setShowConfirm(false); setTermsConfirmed(false) }}
+                className="flex-1 bg-gray-700 hover:bg-gray-600 text-white text-sm font-medium py-3 rounded-xl transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => { setShowConfirm(false); onSend() }}
+                disabled={!termsConfirmed || sending}
+                className="flex-1 bg-orange-500 hover:bg-orange-600 disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold py-3 rounded-xl transition-colors"
+              >
+                {sending ? 'Sending...' : 'Send Quote Request'}
+              </button>
+            </div>
+
+          </div>
+        </div>
+      )}
     </>
   )
 }
