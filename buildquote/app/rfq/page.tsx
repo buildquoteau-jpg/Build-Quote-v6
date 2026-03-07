@@ -33,6 +33,8 @@ export default function RFQPage() {
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
 
+  useEffect(() => { window.scrollTo(0, 0) }, [step])
+
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
 
