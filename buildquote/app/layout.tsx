@@ -50,7 +50,9 @@ export default function RootLayout({
       <body
         className={`${barlow.variable} ${barlowCondensed.variable} antialiased`}
       >
-        {children}
+        <div className="max-w-lg mx-auto w-full">
+          {children}
+        </div>
       </body>
     </html>
   );
