@@ -1,4 +1,5 @@
 'use client'
+import { useState } from 'react'
 import Card from '../ui/Card'
 import Button from '../ui/Button'
 import SectionLabel from '../ui/SectionLabel'
@@ -24,6 +25,26 @@ export default function SuccessScreen({ rfqId, payload, onReset }: SuccessScreen
     a.download = `${rfqId}.${type}`
     a.click()
     URL.revokeObjectURL(url)
+  }
+
+  const [joined, setJoined] = useState(false)
+  const [joining, setJoining] = useState(false)
+
+  const handleCommunitySignup = async () => {
+    if (!payload.builder.email || joined || joining) return
+    setJoining(true)
+    try {
+      await fetch('/api/community', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: payload.builder.email, rfqId }),
+      })
+      setJoined(true)
+    } catch {
+      // fail silently
+    } finally {
+      setJoining(false)
+    }
   }
 
   return (
@@ -61,10 +82,22 @@ export default function SuccessScreen({ rfqId, payload, onReset }: SuccessScreen
       <div className="w-full bg-ui-darker border border-brand/30 rounded-xl p-4 text-left flex flex-col gap-3">
         <p className="text-text-primary text-sm font-semibold">More features coming to BuildQuote soon.</p>
         <p className="text-text-muted text-xs leading-relaxed">Supplier directory, saved builder profiles, component libraries and more — built for Southwest WA builders.</p>
-        <label className="flex items-start gap-3 cursor-pointer">
-          <input type="checkbox" className="mt-0.5 accent-brand shrink-0" />
-          <span className="text-text-secondary text-xs leading-relaxed">Keep me in the loop — join the BuildQuote community</span>
-        </label>
+        {joined ? (
+          <p className="text-brand text-xs font-medium">✓ You&apos;re in — we&apos;ll keep you posted.</p>
+        ) : (
+          <label className="flex items-start gap-3 cursor-pointer">
+            <input
+              type="checkbox"
+              checked={joined}
+              onChange={handleCommunitySignup}
+              disabled={joining || !payload.builder.email}
+              className="mt-0.5 accent-brand shrink-0"
+            />
+            <span className="text-text-secondary text-xs leading-relaxed">
+              {joining ? 'Signing you up...' : 'Keep me in the loop — join the BuildQuote community'}
+            </span>
+          </label>
+        )}
       </div>
     </div>
   )
