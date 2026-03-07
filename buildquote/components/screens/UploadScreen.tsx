@@ -128,7 +128,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
       {error && <p className="text-error text-sm">{error}</p>}
 
       <Button onClick={handleParse} disabled={files.length === 0 || loading} className="w-full py-3">
-        {files.length === 0 ? 'Upload a file to continue' : `📋 Read my list${files.length > 1 ? 's' : ''} →`}
+        {files.length === 0 ? 'Upload a file to continue' : `Read my list${files.length > 1 ? 's' : ''} →`}
       </Button>
 
       <div className="flex items-center gap-3">
