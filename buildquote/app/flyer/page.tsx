@@ -19,7 +19,7 @@ export default function FlyerPage() {
           Snap a photo. Upload any file. BuildQuote reads it and sends a clean RFQ PDF straight to your supplier.
         </p>
         
-          href="https://buildquote.com.au"
+        <a href="https://buildquote.com.au"
           style={{
             display: 'inline-block',
             marginTop: '1.75rem',
@@ -199,7 +199,7 @@ export default function FlyerPage() {
         </h2>
         <p style={{ color: '#9ca3af', marginBottom: '1.5rem' }}>Built for WA builders. Free to use. No account needed.</p>
         
-          href="https://buildquote.com.au"
+        <a href="https://buildquote.com.au"
           style={{
             display: 'inline-block',
             backgroundColor: '#f97316',
