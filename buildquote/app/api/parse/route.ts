@@ -1,6 +1,8 @@
 import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
+import ExcelJS from 'exceljs'
+import * as XLSX from 'xlsx'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
@@ -126,8 +128,29 @@ export async function POST(req: NextRequest) {
         },
         { type: 'text', text: PROMPT },
       ]
+    } else if (['.xlsx', '.xls'].includes(ext)) {
+      // Excel — convert to CSV text for Claude using exceljs
+      const workbook = new ExcelJS.Workbook()
+      await workbook.xlsx.load(buffer)
+      const csvSheets: string[] = []
+      workbook.eachSheet((sheet) => {
+        const rows: string[] = []
+        sheet.eachRow((row) => {
+          const values = (row.values as ExcelJS.CellValue[]).slice(1)
+          rows.push(values.map(v => (v === null || v === undefined ? '' : String(v))).join(','))
+        })
+        csvSheets.push(`Sheet: ${sheet.name}\n${rows.join('\n')}`)
+      })
+      const csvText = csvSheets.join('\n\n')
+      if (csvText.length > MAX_TEXT_SIZE) {
+        return NextResponse.json(
+          { items: [], error: 'Spreadsheet too large. Please reduce the number of rows.' },
+          { status: 400 }
+        )
+      }
+      content = `${PROMPT}\n\nSpreadsheet data (CSV format):\n${csvText}`
     } else {
-      // Text-based files — enforce size limit
+      // Plain text / CSV / Word (docx as text fallback)
       if (file.size > MAX_TEXT_SIZE) {
         return NextResponse.json(
           { items: [], error: 'Text file too large. Maximum size is 100KB.' },
