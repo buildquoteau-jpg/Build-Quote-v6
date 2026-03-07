@@ -87,11 +87,21 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
         onClick={() => inputRef.current?.click()}
         onDragOver={e => e.preventDefault()}
         onDrop={e => { e.preventDefault(); addFiles(e.dataTransfer.files) }}
-        className="bg-upload-bg border-2 border-dashed border-upload-border hover:border-upload-hover-border hover:bg-upload-hover-bg transition-colors cursor-pointer rounded-2xl px-6 py-10 text-center"
+        className={`bg-upload-bg border-2 border-dashed ${files.length > 0 ? "border-brand animate-pulse" : "border-upload-border"} hover:border-upload-hover-border hover:bg-upload-hover-bg transition-colors cursor-pointer rounded-2xl px-6 py-10 text-center`}
       >
-        <p className="text-page font-semibold text-base">Upload your list</p>
-        <p className="text-text-faint text-sm mt-1">or drag and drop your file here</p>
-        <p className="text-text-disabled text-xs mt-3 tracking-wide">PDF · Excel · Word · CSV · Photo</p>
+        {files.length === 0 ? (
+          <>
+            <p className="text-page font-bold text-xl">Upload your list</p>
+            <p className="text-text-faint text-sm mt-1">or drag and drop your file here</p>
+            <p className="text-text-disabled text-xs mt-3 tracking-wide">PDF · Excel · Word · CSV · Photo</p>
+          </>
+        ) : (
+          <>
+            <p className="text-brand text-3xl mb-1">✓</p>
+            <p className="text-page font-bold text-xl">{files.length} file{files.length > 1 ? 's' : ''} ready</p>
+            <p className="text-text-faint text-sm mt-1">Tap below to read, or add more files</p>
+          </>
+        )}
         <input ref={inputRef} type="file" multiple className="hidden" onChange={e => addFiles(e.target.files)} />
       </div>
 
@@ -118,7 +128,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
       {error && <p className="text-error text-sm">{error}</p>}
 
       <Button onClick={handleParse} disabled={files.length === 0 || loading} className="w-full py-3">
-        {files.length === 0 ? 'Upload a file to continue' : `Read my list${files.length > 1 ? 's' : ''} →`}
+        {files.length === 0 ? 'Upload a file to continue' : `📋 Read my list${files.length > 1 ? 's' : ''} →`}
       </Button>
 
       <div className="flex items-center gap-3">
