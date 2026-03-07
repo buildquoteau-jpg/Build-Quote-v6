@@ -32,7 +32,7 @@ export default function FlyerPage() {
             fontSize: '1rem',
           }}
         >
-          Try it free — buildquote.com.au →
+          Try it free — buildquote.com.au &rarr;
         </a>
         <div style={{ color: '#6b7280', fontSize: '0.8rem', marginTop: '0.75rem' }}>
           No account needed · Free to use · Built for WA builders
@@ -211,7 +211,7 @@ export default function FlyerPage() {
             fontSize: '1rem',
           }}
         >
-          Start your RFQ →
+          Start your RFQ &rarr;
         </a>
         <div style={{ color: '#6b7280', fontSize: '0.8rem', marginTop: '1rem' }}>
           buildquote.com.au · Request for Quotation, Made Simple
