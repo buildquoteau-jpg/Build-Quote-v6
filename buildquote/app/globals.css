@@ -16,17 +16,17 @@
   --color-brand-subtle:    rgba(249,115,22,0.10); /* orange tint */
 
   /* --- Page backgrounds --- */
-  --color-page:            #0f0f0f; /* main app background */
-  --color-surface:         #1a1a1a; /* card / panel surface */
-  --color-surface-raised:  #222222; /* elevated surface */
-  --color-surface-subtle:  rgba(31,31,31,0.60); /* muted surface */
+  --color-page:            #1a2535; /* main app background */
+  --color-surface:         #1f2f44; /* card / panel surface */
+  --color-surface-raised:  #243650; /* elevated surface */
+  --color-surface-subtle:  rgba(26,37,53,0.60); /* muted surface */
 
   /* --- UI backgrounds --- */
-  --color-ui:              #374151; /* gray-700 - inputs, controls */
-  --color-ui-hover:        #4b5563; /* gray-600 */
-  --color-ui-dark:         #1f2937; /* gray-800 */
-  --color-ui-darker:       #111827; /* gray-900 */
-  --color-ui-darkest:      #030712; /* gray-950 */
+  --color-ui:              #2e4060; /* gray-700 - inputs, controls */
+  --color-ui-hover:        #3a5278; /* gray-600 */
+  --color-ui-dark:         #1a2d42; /* gray-800 */
+  --color-ui-darker:       #152235; /* gray-900 */
+  --color-ui-darkest:      #0d1a28; /* gray-950 */
 
   /* --- Upload zone (light) --- */
   --color-upload-bg:       #f3f4f6; /* gray-100 - light upload zone */
