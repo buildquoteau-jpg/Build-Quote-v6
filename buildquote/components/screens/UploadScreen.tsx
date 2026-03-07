@@ -150,7 +150,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
           <ul className="flex flex-col gap-1.5">
             {[
               "A builder's materials list",
-              "A shopping or wish list",
+              "A Bunnings style shopping list",
               "A spreadsheet of items",
               "A photo of handwritten notes",
             ].map(item => (
