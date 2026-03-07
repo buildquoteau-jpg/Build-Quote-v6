@@ -1,7 +1,7 @@
 export default function FlyerPage() {
   return (
-    <div className="min-h-screen bg-slate-100 font-sans antialiased">
-      <div className="max-w-4xl mx-auto bg-white shadow-2xl">
+    <div className="min-h-screen bg-white font-sans antialiased">
+      <div className="w-full max-w-5xl mx-auto">
 
         {/* TOP BAR */}
         <div className="bg-slate-800 px-6 sm:px-10 py-4 flex items-center justify-between">
