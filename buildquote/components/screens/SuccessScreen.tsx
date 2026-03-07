@@ -29,12 +29,12 @@ export default function SuccessScreen({ rfqId, payload, onReset }: SuccessScreen
   return (
     <div className="flex flex-col gap-4 items-center text-center">
       <div className="text-6xl mt-4">✅</div>
-      <h1 className="text-3xl font-bold text-white">RFQ Sent!</h1>
-      <p className="text-gray-400">Your quote request has been sent to {payload.supplier.supplierName}.</p>
+      <h1 className="text-3xl font-bold text-text-primary">RFQ Sent!</h1>
+      <p className="text-text-muted">Your quote request has been sent to {payload.supplier.supplierName}.</p>
 
       <Card className="w-full text-left">
         <SectionLabel>RFQ Reference</SectionLabel>
-        <p className="text-orange-500 font-mono text-xl font-bold">{rfqId}</p>
+        <p className="text-brand font-mono text-xl font-bold">{rfqId}</p>
       </Card>
 
       <Card className="w-full flex flex-col gap-3">
@@ -51,19 +51,19 @@ export default function SuccessScreen({ rfqId, payload, onReset }: SuccessScreen
         + Start Another RFQ
       </Button>
 
-      <div className="w-full flex gap-3 items-start bg-gray-900 border border-gray-700 rounded-lg p-4 text-left">
-        <span className="text-yellow-500 text-sm mt-0.5 flex-shrink-0">⚠</span>
-        <p className="text-gray-400 text-xs leading-relaxed">
+      <div className="w-full flex gap-3 items-start bg-ui-darker border border-border rounded-lg p-4 text-left">
+        <span className="text-warning text-sm mt-0.5 flex-shrink-0">⚠</span>
+        <p className="text-text-muted text-xs leading-relaxed">
           BuildQuote does not track builder to supplier Requests for Quotation. Please call your preferred supplier to confirm receipt and product availability.
         </p>
       </div>
 
-      <div className="w-full bg-gray-900 border border-orange-500/30 rounded-xl p-4 text-left flex flex-col gap-3">
-        <p className="text-white text-sm font-semibold">More features coming to BuildQuote soon.</p>
-        <p className="text-gray-400 text-xs leading-relaxed">Supplier directory, saved builder profiles, component libraries and more — built for Southwest WA builders.</p>
+      <div className="w-full bg-ui-darker border border-brand/30 rounded-xl p-4 text-left flex flex-col gap-3">
+        <p className="text-text-primary text-sm font-semibold">More features coming to BuildQuote soon.</p>
+        <p className="text-text-muted text-xs leading-relaxed">Supplier directory, saved builder profiles, component libraries and more — built for Southwest WA builders.</p>
         <label className="flex items-start gap-3 cursor-pointer">
-          <input type="checkbox" className="mt-0.5 accent-orange-500 shrink-0" />
-          <span className="text-gray-300 text-xs leading-relaxed">Keep me in the loop — join the BuildQuote community</span>
+          <input type="checkbox" className="mt-0.5 accent-brand shrink-0" />
+          <span className="text-text-secondary text-xs leading-relaxed">Keep me in the loop — join the BuildQuote community</span>
         </label>
       </div>
     </div>
