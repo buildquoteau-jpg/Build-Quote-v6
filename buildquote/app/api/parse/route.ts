@@ -5,32 +5,36 @@ import ExcelJS from 'exceljs'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
-const PROMPT = `You are a construction materials expert helping an Australian builder create a Request for Quotation. Extract ALL material line items from this Bill of Materials.
+const PROMPT = `You are a helpful assistant that extracts line items from any kind of list — materials lists, shopping lists, wish lists, handwritten notes, spreadsheets, or any document containing items with quantities.
+
+Extract EVERY item you can find, no matter what type of item it is.
 
 Rules:
-- Include EVERY orderable item, even if quantities are vague (e.g. "approx 42", "maybe 2")
-- Include items marked "supply only" or "install separate" — they are still orderable materials
-- Include ALL fixings, hardware, bolts, screws, anchors, hangers — even if described casually
-- Include windows, doors, and openings — even if installer is separate
-- Skip notes, phone numbers, names, dates, and non-material lines
-- Skip crossed out or cancelled items
+- Include EVERY item, even if quantities are vague (e.g. "approx 42", "maybe 2", "a couple")
+- Include items even if they are services, gift cards, cash amounts, or intangible items
+- Include ALL items regardless of category — construction materials, consumer goods, food, services, anything
+- Treat informal quantities as valid (e.g. "just get a box" = qty "1", "a couple" = qty "2", "heaps" = qty "10")
 - If quantity is uncertain, use the higher estimate
-- Treat informal quantities as valid (e.g. "just get a box" = qty "1", "a couple" = qty "2")
+- Skip notes, phone numbers, names, dates, and lines that are clearly not items
+- Skip crossed out or cancelled items
+- For cash or money items, put the amount in the qty field (e.g. qty "500", uom "dollars")
+- For services (e.g. "get my nails done"), set uom to "service"
+- For gift cards, set uom to "gift card"
+- Correct obvious spelling mistakes when extracting (e.g. "acrilic" → "acrylic nail set")
 
 Confidence rules — set confidence to "low" if ANY of these apply:
 - Quantity is vague, estimated, or uncertain
-- Product name is incomplete or uses "or similar" / "or equivalent"
-- Dimensions or grade are missing
-- Item uses informal language
+- Item name is incomplete or unclear
+- The line was hard to read or ambiguous
 
 Return ONLY a raw JSON array. No markdown, no code fences, no explanation. First character must be [
 Each object must have exactly these keys:
-  "name"       - product name e.g. "H2 Framing Timber 190x35"
+  "name"       - item name, cleaned up and spelled correctly e.g. "iPhone 17 Pink" or "H2 Framing Timber 190x35"
   "sku"        - supplier SKU if visible, else ""
   "productId"  - manufacturer ID if visible, else ""
-  "desc"       - full description including dimensions, grade, treatment, length
-  "uom"        - unit of measure inferred from context: EA, LM, m2, BAG, SHEET, ROLL, BOX etc
-  "qty"        - quantity as a string, use best estimate if vague e.g. "42" or "85"
+  "desc"       - full description including any colour, size, spec, or details mentioned
+  "uom"        - unit of measure: EA, LM, m2, BAG, SHEET, ROLL, BOX, service, gift card, dollars, etc
+  "qty"        - quantity as a string, use best estimate if vague e.g. "2" or "500"
   "confidence" - "high" if item is clearly specified, "low" if uncertain in any way
 Respond with ONLY the JSON array starting with [`
 
@@ -59,7 +63,6 @@ const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'
 
 export async function POST(req: NextRequest) {
   try {
-    // Rate limiting
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
     if (isRateLimited(ip)) {
       return NextResponse.json(
@@ -72,7 +75,6 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file') as File
     if (!file) return NextResponse.json({ items: [] })
 
-    // File size check
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { items: [], error: 'File too large. Maximum size is 5MB.' },
@@ -80,7 +82,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // MIME type check
     if (!ALLOWED_MIME_TYPES.includes(file.type)) {
       return NextResponse.json(
         { items: [], error: 'File type not supported.' },
@@ -88,7 +89,6 @@ export async function POST(req: NextRequest) {
       )
     }
 
-    // File extension check
     const ext = '.' + file.name.split('.').pop()?.toLowerCase()
     if (!ALLOWED_EXTENSIONS.includes(ext)) {
       return NextResponse.json(
@@ -128,7 +128,6 @@ export async function POST(req: NextRequest) {
         { type: 'text', text: PROMPT },
       ]
     } else if (['.xlsx', '.xls'].includes(ext)) {
-      // Excel — convert to CSV text for Claude using exceljs
       const workbook = new ExcelJS.Workbook()
       await workbook.xlsx.load(buffer as any)
       const csvSheets: string[] = []
@@ -149,7 +148,6 @@ export async function POST(req: NextRequest) {
       }
       content = `${PROMPT}\n\nSpreadsheet data (CSV format):\n${csvText}`
     } else {
-      // Plain text / CSV / Word (docx as text fallback)
       if (file.size > MAX_TEXT_SIZE) {
         return NextResponse.json(
           { items: [], error: 'Text file too large. Maximum size is 100KB.' },
@@ -174,18 +172,46 @@ export async function POST(req: NextRequest) {
     const responseText =
       message.content[0].type === 'text' ? message.content[0].text : ''
 
+    // Try full JSON parse first
     const start = responseText.indexOf('[')
     const end = responseText.lastIndexOf(']')
-    if (start === -1 || end === -1) return NextResponse.json({ items: [] })
 
-    const parsed = JSON.parse(responseText.slice(start, end + 1))
+    let items: any[] = []
 
-    const items = parsed.map((item: any) => ({
-      id: randomUUID(),
-      ...item,
-    }))
+    if (start !== -1 && end !== -1) {
+      try {
+        items = JSON.parse(responseText.slice(start, end + 1))
+      } catch {
+        // Full parse failed — recover object by object
+        console.warn('Full JSON parse failed, attempting object-by-object recovery')
+        const chunk = responseText.slice(start, end + 1)
+        const objMatches = chunk.match(/\{[^{}]+\}/g) || []
+        for (const obj of objMatches) {
+          try {
+            const parsed = JSON.parse(obj)
+            if (parsed.name) items.push(parsed)
+          } catch {
+            // skip malformed object
+          }
+        }
+      }
+    }
 
-    return NextResponse.json({ items })
+    // Filter and map — a single bad item never kills the whole result
+    const result = items
+      .filter((item: any) => item && typeof item.name === 'string' && item.name.trim() !== '')
+      .map((item: any) => ({
+        id: randomUUID(),
+        name: item.name || '',
+        sku: item.sku || '',
+        productId: item.productId || '',
+        desc: item.desc || '',
+        uom: item.uom || '',
+        qty: item.qty ? String(item.qty) : '',
+        confidence: item.confidence === 'low' ? 'low' : 'high',
+      }))
+
+    return NextResponse.json({ items: result })
 
   } catch (e) {
     console.error('Parse error:', e)

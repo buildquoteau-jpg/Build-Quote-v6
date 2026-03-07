@@ -11,9 +11,9 @@ interface UploadScreenProps {
 const LOADING_MESSAGES = [
   'Reading your list...',
   'Identifying the items...',
-  'Counting those 90x45s...',
-  'Sorting timber from the plasterboard...',
-  'Checking the LVLs...',
+  'Organising your lines...',
+  'Checking quantities...',
+  'Almost done...',
   'Nearly there...',
 ]
 
@@ -127,8 +127,8 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
           <ul className="flex flex-col gap-1.5">
             {[
               "A builder's materials list",
-              "A Bunnings shopping list",
-              "A spreadsheet of building items",
+              "A shopping or wish list",
+              "A spreadsheet of items",
               "A photo of handwritten notes",
             ].map(item => (
               <li key={item} className="text-text-muted text-sm flex items-start gap-2">
