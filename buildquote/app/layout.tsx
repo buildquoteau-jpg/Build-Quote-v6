@@ -52,6 +52,7 @@ export default function RootLayout({
       >
         <div className="max-w-lg mx-auto w-full">
           {children}
+          <Analytics />
         </div>
       </body>
     </html>
