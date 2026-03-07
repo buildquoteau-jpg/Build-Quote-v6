@@ -205,7 +205,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
               onChange={e => handleSupplierNameChange(e.target.value)}
               onFocus={() => { if (!selectedFromList && supplierQuery.length >= 2) setShowSuggestions(true) }}
               placeholder="Start typing a supplier name..."
-              className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary placeholder-text-disabled focus:outline-none focus:border-brand w-full text-sm"
+              className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary placeholder-text-muted focus:outline-none focus:border-brand w-full text-sm"
             />
             {showSuggestions && filteredSuppliers.length > 0 && (
               <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-ui-dark border border-border-subtle rounded-lg overflow-hidden shadow-xl">
@@ -225,8 +225,8 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
             <input
               value={rfqPayload.supplier.accountNumber}
               onChange={e => setSupplier('accountNumber', e.target.value)}
-              placeholder="e.g. 10045231 (leave blank if unknown)"
-              className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary placeholder-text-disabled focus:outline-none focus:border-brand w-full text-sm"
+              placeholder="Your trade account number with this supplier if known"
+              className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary placeholder-text-muted focus:outline-none focus:border-brand w-full text-sm"
             />
           </div>
         </Card>
@@ -308,7 +308,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
               onChange={e => onChange({ ...rfqPayload, message: e.target.value })}
               placeholder="Any additional notes for the supplier..."
               rows={4}
-              className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary placeholder-text-disabled focus:outline-none focus:border-brand w-full resize-none"
+              className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary placeholder-text-muted focus:outline-none focus:border-brand w-full resize-none"
             />
           </div>
           {voiceError && <p className="text-error text-xs">⚠️ {voiceError}</p>}
