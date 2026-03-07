@@ -161,11 +161,11 @@ export async function POST(req: NextRequest) {
     const message = await Promise.race([
       client.messages.create({
         model: 'claude-haiku-4-5-20251001',
-        max_tokens: 2048,
+        max_tokens: 4096,
         messages: [{ role: 'user', content }],
       }),
       new Promise((_, reject) =>
-        setTimeout(() => reject(new Error('Parse timeout')), 30000)
+        setTimeout(() => reject(new Error('Parse timeout')), 55000)
       ),
     ]) as Anthropic.Message
 
