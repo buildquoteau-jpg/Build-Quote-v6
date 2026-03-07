@@ -130,7 +130,7 @@ export async function POST(req: NextRequest) {
     } else if (['.xlsx', '.xls'].includes(ext)) {
       // Excel — convert to CSV text for Claude using exceljs
       const workbook = new ExcelJS.Workbook()
-      await workbook.xlsx.load(buffer)
+      await workbook.xlsx.load(buffer as any)
       const csvSheets: string[] = []
       workbook.eachSheet((sheet) => {
         const rows: string[] = []
