@@ -17,6 +17,19 @@ const barlowCondensed = Barlow_Condensed({
 export const metadata: Metadata = {
   title: "BuildQuote — Request for Quotation, Made Simple",
   description: "Upload your Bill of Materials and we'll turn it into a professional RFQ sent directly to your suppliers. Built for Southwest WA builders.",
+  icons: {
+    icon: [
+      { url: "/favicon-16.png", sizes: "16x16", type: "image/png" },
+      { url: "/favicon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/favicon.ico", sizes: "any" },
+    ],
+    apple: [
+      { url: "/apple-touch-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    other: [
+      { rel: "icon", url: "/android-chrome-192.png", sizes: "192x192" },
+    ],
+  },
   openGraph: {
     title: "BuildQuote — Request for Quotation, Made Simple",
     description: "Upload your Bill of Materials and we'll turn it into a professional RFQ sent directly to your suppliers.",
