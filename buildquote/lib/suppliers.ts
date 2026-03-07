@@ -2,9 +2,11 @@ export interface SupplierEntry {
   name: string
   email: string
   phone: string
+  hidden?: boolean
 }
 
 export const SUPPLIERS: SupplierEntry[] = [
+  { name: 'Test Supplier', email: '', phone: '', hidden: true },
   { name: 'Bunnings Busselton', email: 'busselton@bunnings.com.au', phone: '+61 8 9752 6100' },
   { name: 'Bunnings Bunbury', email: 'bunbury@bunnings.com.au', phone: '+61 8 9722 2500' },
   { name: 'Bunnings Margaret River', email: 'margaretriver@bunnings.com.au', phone: '+61 8 9758 7000' },
