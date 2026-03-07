@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BuildQuote — Request for Quotation, Made Simple</title>
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; background: #f5f5f0; color: #1a2535; }
+  .hero { background: #1f2f44; color: white; padding: 48px 24px 40px; text-align: center; }
+  .logo { font-size: 32px; font-weight: 800; letter-spacing: -1px; }
+  .logo span { color: #f97316; }
+  .tagline { color: #94a3b8; font-size: 12px; text-transform: uppercase; letter-spacing: 3px; margin-top: 6px; }
+  .hero-headline { font-size: 28px; font-weight: 800; margin-top: 28px; line-height: 1.2; }
+  .hero-headline em { color: #f97316; font-style: normal; }
+  .hero-sub { color: #94a3b8; margin-top: 12px; font-size: 15px; line-height: 1.5; max-width: 320px; margin-left: auto; margin-right: auto; }
+  .cta-btn { display: inline-block; margin-top: 28px; background: #f97316; color: white; font-weight: 700; font-size: 17px; padding: 16px 40px; border-radius: 14px; text-decoration: none; }
+  .steps { padding: 40px 24px; max-width: 480px; margin: 0 auto; }
+  .steps h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #f97316; margin-bottom: 20px; }
+  .step { display: flex; gap: 16px; margin-bottom: 20px; align-items: flex-start; }
+  .step-num { background: #1f2f44; color: white; width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 14px; flex-shrink: 0; }
+  .step-text strong { display: block; font-size: 15px; color: #1a2535; }
+  .step-text span { font-size: 13px; color: #64748b; }
+  .preview { background: white; margin: 0 auto 32px; border-radius: 16px; overflow: hidden; box-shadow: 0 4px 20px rgba(0,0,0,0.08); max-width: 432px; }
+  .preview-header { background: #1f2f44; padding: 14px 20px; }
+  .preview-header p { color: #f97316; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; }
+  .preview-header h3 { color: white; font-size: 16px; margin-top: 2px; }
+  .preview-table { width: 100%; border-collapse: collapse; }
+  .preview-table th { background: #1f2f44; color: white; font-size: 10px; padding: 8px 12px; text-align: left; }
+  .preview-table td { font-size: 12px; padding: 9px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+  .preview-table tr:last-child td { border-bottom: none; }
+  .preview-table tr:nth-child(even) td { background: #f8fafc; }
+  .why { padding: 0 24px 40px; max-width: 480px; margin: 0 auto; }
+  .why h2 { font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; color: #f97316; margin-bottom: 16px; }
+  .why-card { background: white; border-radius: 12px; padding: 16px; margin-bottom: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+  .why-card strong { display: block; font-size: 14px; color: #1a2535; margin-bottom: 4px; }
+  .why-card span { font-size: 13px; color: #64748b; }
+  .footer { background: #1f2f44; color: #94a3b8; text-align: center; padding: 32px 24px; font-size: 13px; }
+  .footer a { color: #f97316; text-decoration: none; font-weight: 700; font-size: 16px; display: block; margin-bottom: 12px; }
+  .footer p { font-size: 11px; color: #64748b; margin-top: 12px; }
+</style>
+</head>
+<body>
+<div class="hero">
+  <div class="logo">Build<span>Quote</span></div>
+  <div class="tagline">Request for Quotation, Made Simple</div>
+  <div class="hero-headline">Your materials list.<br>Turned into a professional RFQ.<br><em>Instantly.</em></div>
+  <p class="hero-sub">Snap a photo, upload a spreadsheet, or type your list. BuildQuote reads it and sends a professional quote request to your supplier.</p>
+  <a href="https://buildquote.com.au" class="cta-btn">Try it free &rarr;</a>
+</div>
+<div class="steps">
+  <h2>How it works</h2>
+  <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Upload your list</strong><span>Photo, PDF, Excel, Word, or handwritten notes</span></div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-text"><strong>We read it</strong><span>AI extracts every item, quantity and unit</span></div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-text"><strong>You review it</strong><span>Edit anything before it goes out</span></div></div>
+  <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Hit send</strong><span>Professional RFQ lands in your supplier's inbox</span></div></div>
+</div>
+<div class="preview">
+  <div class="preview-header">
+    <p>Request for Quotation</p>
+    <h3>Gold Construction &mdash; Ridgeway Garage</h3>
+  </div>
+  <table class="preview-table">
+    <tr><th>Item</th><th>Spec</th><th>Unit</th><th>Qty</th></tr>
+    <tr><td>LVL Beam</td><td>200 x 45</td><td>length</td><td>3</td></tr>
+    <tr><td>Framing Timber</td><td>90 x 45 MGP10</td><td>length</td><td>24</td></tr>
+    <tr><td>Fibre Cement Sheet</td><td>2400 x 1200 x 6 JH</td><td>sheet</td><td>8</td></tr>
+    <tr><td>Deck Screws</td><td>14g x 100 GALV</td><td>box</td><td>2</td></tr>
+  </table>
+</div>
+<div class="why">
+  <h2>Built for WA builders</h2>
+  <div class="why-card"><strong>No account needed</strong><span>Just open it and go. Free to use.</span></div>
+  <div class="why-card"><strong>Works from the job site</strong><span>Snap your handwritten list and send in 60 seconds.</span></div>
+  <div class="why-card"><strong>Your suppliers, your way</strong><span>Choose from Southwest WA suppliers or enter any email.</span></div>
+</div>
+<div class="footer">
+  <a href="https://buildquote.com.au">buildquote.com.au</a>
+  Built for WA builders. Free to use. No account needed.
+  <p>buildquote.com.au/flyer</p>
+</div>
+</body>
+</html>
