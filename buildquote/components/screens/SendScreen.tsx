@@ -258,7 +258,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
               min={today}
               value={rfqPayload.dateRequired}
               onChange={e => { const v = e.target.value; if (v >= today) onChange({ ...rfqPayload, dateRequired: v }) }}
-              className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-brand w-full max-w-full box-border text-sm"
+              className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-brand box-border text-sm w-48"
             />
             <p className="text-text-faint text-xs mt-1">Approximate date these goods will be required on site</p>
           </div>
