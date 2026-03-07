@@ -2,7 +2,6 @@ import Anthropic from '@anthropic-ai/sdk'
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import ExcelJS from 'exceljs'
-import * as XLSX from 'xlsx'
 
 const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
 
