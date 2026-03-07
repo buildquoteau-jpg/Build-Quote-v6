@@ -18,8 +18,10 @@ export async function POST(req: NextRequest) {
 
     // Only email if sendToSupplier is true
     if (payload.sendToSupplier !== false) {
-      const to = [payload.supplier.supplierEmail]
-      const cc = payload.sendCopyToSelf ? [payload.builder.email] : []
+      // Test Supplier — send only to builder's own email, no supplier email
+      const isTestSupplier = payload.supplier.supplierName === 'Test Supplier'
+      const to = isTestSupplier ? [payload.builder.email] : [payload.supplier.supplierEmail]
+      const cc = (!isTestSupplier && payload.sendCopyToSelf) ? [payload.builder.email] : []
 
       const { data, error } = await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL || 'rfq@buildquote.com.au',

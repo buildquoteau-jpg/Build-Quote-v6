@@ -53,7 +53,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
   const builderEmailError = validateEmail(rfqPayload.builder.email)
 
   const filteredSuppliers = supplierQuery.trim().length >= 2 && !selectedFromList
-    ? SUPPLIERS.filter(s => s.name.toLowerCase().includes(supplierQuery.toLowerCase())).slice(0, 6)
+    ? SUPPLIERS.filter(s => !s.hidden && s.name.toLowerCase().includes(supplierQuery.toLowerCase())).slice(0, 6)
     : []
 
   useEffect(() => {

@@ -37,6 +37,10 @@ export default function Home() {
         <p className="text-text-primary text-base font-semibold">Built for busy builders.</p>
         <p className="text-text-secondary text-sm mt-1 leading-relaxed">Send clear building materials quote requests to your trusted suppliers in seconds.</p>
       </div>
+      <div className="mt-8 flex gap-4 justify-center">
+        <a href="/privacy" className="text-text-faint text-xs hover:text-text-muted">Privacy Policy</a>
+        <a href="/terms" className="text-text-faint text-xs hover:text-text-muted">Terms of Use</a>
+      </div>
     </main>
   )
 }
