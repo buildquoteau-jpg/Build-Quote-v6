@@ -34,16 +34,64 @@ Each object must have exactly these keys:
 Respond with ONLY the JSON array starting with [`
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
+const MAX_TEXT_SIZE = 100 * 1024       // 100KB for text files
+
+// Simple in-memory rate limiter — 10 requests per hour per IP
+const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
+const RATE_LIMIT = 10
+const RATE_WINDOW_MS = 60 * 60 * 1000 // 1 hour
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now()
+  const entry = rateLimitMap.get(ip)
+  if (!entry || now > entry.resetAt) {
+    rateLimitMap.set(ip, { count: 1, resetAt: now + RATE_WINDOW_MS })
+    return false
+  }
+  if (entry.count >= RATE_LIMIT) return true
+  entry.count++
+  return false
+}
+
+const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf', '.csv', '.txt', '.xls', '.xlsx', '.doc', '.docx']
+const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'text/csv', 'text/plain', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
 
 export async function POST(req: NextRequest) {
   try {
+    // Rate limiting
+    const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
+    if (isRateLimited(ip)) {
+      return NextResponse.json(
+        { items: [], error: 'Too many requests. Please try again later.' },
+        { status: 429 }
+      )
+    }
+
     const formData = await req.formData()
     const file = formData.get('file') as File
     if (!file) return NextResponse.json({ items: [] })
 
+    // File size check
     if (file.size > MAX_FILE_SIZE) {
       return NextResponse.json(
         { items: [], error: 'File too large. Maximum size is 5MB.' },
+        { status: 400 }
+      )
+    }
+
+    // MIME type check
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return NextResponse.json(
+        { items: [], error: 'File type not supported.' },
+        { status: 400 }
+      )
+    }
+
+    // File extension check
+    const ext = '.' + file.name.split('.').pop()?.toLowerCase()
+    if (!ALLOWED_EXTENSIONS.includes(ext)) {
+      return NextResponse.json(
+        { items: [], error: 'File extension not supported.' },
         { status: 400 }
       )
     }
@@ -79,6 +127,13 @@ export async function POST(req: NextRequest) {
         { type: 'text', text: PROMPT },
       ]
     } else {
+      // Text-based files — enforce size limit
+      if (file.size > MAX_TEXT_SIZE) {
+        return NextResponse.json(
+          { items: [], error: 'Text file too large. Maximum size is 100KB.' },
+          { status: 400 }
+        )
+      }
       const text = buffer.toString('utf-8')
       content = `${PROMPT}\n\nDocument:\n${text}`
     }
@@ -103,7 +158,6 @@ export async function POST(req: NextRequest) {
 
     const parsed = JSON.parse(responseText.slice(start, end + 1))
 
-    // Give every item a unique id so delete works correctly in RFQScreen
     const items = parsed.map((item: any) => ({
       id: randomUUID(),
       ...item,

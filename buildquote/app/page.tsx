@@ -5,7 +5,7 @@ export default function Home() {
         <h1 className="text-3xl font-bold tracking-tight text-text-primary">
           Build<span className="text-brand">Quote</span>
         </h1>
-        <p className="text-xs text-text-disabled mt-1 uppercase tracking-widest">
+        <p className="text-xs text-text-muted mt-1 uppercase tracking-widest">
           buildquote.com.au
         </p>
       </div>
@@ -32,7 +32,7 @@ export default function Home() {
       >
         Start your RFQ
       </a>
-      <p className="text-text-disabled text-xs mt-2">Takes about 60 seconds</p>
+      <p className="text-text-secondary text-xs mt-2">Takes about 60 seconds</p>
       <div className="mt-6 text-center max-w-xs">
         <p className="text-text-primary text-base font-semibold">Built for busy builders.</p>
         <p className="text-text-secondary text-sm mt-1 leading-relaxed">Send clear building materials quote requests to your trusted suppliers in seconds.</p>
