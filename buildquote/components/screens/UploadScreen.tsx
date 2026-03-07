@@ -117,6 +117,10 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
 
       {error && <p className="text-error text-sm">{error}</p>}
 
+      <Button onClick={handleParse} disabled={files.length === 0 || loading} className="w-full py-3">
+        {files.length === 0 ? 'Upload a file to continue' : `Read my list${files.length > 1 ? 's' : ''} →`}
+      </Button>
+
       <div className="flex flex-col gap-4">
         <div className="bg-surface-subtle border border-border rounded-xl p-4">
           <p className="text-text-secondary text-xs font-bold uppercase tracking-widest mb-3">Examples of what you can upload</p>
@@ -188,9 +192,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
         </div>
       )}
 
-      <Button onClick={handleParse} disabled={files.length === 0 || loading} className="w-full py-3">
-        Continue
-      </Button>
+
 
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px bg-border" />
