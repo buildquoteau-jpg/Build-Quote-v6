@@ -13,11 +13,11 @@ const steps = [
 
 export default function TopBar({ currentStep }: TopBarProps) {
   return (
-    <div className="sticky top-0 z-50 bg-gray-900 border-b border-gray-800 px-4 py-3">
+    <div className="sticky top-0 z-50 bg-ui-darker border-b border-border px-4 py-3">
       <div className="max-w-2xl mx-auto flex items-center justify-between">
         <a href="/" className="flex flex-col">
-          <span className="text-orange-500 font-bold text-lg tracking-tight leading-tight">BuildQuote</span>
-          <span className="text-gray-500 text-xs leading-tight">Request for Quotation, Made Simple</span>
+          <span className="text-brand font-bold text-lg tracking-tight leading-tight">BuildQuote</span>
+          <span className="text-text-faint text-xs leading-tight">Request for Quotation, Made Simple</span>
         </a>
         <div className="flex gap-2">
           {steps.map(({ n, label }) => (
@@ -25,10 +25,10 @@ export default function TopBar({ currentStep }: TopBarProps) {
               key={n}
               className={`flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium transition-colors ${
                 n === currentStep
-                  ? 'bg-orange-500 text-white'
+                  ? 'bg-brand text-text-primary'
                   : n < currentStep
-                  ? 'bg-gray-700 text-gray-300'
-                  : 'bg-gray-800 text-gray-500'
+                  ? 'bg-ui text-text-secondary'
+                  : 'bg-surface text-text-faint'
               }`}
             >
               <span>{n}</span>

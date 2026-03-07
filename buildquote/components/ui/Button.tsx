@@ -9,10 +9,10 @@ interface ButtonProps {
 
 export default function Button({ children, onClick, variant = 'primary', disabled, type = 'button', className = '' }: ButtonProps) {
   const styles = {
-    primary: 'bg-orange-500 hover:bg-orange-600 text-white',
-    secondary: 'bg-gray-700 hover:bg-gray-600 text-white',
-    success: 'bg-green-600 hover:bg-green-700 text-white',
-    ghost: 'bg-transparent hover:bg-gray-700 text-gray-300 border border-gray-600',
+    primary: 'bg-brand hover:bg-brand-hover text-text-primary',
+    secondary: 'bg-ui hover:bg-ui-hover text-text-primary',
+    success: 'bg-success hover:bg-success text-text-primary',
+    ghost: 'bg-transparent hover:bg-ui text-text-secondary border border-border-subtle',
   }
   return (
     <button
