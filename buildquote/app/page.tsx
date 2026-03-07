@@ -26,7 +26,6 @@ export default function Home() {
         </div>
       </div>
       
-      
         href="/rfq"
         className="bg-brand hover:bg-brand-hover active:bg-brand-hover text-text-primary font-bold text-lg px-8 py-4 rounded-2xl transition-colors w-full max-w-xs text-center shadow-lg"
       >
