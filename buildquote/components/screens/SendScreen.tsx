@@ -38,6 +38,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
   const [selectedFromList, setSelectedFromList] = useState(false)
   const supplierInputRef = useRef<HTMLDivElement>(null)
   const [showConfirm, setShowConfirm] = useState(false)
+  const [pdfScale, setPdfScale] = useState(1)
   const [termsConfirmed, setTermsConfirmed] = useState(false)
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
@@ -112,6 +113,17 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
     }
   }
 
+  // Compute PDF scale for mobile preview
+  useEffect(() => {
+    if (previewUrl) {
+      const scale = Math.min(window.innerWidth / 793, 1)
+      setPdfScale(scale)
+      const handleResize = () => setPdfScale(Math.min(window.innerWidth / 793, 1))
+      window.addEventListener('resize', handleResize)
+      return () => window.removeEventListener('resize', handleResize)
+    }
+  }, [previewUrl])
+
   // Check if sandbox supplier is selected — keep email in sync with builder email
   const today = new Date().toISOString().split('T')[0]
   const isSandbox = SUPPLIERS.some(s => s.sandbox && s.name === rfqPayload.supplier.supplierName)
@@ -128,8 +140,10 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
             </div>
             <button onClick={closePreview} className="text-text-muted hover:text-text-primary text-2xl leading-none px-2 shrink-0">✕</button>
           </div>
-          <div className="flex-1 overflow-auto" style={{ WebkitOverflowScrolling: "touch", maxWidth: "100vw" }}>
-            <iframe src={previewUrl} className="w-full border-0" title="RFQ Preview" style={{ minHeight: '100vh', width: '100%', maxWidth: '100vw', display: 'block' }} />
+          <div className="flex-1 overflow-hidden bg-ui-darkest">
+            <div style={{ width: `${793 * pdfScale}px`, height: `${1122 * pdfScale}px`, overflow: 'hidden' }}>
+              <iframe src={previewUrl} className="border-0" title="RFQ Preview" style={{ width: '793px', height: '1122px', display: 'block', transformOrigin: 'top left', transform: `scale(${pdfScale})` }} />
+            </div>
           </div>
           <div className="flex gap-3 px-4 py-4 bg-ui-darker border-t border-border shrink-0">
             <button onClick={closePreview} className="flex-1 py-3 rounded-xl border border-border-subtle text-text-secondary font-medium text-sm hover:bg-surface transition-colors">
