@@ -113,20 +113,35 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
 
   // Message
   if (message) {
-    page.drawText('MESSAGE', { x: 32, y, size: 8, font: bold, color: orange })
+    // Add a new page if not enough room for message (need at least 80px above footer)
+    let msgPage = page
+    if (y < 140) {
+      msgPage = doc.addPage([595, 842])
+      y = 842 - 48
+    }
+    msgPage.drawText('MESSAGE', { x: 32, y, size: 8, font: bold, color: orange })
     y -= 14
     const words = message.split(' ')
     let line = ''
     for (const word of words) {
-      if ((line + word).length > 80) {
-        page.drawText(line.trim(), { x: 32, y, size: 9, font: regular, color: grey })
+      if ((line + word).length > 90) {
+        // Start new page if too close to footer
+        if (y < 80) {
+          msgPage = doc.addPage([595, 842])
+          y = 842 - 48
+        }
+        msgPage.drawText(line.trim(), { x: 32, y, size: 9, font: regular, color: grey })
         y -= 12
         line = ''
       }
       line += word + ' '
     }
     if (line.trim()) {
-      page.drawText(line.trim(), { x: 32, y, size: 9, font: regular, color: grey })
+      if (y < 80) {
+        msgPage = doc.addPage([595, 842])
+        y = 842 - 48
+      }
+      msgPage.drawText(line.trim(), { x: 32, y, size: 9, font: regular, color: grey })
       y -= 12
     }
     y -= 8
