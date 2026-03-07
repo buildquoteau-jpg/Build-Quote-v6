@@ -29,12 +29,10 @@ export default function FlyerPage() {
             </span>
           ))}
         </div>
-
-        {/* TRANSFORMATION VISUAL */}
-        <div className="flex items-center gap-4 sm:gap-8 max-w-2xl">
+        <div className="flex items-center gap-6 max-w-2xl">
           <div className="flex-1 min-w-0">
             <div className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-2">Your list</div>
-            <div className="rounded-xl border border-white/10 shadow-xl overflow-hidden aspect-[4/3] bg-slate-900">
+            <div className="rounded-xl border border-white/10 overflow-hidden aspect-[4/3] bg-slate-900">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/handwritten-list.jpg" alt="Handwritten materials list" className="w-full h-full object-cover" />
             </div>
@@ -50,13 +48,12 @@ export default function FlyerPage() {
           </div>
           <div className="flex-1 min-w-0">
             <div className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-2">Supplier-ready RFQ</div>
-            <div className="rounded-xl border border-white/10 shadow-xl overflow-hidden aspect-[4/3] bg-slate-900">
+            <div className="rounded-xl border border-white/10 overflow-hidden aspect-[4/3] bg-slate-900">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/rfq-pdf-sample.png" alt="Generated RFQ PDF" className="w-full h-full object-cover" />
             </div>
           </div>
         </div>
-
         <div className="mt-10">
           <a href="https://buildquote.com.au/" className="inline-flex items-center gap-2 bg-orange-500 text-white text-base font-bold px-7 py-3.5 rounded-xl shadow-lg shadow-orange-500/30 hover:opacity-90 transition-opacity">
             Try BuildQuote Free &nbsp;&rarr;
@@ -69,16 +66,16 @@ export default function FlyerPage() {
       <div className="bg-white px-6 sm:px-16 py-12">
         <div className="text-xs font-bold tracking-widest uppercase text-orange-500 mb-2">How it works</div>
         <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 mb-8">Four steps. Done in under a minute.</h2>
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-6">
           {[
             { n: '01', title: 'Start with any list', desc: 'Handwritten note, site pad, spreadsheet, or PDF. No special format required.' },
             { n: '02', title: 'Upload to BuildQuote', desc: 'Drop any file. AI reads it and pulls out every line item automatically.' },
             { n: '03', title: 'Review and edit', desc: 'Check quantities, specs, and descriptions. Add anything that was missed.' },
             { n: '04', title: 'Send to your supplier', desc: 'Supplier receives a clean PDF with every item clearly listed. Done.' },
           ].map((step) => (
-            <div key={step.n} className="flex flex-col gap-3 p-5 rounded-xl bg-slate-50 border border-slate-200">
-              <div className="text-xs font-bold text-orange-500 tracking-widest uppercase">Step {step.n}</div>
-              <div className="text-sm font-bold text-slate-900">{step.title}</div>
+            <div key={step.n} className="flex flex-col gap-2 p-6 rounded-xl bg-slate-50 border border-slate-200">
+              <div className="text-xs font-bold text-orange-500 tracking-widest uppercase mb-1">Step {step.n}</div>
+              <div className="text-base font-bold text-slate-900">{step.title}</div>
               <div className="text-sm text-slate-600 leading-relaxed">{step.desc}</div>
             </div>
           ))}
