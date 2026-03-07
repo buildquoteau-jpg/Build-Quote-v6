@@ -17,7 +17,8 @@ export async function POST(req: NextRequest) {
     const csvString = generateCSVString(payload)
 
     // Only email if sendToSupplier is true
-    if (payload.sendToSupplier !== false) {
+    console.log('[SEND] sendToSupplier:', JSON.stringify(payload.sendToSupplier))
+    if (payload.sendToSupplier === true) {
       // Test Supplier — send only to builder's own email, no supplier email
       const isTestSupplier = payload.supplier.supplierName === 'Test Supplier'
       const to = isTestSupplier ? [payload.builder.email] : [payload.supplier.supplierEmail]

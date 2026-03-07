@@ -31,7 +31,6 @@ function validateEmail(v: string) {
   return ''
 }
 
-const today = new Date().toISOString().split('T')[0]
 
 export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sending, sendError }: SendScreenProps) {
   const [supplierQuery, setSupplierQuery] = useState(rfqPayload.supplier.supplierName)
@@ -114,6 +113,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
   }
 
   // Check if sandbox supplier is selected — keep email in sync with builder email
+  const today = new Date().toISOString().split('T')[0]
   const isSandbox = SUPPLIERS.some(s => s.sandbox && s.name === rfqPayload.supplier.supplierName)
 
   return (
@@ -128,8 +128,8 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
             </div>
             <button onClick={closePreview} className="text-text-muted hover:text-text-primary text-2xl leading-none px-2 shrink-0">✕</button>
           </div>
-          <div className="flex-1 overflow-auto -webkit-overflow-scrolling-touch">
-            <iframe src={previewUrl} className="w-full border-0" title="RFQ Preview" style={{ minHeight: '100%', height: '100vh', display: 'block' }} />
+          <div className="flex-1 overflow-auto" style={{ WebkitOverflowScrolling: "touch", maxWidth: "100vw" }}>
+            <iframe src={previewUrl} className="w-full border-0" title="RFQ Preview" style={{ minHeight: '100vh', width: '100%', maxWidth: '100vw', display: 'block' }} />
           </div>
           <div className="flex gap-3 px-4 py-4 bg-ui-darker border-t border-border shrink-0">
             <button onClick={closePreview} className="flex-1 py-3 rounded-xl border border-border-subtle text-text-secondary font-medium text-sm hover:bg-surface transition-colors">
@@ -243,7 +243,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
               type="date"
               min={today}
               value={rfqPayload.dateRequired}
-              onChange={e => onChange({ ...rfqPayload, dateRequired: e.target.value })}
+              onChange={e => { const v = e.target.value; if (v >= today) onChange({ ...rfqPayload, dateRequired: v }) }}
               className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-brand w-full max-w-full box-border text-sm"
             />
             <p className="text-text-faint text-xs mt-1">Approximate date these goods will be required on site</p>
