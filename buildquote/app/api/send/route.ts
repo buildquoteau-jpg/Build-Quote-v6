@@ -20,7 +20,7 @@ export async function POST(req: NextRequest) {
     console.log('[SEND] sendToSupplier:', JSON.stringify(payload.sendToSupplier))
     if (payload.sendToSupplier === true) {
       // Test Supplier — send only to builder's own email, no supplier email
-      const isTestSupplier = payload.supplier.supplierName === 'Test Supplier'
+      const isTestSupplier = payload.supplier.supplierName === 'Test Supplier' || payload.supplier.supplierName.startsWith('Sandbox')
       const to = isTestSupplier ? [payload.builder.email] : [payload.supplier.supplierEmail]
       const cc = (!isTestSupplier && payload.sendCopyToSelf) ? [payload.builder.email] : []
 
