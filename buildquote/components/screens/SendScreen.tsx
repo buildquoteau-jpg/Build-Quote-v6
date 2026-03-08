@@ -105,9 +105,16 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
       })
       if (!res.ok) throw new Error('PDF generation failed')
       const blob = await res.blob()
-      setPreviewUrl(URL.createObjectURL(blob))
+      const url = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = 'buildquote-rfq-preview.pdf'
+      document.body.appendChild(a)
+      a.click()
+      a.remove()
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
     } catch {
-      setPreviewError('Could not generate preview. Try again.')
+      setPreviewError('Could not generate PDF. Try again.')
     } finally {
       setPreviewLoading(false)
     }
@@ -293,7 +300,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
 
         <div className="flex gap-3">
           <Button variant="secondary" onClick={onBack} className="flex-1 py-3">← Back</Button>
-          <button onClick={() => window.open('/api/pdf?draft=1','_blank')} disabled={previewLoading}
+          <button onClick={handlePreview} disabled={previewLoading}
             className="flex-1 py-3 rounded-xl border border-brand text-brand hover:bg-brand-subtle disabled:opacity-50 font-medium text-sm transition-colors">
             {previewLoading ? 'Loading...' : '⬇ Download RFQ PDF'}
           </button>
