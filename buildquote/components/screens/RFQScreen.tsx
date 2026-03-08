@@ -76,7 +76,7 @@ function ItemCard({ item, index, onChange, onRemove }: {
         onChange={e => onChange('desc', e.target.value)}
         placeholder="Description / Specs"
         rows={2}
-        className={`bg-ui/50 border rounded-lg px-3 py-2 text-text-muted placeholder-text-disabled focus:outline-none text-xs w-full resize-none leading-relaxed transition-colors ${
+        className={`bg-ui/50 border rounded-lg px-3 py-2 text-text-primary placeholder-text-disabled focus:outline-none text-xs w-full resize-none leading-relaxed transition-colors ${
           isLow ? 'border-warning/30 focus:border-warning' : 'border-border/60 focus:border-brand/70'
         }`}
       />

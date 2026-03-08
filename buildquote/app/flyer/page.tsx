@@ -7,7 +7,7 @@ export default function FlyerPage() {
         <div className="text-xl font-extrabold tracking-tight text-white">
           Build<span className="text-orange-500">Quote</span>
         </div>
-        <div className="text-xs text-slate-400 font-mono">buildquote.com.au</div>
+        <div className="text-xs text-slate-200 font-mono">buildquote.com.au</div>
       </div>
 
       {/* HERO */}
@@ -31,7 +31,7 @@ export default function FlyerPage() {
         </div>
         <div className="flex items-center gap-6 max-w-2xl">
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-2">Your list</div>
+            <div className="text-xs font-bold tracking-widest uppercase text-slate-200 mb-2">Your list</div>
             <div className="rounded-xl border border-white/10 overflow-hidden aspect-[4/3] bg-slate-900">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/handwritten-list.jpg" alt="Handwritten materials list" className="w-full h-full object-cover" />
@@ -47,7 +47,7 @@ export default function FlyerPage() {
             </svg>
           </div>
           <div className="flex-1 min-w-0">
-            <div className="text-xs font-bold tracking-widest uppercase text-slate-400 mb-2">Supplier-ready RFQ</div>
+            <div className="text-xs font-bold tracking-widest uppercase text-slate-200 mb-2">Supplier-ready RFQ</div>
             <div className="rounded-xl border border-white/10 overflow-hidden aspect-[4/3] bg-slate-900">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src="/rfq-pdf-sample.png" alt="Generated RFQ PDF" className="w-full h-full object-cover" />
@@ -58,7 +58,7 @@ export default function FlyerPage() {
           <a href="https://buildquote.com.au/" className="inline-flex items-center gap-2 bg-orange-500 text-white text-base font-bold px-7 py-3.5 rounded-xl shadow-lg shadow-orange-500/30 hover:opacity-90 transition-opacity">
             Try BuildQuote Free &nbsp;&rarr;
           </a>
-          <div className="text-xs text-slate-400 mt-3">No account needed &nbsp;&middot;&nbsp; Takes 60 seconds</div>
+          <div className="text-xs text-slate-200 mt-3">No account needed &nbsp;&middot;&nbsp; Takes 60 seconds</div>
         </div>
       </div>
 
