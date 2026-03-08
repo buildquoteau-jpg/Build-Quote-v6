@@ -40,11 +40,11 @@ Respond with ONLY the JSON array starting with [`
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024 // 5MB
 const MAX_TEXT_SIZE = 100 * 1024       // 100KB for text files
+const MAX_PDF_PAGES = 10               // cap pages sent to vision
 
-// Simple in-memory rate limiter — 10 requests per hour per IP
 const rateLimitMap = new Map<string, { count: number; resetAt: number }>()
 const RATE_LIMIT = 10
-const RATE_WINDOW_MS = 60 * 60 * 1000 // 1 hour
+const RATE_WINDOW_MS = 60 * 60 * 1000
 
 function isRateLimited(ip: string): boolean {
   const now = Date.now()
@@ -61,6 +61,79 @@ function isRateLimited(ip: string): boolean {
 const ALLOWED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.pdf', '.csv', '.txt', '.xls', '.xlsx', '.doc', '.docx']
 const ALLOWED_MIME_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'application/pdf', 'text/csv', 'text/plain', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document']
 
+// ---------------------------------------------------------------------------
+// PDF helper — tries text extraction first, falls back to page-image vision
+// ---------------------------------------------------------------------------
+async function parsePDF(buffer: Buffer): Promise<OpenAI.Chat.ChatCompletionMessageParam[]> {
+  try {
+    // Dynamically import pdfjs-dist (avoids issues with SSR/edge bundling)
+    const pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs' as any)
+    pdfjsLib.GlobalWorkerOptions.workerSrc = ''
+
+    const loadingTask = pdfjsLib.getDocument({ data: new Uint8Array(buffer) })
+    const pdfDoc = await loadingTask.promise
+    const numPages = Math.min(pdfDoc.numPages, MAX_PDF_PAGES)
+
+    // --- Attempt 1: extract text from all pages ---
+    let fullText = ''
+    for (let i = 1; i <= numPages; i++) {
+      const page = await pdfDoc.getPage(i)
+      const textContent = await page.getTextContent()
+      const pageText = textContent.items
+        .map((item: any) => ('str' in item ? item.str : ''))
+        .join(' ')
+      fullText += pageText + '\n'
+    }
+
+    const trimmed = fullText.trim()
+
+    if (trimmed.length > 50) {
+      // Text PDF — send as text
+      console.log(`PDF: extracted ${trimmed.length} chars of text across ${numPages} pages`)
+      return [{ role: 'user', content: `${PROMPT}\n\nDocument:\n${trimmed}` }]
+    }
+
+    // --- Attempt 2: scanned PDF — render each page to canvas → base64 image ---
+    console.log('PDF: no extractable text found, rendering pages as images')
+
+    // canvas is required for pdfjs page rendering in Node
+    const { createCanvas } = await import('canvas')
+
+    const imageContent: OpenAI.Chat.ChatCompletionContentPart[] = [
+      { type: 'text', text: `${PROMPT}\n\nThis is a scanned PDF. Each image below is one page. Extract all items across all pages and return a single combined JSON array.` },
+    ]
+
+    for (let i = 1; i <= numPages; i++) {
+      const page = await pdfDoc.getPage(i)
+      const viewport = page.getViewport({ scale: 2.0 }) // 2x scale for legibility
+      const canvas = createCanvas(viewport.width, viewport.height)
+      const context = canvas.getContext('2d')
+
+      await page.render({
+        canvasContext: context as any,
+        viewport,
+      }).promise
+
+      const base64 = canvas.toDataURL('image/png').split(',')[1]
+      imageContent.push({
+        type: 'image_url',
+        image_url: { url: `data:image/png;base64,${base64}` },
+      })
+    }
+
+    return [{ role: 'user', content: imageContent }]
+
+  } catch (err) {
+    console.error('PDF parse error:', err)
+    // Last resort: try raw text
+    const text = buffer.toString('utf-8')
+    return [{ role: 'user', content: `${PROMPT}\n\nDocument:\n${text}` }]
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Route handler
+// ---------------------------------------------------------------------------
 export async function POST(req: NextRequest) {
   try {
     const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'unknown'
@@ -120,15 +193,7 @@ export async function POST(req: NextRequest) {
         },
       ]
     } else if (isPDF) {
-      // OpenAI does not accept raw PDF base64 — extract as text
-      // For scanned/image PDFs this will be empty; text-based PDFs work fine
-      const text = buffer.toString('utf-8')
-      messages = [
-        {
-          role: 'user',
-          content: `${PROMPT}\n\nDocument:\n${text}`,
-        },
-      ]
+      messages = await parsePDF(buffer)
     } else if (['.xlsx', '.xls'].includes(ext)) {
       const workbook = new ExcelJS.Workbook()
       await workbook.xlsx.load(buffer as any)
@@ -148,12 +213,7 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         )
       }
-      messages = [
-        {
-          role: 'user',
-          content: `${PROMPT}\n\nSpreadsheet data (CSV format):\n${csvText}`,
-        },
-      ]
+      messages = [{ role: 'user', content: `${PROMPT}\n\nSpreadsheet data (CSV format):\n${csvText}` }]
     } else {
       if (file.size > MAX_TEXT_SIZE) {
         return NextResponse.json(
@@ -162,12 +222,7 @@ export async function POST(req: NextRequest) {
         )
       }
       const text = buffer.toString('utf-8')
-      messages = [
-        {
-          role: 'user',
-          content: `${PROMPT}\n\nDocument:\n${text}`,
-        },
-      ]
+      messages = [{ role: 'user', content: `${PROMPT}\n\nDocument:\n${text}` }]
     }
 
     const completion = await Promise.race([
@@ -183,7 +238,6 @@ export async function POST(req: NextRequest) {
 
     const responseText = completion.choices[0]?.message?.content ?? ''
 
-    // Try full JSON parse first
     const start = responseText.indexOf('[')
     const end = responseText.lastIndexOf(']')
 
@@ -193,7 +247,6 @@ export async function POST(req: NextRequest) {
       try {
         items = JSON.parse(responseText.slice(start, end + 1))
       } catch {
-        // Full parse failed — recover object by object
         console.warn('Full JSON parse failed, attempting object-by-object recovery')
         const chunk = responseText.slice(start, end + 1)
         const objMatches = chunk.match(/\{[^{}]+\}/g) || []
@@ -208,7 +261,6 @@ export async function POST(req: NextRequest) {
       }
     }
 
-    // Filter and map — a single bad item never kills the whole result
     const result = items
       .filter((item: any) => item && typeof item.name === 'string' && item.name.trim() !== '')
       .map((item: any) => ({
