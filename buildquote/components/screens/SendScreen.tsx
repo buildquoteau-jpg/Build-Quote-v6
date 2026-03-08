@@ -293,9 +293,9 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
 
         <div className="flex gap-3">
           <Button variant="secondary" onClick={onBack} className="flex-1 py-3">← Back</Button>
-          <button onClick={handlePreview} disabled={previewLoading}
+          <button onClick={() => window.open('/api/pdf?draft=1','_blank')} disabled={previewLoading}
             className="flex-1 py-3 rounded-xl border border-brand text-brand hover:bg-brand-subtle disabled:opacity-50 font-medium text-sm transition-colors">
-            {previewLoading ? 'Loading...' : '👁 Preview'}
+            {previewLoading ? 'Loading...' : '⬇ Download RFQ PDF'}
           </button>
           <Button onClick={() => setShowConfirm(true)} disabled={sending || !rfqPayload.supplier.supplierEmail || !rfqPayload.builder.email} className="flex-1 py-3">
             {sending ? 'Sending...' : 'Send →'}
