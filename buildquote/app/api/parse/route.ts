@@ -76,8 +76,10 @@ const ALLOWED_MIME_TYPES = [
 async function buildPDFMessages(buffer: Buffer): Promise<OpenAI.Chat.ChatCompletionMessageParam[]> {
   // Attempt 1: text extraction
   try {
-    const pdfParse = (await import('pdf-parse')).default
-    const data = await pdfParse(buffer, { max: MAX_PDF_PAGES })
+    const { PDFParse } = await import('pdf-parse')
+    const parser = new PDFParse({ data: buffer })
+    const data = await parser.getText({ first: MAX_PDF_PAGES })
+    await parser.destroy()
     const text = data.text?.trim() ?? ''
 
     if (text.length > 50) {
