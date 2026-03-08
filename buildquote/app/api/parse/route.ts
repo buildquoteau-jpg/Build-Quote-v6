@@ -69,48 +69,63 @@ const ALLOWED_MIME_TYPES = [
 ]
 
 // ---------------------------------------------------------------------------
-// PDF helper — text extraction via pdf-parse (no native deps, Vercel-safe)
-// Falls back to sending the PDF as a base64 image to GPT-4o vision for
-// scanned/image-only PDFs where no text can be extracted.
+// PDF helper — send PDF directly to OpenAI Responses API.
+// This avoids Node canvas/pdfjs runtime issues on serverless builds.
 // ---------------------------------------------------------------------------
-async function buildPDFMessages(buffer: Buffer): Promise<OpenAI.Chat.ChatCompletionMessageParam[]> {
-  // Attempt 1: text extraction
-  try {
-    const { PDFParse } = await import('pdf-parse')
-    const parser = new PDFParse({ data: buffer })
-    const data = await parser.getText({ first: MAX_PDF_PAGES })
-    await parser.destroy()
-    const text = data.text?.trim() ?? ''
+async function parsePDFWithOpenAI(buffer: Buffer, filename: string): Promise<string> {
+  const base64 = buffer.toString('base64')
+  const response = await Promise.race([
+    client.responses.create({
+      model: 'gpt-4o',
+      max_output_tokens: 4096,
+      input: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'input_file',
+              filename,
+              file_data: `data:application/pdf;base64,${base64}`,
+            },
+            { type: 'input_text', text: PROMPT },
+          ],
+        },
+      ],
+    }),
+    new Promise((_, reject) =>
+      setTimeout(() => reject(new Error('Parse timeout')), 55000)
+    ),
+  ]) as OpenAI.Responses.Response
 
-    if (text.length > 50) {
-      console.log(`PDF: text path — ${text.length} chars`)
-      return [{ role: 'user', content: `${PROMPT}\n\nDocument:\n${text}` }]
+  return response.output_text ?? ''
+}
+
+function getParseErrorResponse(error: unknown): NextResponse | null {
+  if (error instanceof OpenAI.APIError) {
+    if (error.status === 429 || error.code === 'insufficient_quota') {
+      return NextResponse.json(
+        {
+          items: [],
+          error: 'OpenAI quota exceeded. Please check billing, then retry.',
+          code: 'insufficient_quota',
+        },
+        { status: 429 }
+      )
     }
 
-    console.log('PDF: text too short, falling back to vision')
-  } catch (err) {
-    console.error('PDF: pdf-parse error:', err)
+    if (error.status === 401) {
+      return NextResponse.json(
+        {
+          items: [],
+          error: 'OpenAI API key is invalid or missing.',
+          code: 'invalid_api_key',
+        },
+        { status: 401 }
+      )
+    }
   }
 
-  // Attempt 2: vision fallback — send the whole PDF as a base64 image
-  // GPT-4o can read image/jpeg and image/png but not application/pdf directly,
-  // so we encode just the raw buffer as a PNG data URI. For true scanned PDFs
-  // this will render the first page. For anything else the text path above
-  // will have succeeded already.
-  console.log('PDF: vision fallback — sending as image to gpt-4o')
-  const base64 = buffer.toString('base64')
-  return [
-    {
-      role: 'user',
-      content: [
-        {
-          type: 'image_url',
-          image_url: { url: `data:image/png;base64,${base64}` },
-        },
-        { type: 'text', text: PROMPT },
-      ],
-    },
-  ]
+  return null
 }
 
 // ---------------------------------------------------------------------------
@@ -174,7 +189,43 @@ export async function POST(req: NextRequest) {
         },
       ]
     } else if (isPDF) {
-      messages = await buildPDFMessages(buffer)
+      const responseText = await parsePDFWithOpenAI(buffer, file.name)
+      const start = responseText.indexOf('[')
+      const end = responseText.lastIndexOf(']')
+      let items: any[] = []
+
+      if (start !== -1 && end !== -1) {
+        try {
+          items = JSON.parse(responseText.slice(start, end + 1))
+        } catch {
+          console.warn('Full JSON parse failed, attempting object-by-object recovery')
+          const chunk = responseText.slice(start, end + 1)
+          const objMatches = chunk.match(/\{[^{}]+\}/g) || []
+          for (const obj of objMatches) {
+            try {
+              const parsed = JSON.parse(obj)
+              if (parsed.name) items.push(parsed)
+            } catch {
+              // skip malformed object
+            }
+          }
+        }
+      }
+
+      const result = items
+        .filter((item: any) => item && typeof item.name === 'string' && item.name.trim() !== '')
+        .map((item: any) => ({
+          id: randomUUID(),
+          name: item.name || '',
+          sku: item.sku || '',
+          productId: item.productId || '',
+          desc: item.desc || '',
+          uom: item.uom || '',
+          qty: item.qty ? String(item.qty) : '',
+          confidence: item.confidence === 'low' ? 'low' : 'high',
+        }))
+
+      return NextResponse.json({ items: result })
     } else if (['.xlsx', '.xls'].includes(ext)) {
       const workbook = new ExcelJS.Workbook()
       await workbook.xlsx.load(buffer as any)
@@ -257,6 +308,12 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ items: result })
 
   } catch (e) {
+    const mappedError = getParseErrorResponse(e)
+    if (mappedError) {
+      console.error('Parse error:', e)
+      return mappedError
+    }
+
     console.error('Parse error:', e)
     return NextResponse.json({ items: [], error: 'Failed to parse file' }, { status: 500 })
   }
