@@ -1,9 +1,9 @@
-import Anthropic from '@anthropic-ai/sdk'
+import OpenAI from 'openai'
 import { NextRequest, NextResponse } from 'next/server'
 import { randomUUID } from 'crypto'
 import ExcelJS from 'exceljs'
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY })
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 const PROMPT = `You are a helpful assistant that extracts line items from any kind of list — materials lists, shopping lists, wish lists, handwritten notes, spreadsheets, or any document containing items with quantities.
 
@@ -104,28 +104,30 @@ export async function POST(req: NextRequest) {
     const isImage = file.type.startsWith('image/')
     const isPDF = file.type === 'application/pdf'
 
-    let content: Anthropic.MessageParam['content']
+    let messages: OpenAI.Chat.ChatCompletionMessageParam[]
 
     if (isImage) {
-      const validImageTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp']
-      const mediaType = validImageTypes.includes(file.type)
-        ? (file.type as 'image/jpeg' | 'image/png' | 'image/gif' | 'image/webp')
-        : 'image/jpeg'
-
-      content = [
+      messages = [
         {
-          type: 'image',
-          source: { type: 'base64', media_type: mediaType, data: base64 },
+          role: 'user',
+          content: [
+            {
+              type: 'image_url',
+              image_url: { url: `data:${file.type};base64,${base64}` },
+            },
+            { type: 'text', text: PROMPT },
+          ],
         },
-        { type: 'text', text: PROMPT },
       ]
     } else if (isPDF) {
-      content = [
+      // OpenAI does not accept raw PDF base64 — extract as text
+      // For scanned/image PDFs this will be empty; text-based PDFs work fine
+      const text = buffer.toString('utf-8')
+      messages = [
         {
-          type: 'document',
-          source: { type: 'base64', media_type: 'application/pdf', data: base64 },
+          role: 'user',
+          content: `${PROMPT}\n\nDocument:\n${text}`,
         },
-        { type: 'text', text: PROMPT },
       ]
     } else if (['.xlsx', '.xls'].includes(ext)) {
       const workbook = new ExcelJS.Workbook()
@@ -146,7 +148,12 @@ export async function POST(req: NextRequest) {
           { status: 400 }
         )
       }
-      content = `${PROMPT}\n\nSpreadsheet data (CSV format):\n${csvText}`
+      messages = [
+        {
+          role: 'user',
+          content: `${PROMPT}\n\nSpreadsheet data (CSV format):\n${csvText}`,
+        },
+      ]
     } else {
       if (file.size > MAX_TEXT_SIZE) {
         return NextResponse.json(
@@ -155,22 +162,26 @@ export async function POST(req: NextRequest) {
         )
       }
       const text = buffer.toString('utf-8')
-      content = `${PROMPT}\n\nDocument:\n${text}`
+      messages = [
+        {
+          role: 'user',
+          content: `${PROMPT}\n\nDocument:\n${text}`,
+        },
+      ]
     }
 
-    const message = await Promise.race([
-      client.messages.create({
-        model: 'claude-haiku-4-5-20251001',
+    const completion = await Promise.race([
+      client.chat.completions.create({
+        model: 'gpt-4o',
         max_tokens: 4096,
-        messages: [{ role: 'user', content }],
+        messages,
       }),
       new Promise((_, reject) =>
         setTimeout(() => reject(new Error('Parse timeout')), 55000)
       ),
-    ]) as Anthropic.Message
+    ]) as OpenAI.Chat.ChatCompletion
 
-    const responseText =
-      message.content[0].type === 'text' ? message.content[0].text : ''
+    const responseText = completion.choices[0]?.message?.content ?? ''
 
     // Try full JSON parse first
     const start = responseText.indexOf('[')
