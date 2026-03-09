@@ -74,16 +74,16 @@ export default function SuccessScreen({ rfqId, payload, onReset }: SuccessScreen
 
       <div className="w-full flex gap-3 items-start bg-ui-darker border border-border rounded-lg p-4 text-left">
         <span className="text-warning text-sm mt-0.5 flex-shrink-0">⚠</span>
-        <p className="text-text-muted text-xs leading-relaxed">
+        <p className="text-text-muted text-sm leading-relaxed">
           BuildQuote does not track builder to supplier Requests for Quotation. Please call your preferred supplier to confirm receipt and product availability.
         </p>
       </div>
 
-      <div className="w-full bg-ui-darker border border-brand/30 rounded-xl p-4 text-left flex flex-col gap-3">
-        <p className="text-text-primary text-sm font-semibold">More features coming to BuildQuote soon.</p>
-        <p className="text-text-muted text-xs leading-relaxed">Supplier directory, saved builder profiles, component libraries and more — built for Southwest WA builders.</p>
+      <div className="w-full bg-ui-darker border border-brand/30 rounded-xl p-5 text-left flex flex-col gap-3">
+        <p className="text-text-primary text-base font-semibold">More features coming to BuildQuote soon.</p>
+        <p className="text-text-muted text-sm leading-relaxed">Supplier directory, saved builder profiles, component libraries and more — built for Southwest WA builders.</p>
         {joined ? (
-          <p className="text-brand text-xs font-medium">✓ You&apos;re in — we&apos;ll keep you posted.</p>
+          <p className="text-brand text-sm font-medium">✓ You&apos;re in — we&apos;ll keep you posted.</p>
         ) : (
           <label className="flex items-start gap-3 cursor-pointer">
             <input
@@ -93,7 +93,7 @@ export default function SuccessScreen({ rfqId, payload, onReset }: SuccessScreen
               disabled={joining || !payload.builder.email}
               className="mt-0.5 accent-brand shrink-0"
             />
-            <span className="text-text-secondary text-xs leading-relaxed">
+            <span className="text-text-primary text-sm leading-relaxed">
               {joining ? 'Signing you up...' : 'Keep me in the loop — join the BuildQuote community'}
             </span>
           </label>
