@@ -70,7 +70,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
     setSelectedFromList(true)
     setShowSuggestions(false)
     // If sandbox supplier, autofill supplier email with builder's own email
-    const supplierEmail = s.sandbox ? rfqPayload.builder.email : s.email
+    const supplierEmail = rfqPayload.builder.email
     onChange({ ...rfqPayload, supplier: { supplierName: s.name, supplierEmail, accountNumber: rfqPayload.supplier.accountNumber } })
   }
 
@@ -158,7 +158,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
             </button>
             <button
               onClick={() => { closePreview(); setShowConfirm(true) }}
-              disabled={sending || !rfqPayload.supplier.supplierEmail || !rfqPayload.builder.email}
+              disabled={sending || !rfqPayload.builder.email}
               className="flex-1 py-3 rounded-xl bg-brand hover:bg-brand-hover disabled:opacity-40 text-text-primary font-semibold text-sm transition-colors"
             >
               {sending ? 'Sending...' : 'Send RFQ →'}
@@ -304,7 +304,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
             className="flex-1 py-3 rounded-xl border border-brand text-brand hover:bg-brand-subtle disabled:opacity-50 font-medium text-sm transition-colors">
             {previewLoading ? 'Loading...' : '⬇ Download RFQ PDF'}
           </button>
-          <Button onClick={() => setShowConfirm(true)} disabled={sending || !rfqPayload.supplier.supplierEmail || !rfqPayload.builder.email} className="flex-1 py-3">
+          <Button onClick={() => setShowConfirm(true)} disabled={sending || !rfqPayload.builder.email} className="flex-1 py-3">
             {sending ? 'Sending...' : 'Send →'}
           </Button>
         </div>
@@ -322,9 +322,6 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
               <p className="text-brand text-sm font-bold break-words">
                 {rfqPayload.supplier.supplierName || 'Selected Supplier'}
               </p>
-              {rfqPayload.supplier.supplierEmail && (
-                <p className="text-text-muted text-xs mt-0.5 break-all">{rfqPayload.supplier.supplierEmail}</p>
-              )}
             </div>
             <p className="text-text-secondary text-xs leading-relaxed">
               This request contains the materials and quantities you have reviewed and approved. Product specifications, pack sizes, availability and pricing may vary between suppliers. Please confirm all product details and suitability directly with the supplier before placing an order. Any updates or changes should be communicated directly between you and your preferred supplier.

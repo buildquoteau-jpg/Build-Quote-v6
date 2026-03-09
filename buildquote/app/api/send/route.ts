@@ -8,6 +8,8 @@ import { supabase } from '@/lib/supabase'
 
 const resend = new Resend(process.env.RESEND_API_KEY)
 
+const TEST_MODE = process.env.TEST_MODE === "true"
+
 export async function POST(req: NextRequest) {
   try {
     const payload: RFQPayload = await req.json()
@@ -21,8 +23,8 @@ export async function POST(req: NextRequest) {
     if (payload.sendToSupplier === true) {
       // Test Supplier — send only to builder's own email, no supplier email
       const isTestSupplier = payload.supplier.supplierName === 'Test Supplier' || payload.supplier.supplierName.startsWith('Sandbox')
-      const to = isTestSupplier ? [payload.builder.email] : [payload.supplier.supplierEmail]
-      const cc = (!isTestSupplier && payload.sendCopyToSelf) ? [payload.builder.email] : []
+      const to = TEST_MODE ? [payload.builder.email] : [payload.supplier.supplierEmail]
+      const cc = TEST_MODE ? [] : (payload.sendCopyToSelf ? [payload.builder.email] : [])
 
       const { data, error } = await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL || 'rfq@buildquote.com.au',

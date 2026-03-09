@@ -40,7 +40,7 @@ export default function RFQPage() {
 
     // Prefill supplier from directory
     const supplierName = params.get('supplier') || ''
-    const supplierEmail = params.get('email') || ''
+    const supplierEmail = ''
     if (supplierName || supplierEmail) {
       setPayload(p => ({
         ...p,
