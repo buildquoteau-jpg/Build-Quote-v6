@@ -144,7 +144,7 @@ export default function RFQScreen({ items, onChange, onBack, onNext }: RFQScreen
         onClick={add}
         className="border-2 border-dashed border-brand/35 bg-brand/5 hover:bg-brand/10 hover:border-brand/60 text-text-primary hover:text-brand rounded-xl py-3 text-sm font-medium transition-colors"
       >
-        + Add Line Item
+        + Add another line item
       </button>
 
       <div className="flex gap-3 pt-1">
