@@ -48,7 +48,7 @@ function ItemCard({ item, index, onChange, onRemove }: {
     >
       <div className="flex items-center justify-between">
         <span className={`text-xs font-medium tracking-widest uppercase transition-colors duration-300 ${
-          active ? 'text-brand' : 'text-text-disabled'
+          active ? 'text-brand' : 'text-text-secondary'
         }`}>
           Item {index + 1}
         </span>
@@ -58,7 +58,7 @@ function ItemCard({ item, index, onChange, onRemove }: {
               ⚠ Check
             </span>
           )}
-          <button onClick={onRemove} className="text-text-disabled hover:text-error text-sm leading-none transition-colors">✕</button>
+          <button onClick={onRemove} className="text-text-secondary hover:text-error text-sm leading-none transition-colors">✕</button>
         </div>
       </div>
 
@@ -66,7 +66,7 @@ function ItemCard({ item, index, onChange, onRemove }: {
         value={item.name}
         onChange={e => onChange('name', e.target.value)}
         placeholder="Product Name"
-        className={`bg-ui/50 border rounded-lg px-3 py-2 text-text-primary placeholder-text-disabled focus:outline-none text-sm font-medium w-full transition-colors ${
+        className={`bg-ui/50 border rounded-lg px-3 py-2 text-text-primary placeholder-text-secondary focus:outline-none text-sm font-medium w-full transition-colors ${
           isLow ? 'border-warning/30 focus:border-warning' : 'border-border/60 focus:border-brand/70'
         }`}
       />
@@ -76,7 +76,7 @@ function ItemCard({ item, index, onChange, onRemove }: {
         onChange={e => onChange('desc', e.target.value)}
         placeholder="Description / Specs"
         rows={2}
-        className={`bg-ui/50 border rounded-lg px-3 py-2 text-text-primary placeholder-text-disabled focus:outline-none text-xs w-full resize-none leading-relaxed transition-colors ${
+        className={`bg-ui/50 border rounded-lg px-3 py-2 text-text-primary placeholder-text-secondary focus:outline-none text-xs w-full resize-none leading-relaxed transition-colors ${
           isLow ? 'border-warning/30 focus:border-warning' : 'border-border/60 focus:border-brand/70'
         }`}
       />
@@ -84,12 +84,12 @@ function ItemCard({ item, index, onChange, onRemove }: {
       <div className="grid grid-cols-3 gap-2">
         {(['sku', 'uom', 'qty'] as const).map(field => (
           <div key={field} className="flex flex-col gap-1">
-            <label className="text-text-disabled text-xs uppercase tracking-wider pl-1">{field}</label>
+            <label className="text-text-secondary text-xs uppercase tracking-wider pl-1">{field}</label>
             <input
               value={item[field]}
               onChange={e => onChange(field, e.target.value)}
               placeholder="—"
-              className={`bg-ui/50 border rounded-lg px-2 py-1.5 text-text-secondary placeholder-text-disabled focus:outline-none text-sm text-center w-full transition-colors ${
+              className={`bg-ui/50 border rounded-lg px-2 py-1.5 text-text-secondary placeholder-text-secondary focus:outline-none text-sm text-center w-full transition-colors ${
                 isLow ? 'border-warning/30 focus:border-warning' : 'border-border/60 focus:border-brand/70'
               }`}
             />
@@ -142,7 +142,7 @@ export default function RFQScreen({ items, onChange, onBack, onNext }: RFQScreen
 
       <button
         onClick={add}
-        className="border border-dashed border-border hover:border-brand/50 text-text-disabled hover:text-brand/70 rounded-xl py-2.5 text-sm transition-colors"
+        className="border-2 border-dashed border-brand/35 bg-brand/5 hover:bg-brand/10 hover:border-brand/60 text-text-primary hover:text-brand rounded-xl py-3 text-sm font-medium transition-colors"
       >
         + Add Line Item
       </button>

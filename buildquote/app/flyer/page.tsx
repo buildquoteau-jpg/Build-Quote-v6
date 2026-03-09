@@ -107,7 +107,7 @@ export default function FlyerPage() {
         </h2>
         <p className="text-sm text-slate-300 mb-6 max-w-sm mx-auto">Built for WA builders. Free to use. No account needed.</p>
         <a href="https://buildquote.com.au/" className="inline-flex items-center gap-2 bg-orange-500 text-white text-base font-bold px-8 py-4 rounded-xl shadow-lg shadow-orange-500/30 hover:opacity-90 transition-opacity">
-          Start your RFQ &nbsp;&rarr;
+          Start your Request for Quotation &nbsp;&rarr;
         </a>
         <div className="text-xs text-slate-500 mt-5 font-mono tracking-wide">
           buildquote.com.au &nbsp;&middot;&nbsp; Request for Quotation, Made Simple

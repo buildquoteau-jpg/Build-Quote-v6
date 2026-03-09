@@ -30,7 +30,7 @@ export default function Home() {
         href="/rfq"
         className="bg-brand hover:bg-brand-hover active:bg-brand-hover text-text-primary font-bold text-lg px-8 py-4 rounded-2xl transition-colors w-full max-w-xs text-center shadow-lg"
       >
-        Start your RFQ
+        Start your Request for Quotation
       </a>
       <p className="text-text-secondary text-xs mt-2">Takes about 60 seconds</p>
       <div className="mt-6 text-center max-w-xs">
