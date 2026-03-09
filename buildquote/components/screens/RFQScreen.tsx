@@ -65,7 +65,7 @@ function ItemCard({ item, index, onChange, onRemove }: {
       <input
         value={item.name}
         onChange={e => onChange('name', e.target.value)}
-        placeholder="Product Name"
+        placeholder="Product name (e.g. Colorbond Roofing Sheet)"
         className={`bg-ui/50 border rounded-lg px-3 py-2 text-text-primary placeholder-text-secondary focus:outline-none text-sm font-medium w-full transition-colors ${
           isLow ? 'border-warning/30 focus:border-warning' : 'border-border/60 focus:border-brand/70'
         }`}
@@ -74,7 +74,7 @@ function ItemCard({ item, index, onChange, onRemove }: {
       <textarea
         value={item.desc}
         onChange={e => onChange('desc', e.target.value)}
-        placeholder="Description / Specs"
+        placeholder="Description / specs (size, colour, brand)"
         rows={2}
         className={`bg-ui/50 border rounded-lg px-3 py-2 text-text-primary placeholder-text-secondary focus:outline-none text-xs w-full resize-none leading-relaxed transition-colors ${
           isLow ? 'border-warning/30 focus:border-warning' : 'border-border/60 focus:border-brand/70'
