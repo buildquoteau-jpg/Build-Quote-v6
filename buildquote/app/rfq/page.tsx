@@ -1,5 +1,6 @@
 'use client'
 import { useState, useEffect } from 'react'
+import { getOrCreateDraft } from '@/lib/rfqDraft'
 import TopBar from '@/components/ui/TopBar'
 import UploadScreen from '@/components/screens/UploadScreen'
 import RFQScreen from '@/components/screens/RFQScreen'
@@ -34,6 +35,7 @@ export default function RFQPage() {
   const [sendError, setSendError] = useState('')
 
   useEffect(() => { window.scrollTo(0, 0) }, [step])
+useEffect(() => {    getOrCreateDraft().catch(console.error)  }, [])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
