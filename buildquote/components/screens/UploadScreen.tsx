@@ -133,6 +133,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
 
       <div className="flex items-center gap-3">
         <div className="flex-1 h-px bg-border" />
+<button        onClick={() => {          const draft = new URLSearchParams(window.location.search).get('draft');          const url = 'https://manufacturer-portal.vercel.app?draft=' + draft;          window.open(url, '_blank');        }}        className="w-full py-3 rounded-xl border border-brand/40 text-brand text-sm font-medium hover:bg-brand/10 transition-colors"      >        Browse Manufacturer Components      </button>
         <span className="text-text-faint text-xs uppercase tracking-widest">or</span>
         <div className="flex-1 h-px bg-border" />
       </div>
