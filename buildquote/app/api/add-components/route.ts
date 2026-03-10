@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { supabase } from "@/lib/supabase";
 
 export async function POST(req: Request) {
   try {
@@ -13,16 +14,37 @@ export async function POST(req: Request) {
       );
     }
 
-    // TEMP: log incoming data so we can verify flow
-    console.log("RFQ draft import:", draft_id, items.length);
+    const rows = items.map((item: any) => ({
+      draft_id: draft_id,
+      component_id: item.component_id ?? null,
+      manufacturer: item.manufacturer ?? null,
+      system: item.system ?? null,
+      sku: item.sku ?? null,
+      name: item.name ?? null,
+      description: item.description ?? null,
+      uom: item.uom ?? null,
+      qty: item.qty ?? null
+    }));
+
+    const { error } = await supabase
+      .from("rfq_draft_items")
+      .insert(rows);
+
+    if (error) {
+      console.error(error);
+      return NextResponse.json(
+        { error: "Insert failed" },
+        { status: 500 }
+      );
+    }
 
     return NextResponse.json({
       success: true,
-      received: items.length,
+      inserted: rows.length
     });
 
   } catch (err) {
-    console.error("Import error", err);
+    console.error(err);
 
     return NextResponse.json(
       { error: "Server error" },
