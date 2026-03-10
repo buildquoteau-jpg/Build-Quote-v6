@@ -119,6 +119,7 @@ getOrCreateDraft().then((id)=>{      const url = new URL(window.location.href); 
     }
   }
 
+useEffect(() => {    const loadDraftItems = async () => {      try {        const draftId = new URLSearchParams(window.location.search).get('draft');        const res = await fetch('/api/get-draft-items?draft=' + draftId);        const data = await res.json();        const mapped = (data.items || []).map((row: any) => ({          id: crypto.randomUUID(),          name: row.name || '',          sku: row.sku || '',          productId: row.component_id || '',          desc: row.description || '',          uom: row.uom || '',          qty: row.qty ? String(row.qty) : '',          confidence: 'high'        }));        if (mapped.length) {          setItems(mapped);          setPayload(p => ({ ...p, items: mapped }));          setStep(2);        }      } catch (e) {        console.error('draft load failed', e);      }    };    loadDraftItems();  }, []);
   const handleReset = () => {
     setStep(1)
     setItems([])
