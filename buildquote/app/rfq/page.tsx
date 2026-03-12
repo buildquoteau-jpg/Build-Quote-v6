@@ -35,7 +35,19 @@ export default function RFQPage() {
   const [sendError, setSendError] = useState('')
 
   useEffect(() => { window.scrollTo(0, 0) }, [step])
-getOrCreateDraft().then((id)=>{      const url = new URL(window.location.href);      url.searchParams.set('draft', id);      window.history.replaceState({}, '', url);    }).catch(console.error)
+
+  useEffect(() => {
+    const existingDraft = new URLSearchParams(window.location.search).get('draft')
+    if (existingDraft) return
+
+    getOrCreateDraft()
+      .then((id) => {
+        const url = new URL(window.location.href)
+        url.searchParams.set('draft', id)
+        window.history.replaceState({}, '', url)
+      })
+      .catch(console.error)
+  }, [])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)

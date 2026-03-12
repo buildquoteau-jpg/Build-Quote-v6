@@ -136,7 +136,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
       <button
         onClick={() => {
           const draft = localStorage.getItem('rfq_draft_id')
-          const url = 'https://manufacturer-portal.vercel.app?draft=' + draft
+          const url = 'https://zany-space-train-697xj5vxgjr6cp74-3000.app.github.dev/?draft=' + draft
           window.open(url, '_blank')
         }}
         className="w-full py-3 rounded-xl border border-brand/40 text-brand text-sm font-medium hover:bg-brand/10 transition-colors"

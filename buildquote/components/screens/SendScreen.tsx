@@ -36,6 +36,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
   const [supplierQuery, setSupplierQuery] = useState(rfqPayload.supplier.supplierName)
   const [showSuggestions, setShowSuggestions] = useState(false)
   const [selectedFromList, setSelectedFromList] = useState(false)
+  const DEFAULT_SANDBOX = 'Sandbox — Test with your own email'
   const supplierInputRef = useRef<HTMLDivElement>(null)
   const [showConfirm, setShowConfirm] = useState(false)
   const [pdfScale, setPdfScale] = useState(1)
@@ -133,6 +134,21 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
 
   // Check if sandbox supplier is selected — keep email in sync with builder email
   const today = new Date().toISOString().split('T')[0]
+  useEffect(() => {
+    if (!rfqPayload.supplier.supplierName) {
+      setSupplierQuery(DEFAULT_SANDBOX)
+      setSelectedFromList(true)
+      onChange({
+        ...rfqPayload,
+        supplier: {
+          supplierName: DEFAULT_SANDBOX,
+          supplierEmail: rfqPayload.builder.email,
+          accountNumber: rfqPayload.supplier.accountNumber,
+        },
+      })
+    }
+  }, [])
+
   const isSandbox = SUPPLIERS.some(s => s.sandbox && s.name === rfqPayload.supplier.supplierName)
 
   return (
