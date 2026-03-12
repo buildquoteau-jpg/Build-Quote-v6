@@ -151,6 +151,18 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
 
   const isSandbox = SUPPLIERS.some(s => s.sandbox && s.name === rfqPayload.supplier.supplierName)
 
+  useEffect(() => {
+    if (!isSandbox) return
+    if (rfqPayload.supplier.supplierEmail === rfqPayload.builder.email) return
+    onChange({
+      ...rfqPayload,
+      supplier: {
+        ...rfqPayload.supplier,
+        supplierEmail: rfqPayload.builder.email,
+      },
+    })
+  }, [isSandbox, rfqPayload.builder.email])
+
   return (
     <>
       {/* PDF Preview Overlay — mobile optimised */}
@@ -243,7 +255,18 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
               <p className="text-brand text-xs font-medium">Sandbox mode — RFQ will be sent to your own email address</p>
             </div>
           )}
-          <Input label="Supplier Email" value={rfqPayload.supplier.supplierEmail} onChange={v => setSupplier('supplierEmail', v)} type="email" />
+          {isSandbox ? (
+            <div className="flex flex-col gap-1">
+              <label className="text-text-muted text-xs uppercase tracking-widest block">Supplier Email</label>
+              <input
+                value={rfqPayload.builder.email}
+                readOnly
+                className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-muted w-full max-w-full box-border text-sm"
+              />
+            </div>
+          ) : (
+            <Input label="Supplier Email" value={rfqPayload.supplier.supplierEmail} onChange={v => setSupplier('supplierEmail', v)} type="email" />
+          )}
           <div className="flex flex-col gap-1">
             <label className="text-text-muted text-xs uppercase tracking-widest block">Account Number</label>
             <input

@@ -82,6 +82,54 @@ export default function FlyerPage() {
         </div>
       </div>
 
+      {/* NEW FEATURE – MANUFACTURER SYSTEM CARDS */}
+      <div className="bg-white px-6 sm:px-16 py-10 sm:py-12 border-t border-slate-200">
+        <div className="text-xs font-bold tracking-widest uppercase text-orange-500 mb-2">
+          Try our newest feature
+        </div>
+
+        <h2 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-slate-900 mb-3">
+          Manufacturer system cards
+        </h2>
+
+        <p className="text-slate-700 text-base leading-relaxed max-w-2xl mb-6">
+          Browse systems. Add components to your RFQ.
+        </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+            <div className="text-base font-bold text-slate-900 mb-2">Browse systems</div>
+            <div className="text-sm text-slate-600 leading-relaxed">
+              Open real manufacturer systems.
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+            <div className="text-base font-bold text-slate-900 mb-2">Pick cards</div>
+            <div className="text-sm text-slate-600 leading-relaxed">
+              Choose products and quantities.
+            </div>
+          </div>
+
+          <div className="rounded-xl border border-slate-200 bg-slate-50 p-5">
+            <div className="text-base font-bold text-slate-900 mb-2">Add to RFQ</div>
+            <div className="text-sm text-slate-600 leading-relaxed">
+              Send selections into your draft.
+            </div>
+          </div>
+        </div>
+
+        <div className="rounded-xl border border-orange-200 bg-orange-50 px-5 py-4 text-sm text-slate-700 leading-relaxed max-w-2xl">
+          <p className="font-semibold text-slate-900 mb-2">Early test release</p>
+          <p className="mb-2">
+            James Hardie available now. More manufacturers coming soon.
+          </p>
+          <p>
+            <strong>Global Test Mode:</strong> real supplier sending is off. The <strong>Sandbox supplier</strong> emails the RFQ back to you.
+          </p>
+        </div>
+      </div>
+
       {/* WHY BUILDQUOTE */}
       <div className="bg-slate-50 px-6 sm:px-16 py-12 border-t border-slate-200">
         <div className="text-xs font-bold tracking-widest uppercase text-orange-500 mb-2">Why BuildQuote</div>

@@ -23,15 +23,25 @@ export async function POST(req: NextRequest) {
     if (payload.sendToSupplier === true) {
       // Test Supplier — send only to builder's own email, no supplier email
       const isTestSupplier = payload.supplier.supplierName === 'Test Supplier' || payload.supplier.supplierName.startsWith('Sandbox')
-      const to = TEST_MODE ? [payload.builder.email] : [payload.supplier.supplierEmail]
-      const cc = TEST_MODE ? [] : (payload.sendCopyToSelf ? [payload.builder.email] : [])
+
+      const builderEmail = (payload.builder.email || '').trim()
+      const supplierEmail = (payload.supplier.supplierEmail || '').trim()
+      const recipient = (TEST_MODE || isTestSupplier) ? builderEmail : supplierEmail
+      const cc = (TEST_MODE || isTestSupplier) ? [] : (payload.sendCopyToSelf && builderEmail ? [builderEmail] : [])
+
+      if (!recipient || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(recipient)) {
+        return NextResponse.json(
+          { success: false, error: 'Recipient email is missing or invalid.' },
+          { status: 400 }
+        )
+      }
 
       const { data, error } = await resend.emails.send({
         from: process.env.RESEND_FROM_EMAIL || 'rfq@buildquote.com.au',
-        to,
+        to: [recipient],
         bcc: ['buildquoteau@gmail.com'],
         cc,
-        replyTo: payload.builder.email,
+        replyTo: builderEmail || undefined,
         subject: `RFQ from ${payload.builder.builderName} — ${payload.builder.company} — ${payload.rfqId}`,
         html,
         attachments: [

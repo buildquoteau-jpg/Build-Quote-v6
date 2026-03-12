@@ -48,17 +48,20 @@ export default function SuccessScreen({ rfqId, payload, onReset }: SuccessScreen
   }
 
   return (
-    <div className="flex flex-col gap-4 items-center text-center">
-      <div className="text-6xl mt-4">✅</div>
-      <h1 className="text-3xl font-bold text-text-primary">RFQ Sent!</h1>
-      <p className="text-text-muted">Your quote request has been sent to {payload.supplier.supplierName}.</p>
+    <div className="min-h-[100svh] w-full px-4 py-4 sm:py-8 flex flex-col items-center justify-start text-center">
+      <div className="w-full max-w-md flex flex-col gap-3 items-center text-center">
+        <div className="text-4xl sm:text-5xl mt-1 sm:mt-2">✅</div>
+        <h1 className="text-2xl sm:text-3xl font-bold text-text-primary leading-tight">RFQ Sent!</h1>
+        <p className="text-text-muted text-sm sm:text-base max-w-sm">
+          Your quote request has been sent to {payload.supplier.supplierName}.
+        </p>
 
-      <Card className="w-full text-left">
+      <Card className="w-full text-left py-4">
         <SectionLabel>RFQ Reference</SectionLabel>
         <p className="text-brand font-mono text-xl font-bold">{rfqId}</p>
       </Card>
 
-      <Card className="w-full flex flex-col gap-3">
+      <Card className="w-full flex flex-col gap-3 py-4">
         <SectionLabel>Downloads</SectionLabel>
         <Button variant="secondary" onClick={() => download('pdf')} className="w-full py-3">
           ⬇ Download PDF
@@ -68,7 +71,7 @@ export default function SuccessScreen({ rfqId, payload, onReset }: SuccessScreen
         </Button>
       </Card>
 
-      <Button onClick={onReset} className="w-full py-3">
+      <Button onClick={onReset} className="w-full py-3 mt-1">
         + Start Another RFQ
       </Button>
 
@@ -98,6 +101,7 @@ export default function SuccessScreen({ rfqId, payload, onReset }: SuccessScreen
             </span>
           </label>
         )}
+      </div>
       </div>
     </div>
   )
