@@ -135,7 +135,8 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
         <div className="flex-1 h-px bg-border" />
       <button
         onClick={() => {
-          const draft = localStorage.getItem('rfq_draft_id')
+          const draft = new URLSearchParams(window.location.search).get('draft') || localStorage.getItem('rfq_draft_id')
+          if (!draft) return
           const url = 'https://mfp.buildquote.com.au/?draft=' + draft
           window.open(url, '_blank')
         }}
