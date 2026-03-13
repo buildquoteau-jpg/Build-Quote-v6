@@ -7,6 +7,13 @@ export interface LineItem {
   uom: string
   qty: string
   confidence?: 'high' | 'low'
+  length_mm?: number | string | null
+  width_mm?: number | string | null
+  thickness_mm?: number | string | null
+  height_mm?: number | string | null
+  diameter_mm?: number | string | null
+  coverage_m2?: number | string | null
+  weight_kg?: number | string | null
 }
 
 export interface BuilderDetails {
@@ -29,11 +36,11 @@ export interface RFQPayload {
   supplier: SupplierDetails
   items: LineItem[]
   delivery: 'delivery' | 'pickup'
-  siteAddress?: string
-  siteSuburb?: string
   dateRequired: string
   message: string
-  projectReference?: string
+  projectReference: string
+  siteAddress?: string
+  siteSuburb?: string
   sendToSupplier: boolean
   sendCopyToSelf: boolean
 }

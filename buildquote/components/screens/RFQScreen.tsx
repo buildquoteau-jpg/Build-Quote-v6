@@ -1,5 +1,4 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
 import Button from '../ui/Button'
 import { LineItem } from '@/lib/types'
 
@@ -11,147 +10,211 @@ interface RFQScreenProps {
 }
 
 function blankItem(): LineItem {
-  return { id: crypto.randomUUID(), name: '', sku: '', productId: '', desc: '', uom: '', qty: '', confidence: 'high' }
+  return {
+    id: crypto.randomUUID(),
+    name: '',
+    sku: '',
+    productId: '',
+    desc: '',
+    uom: '',
+    qty: '',
+    confidence: 'high',
+    length_mm: null,
+    width_mm: null,
+    thickness_mm: null,
+    height_mm: null,
+    diameter_mm: null,
+    coverage_m2: null,
+    weight_kg: null,
+  }
 }
 
-function ItemCard({ item, index, onChange, onRemove }: {
-  item: LineItem
-  index: number
-  onChange: (field: keyof LineItem, value: string) => void
-  onRemove: () => void
-}) {
-  const ref = useRef<HTMLDivElement>(null)
-  const [active, setActive] = useState(false)
-  const isLow = item.confidence === 'low'
+function formatNumber(value: number | string | null | undefined) {
+  if (value === null || value === undefined || value === '') return ''
+  const num = Number(value)
+  if (Number.isNaN(num)) return String(value)
+  return Number.isInteger(num) ? String(num) : String(num)
+}
 
-  useEffect(() => {
-    const el = ref.current
-    if (!el) return
-    const observer = new IntersectionObserver(
-      ([entry]) => setActive(entry.intersectionRatio > 0.5),
-      { threshold: 0.5 }
-    )
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
+function buildSpecSummary(item: LineItem) {
+  const parts: string[] = []
 
-  return (
-    <div
-      ref={ref}
-      className={`rounded-xl border px-3 pt-2 pb-3 flex flex-col gap-2 transition-all duration-300 ${
-        isLow
-          ? 'border-warning/40 bg-warning/5'
-          : active
-            ? 'border-brand/30 bg-surface'
-            : 'border-border/60 bg-surface/40'
-      }`}
-    >
-      <div className="flex items-center justify-between">
-        <span className={`text-xs font-medium tracking-widest uppercase transition-colors duration-300 ${
-          active ? 'text-brand' : 'text-text-secondary'
-        }`}>
-          Item {index + 1}
-        </span>
-        <div className="flex items-center gap-2">
-          {isLow && (
-            <span className="text-warning text-xs px-1.5 py-0.5 rounded-full bg-warning/10 border border-warning/20">
-              ⚠ Check
-            </span>
-          )}
-          <button onClick={onRemove} className="text-text-secondary hover:text-error text-sm leading-none transition-colors">✕</button>
-        </div>
-      </div>
+  const dims = [item.length_mm, item.width_mm, item.thickness_mm].filter(
+    (v) => v !== null && v !== undefined && v !== ''
+  ) as Array<number | string>
 
-      <input
-        value={item.name}
-        onChange={e => onChange('name', e.target.value)}
-        placeholder="Product name (e.g. Colorbond Roofing Sheet)"
-        className={`bg-ui/50 border rounded-lg px-3 py-2 text-text-primary placeholder-text-secondary focus:outline-none text-sm font-medium w-full transition-colors ${
-          isLow ? 'border-warning/30 focus:border-warning' : 'border-border/60 focus:border-brand/70'
-        }`}
-      />
+  if (dims.length >= 2) {
+    parts.push(`${dims.map(formatNumber).join(' × ')} mm`)
+  } else if (item.diameter_mm !== null && item.diameter_mm !== undefined && item.diameter_mm !== '') {
+    parts.push(`${formatNumber(item.diameter_mm)} mm dia`)
+  }
 
-      <textarea
-        value={item.desc}
-        onChange={e => onChange('desc', e.target.value)}
-        placeholder="Description / specs (size, colour, brand)"
-        rows={2}
-        className={`bg-ui/50 border rounded-lg px-3 py-2 text-text-primary placeholder-text-secondary focus:outline-none text-xs w-full resize-none leading-relaxed transition-colors ${
-          isLow ? 'border-warning/30 focus:border-warning' : 'border-border/60 focus:border-brand/70'
-        }`}
-      />
+  if (item.coverage_m2 !== null && item.coverage_m2 !== undefined && item.coverage_m2 !== '') {
+    parts.push(`${formatNumber(item.coverage_m2)} m²`)
+  }
 
-      <div className="grid grid-cols-3 gap-2">
-        {(['sku', 'uom', 'qty'] as const).map(field => (
-          <div key={field} className="flex flex-col gap-1">
-            <label className="text-text-secondary text-xs uppercase tracking-wider pl-1">{field}</label>
-            <input
-              value={item[field]}
-              onChange={e => onChange(field, e.target.value)}
-              placeholder="—"
-              className={`bg-ui/50 border rounded-lg px-2 py-1.5 text-text-secondary placeholder-text-secondary focus:outline-none text-sm text-center w-full transition-colors ${
-                isLow ? 'border-warning/30 focus:border-warning' : 'border-border/60 focus:border-brand/70'
-              }`}
-            />
-          </div>
-        ))}
-      </div>
-    </div>
-  )
+  if (item.weight_kg !== null && item.weight_kg !== undefined && item.weight_kg !== '') {
+    parts.push(`${formatNumber(item.weight_kg)} kg`)
+  }
+
+  return parts.join(' · ')
 }
 
 export default function RFQScreen({ items, onChange, onBack, onNext }: RFQScreenProps) {
   const update = (id: string, field: keyof LineItem, value: string) => {
-    onChange(items.map(item =>
-      item.id === id
-        ? { ...item, [field]: value, ...(['name', 'qty', 'desc'].includes(field) ? { confidence: 'high' as const } : {}) }
-        : item
-    ))
+    onChange(
+      items.map((item) =>
+        item.id === id
+          ? {
+              ...item,
+              [field]: value,
+              ...((field === 'name' || field === 'qty') ? { confidence: 'high' as const } : {}),
+            }
+          : item
+      )
+    )
   }
-  const remove = (id: string) => onChange(items.filter(item => item.id !== id))
-  const add = () => onChange([...items, blankItem()])
-  const lowCount = items.filter(i => i.confidence === 'low').length
+
+  const remove = (id: string) => onChange(items.filter((item) => item.id !== id))
+
+  const addManual = () => onChange([...items, blankItem()])
+
+  const lowCount = items.filter((i) => i.confidence === 'low').length
+
+  const inputClass =
+    'w-full min-w-0 rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-heading'
+  const compactInputClass =
+    'w-full min-w-0 rounded-lg border border-border bg-white px-2.5 py-2 text-sm text-text-primary placeholder-text-muted focus:outline-none focus:border-heading'
 
   return (
-    <div className="flex flex-col gap-3">
-
-      <div className="px-1 pb-1">
-        {items.length > 0 ? (
-          <>
-            <p className="text-text-secondary text-sm font-normal leading-snug">
-              BuildQuote detected <span className="text-text-primary font-medium">{items.length} line item{items.length !== 1 ? 's' : ''}</span> — please check the specs below and edit anything that doesn&apos;t look right.
-            </p>
-            {lowCount > 0 && (
-              <p className="text-warning/80 text-xs mt-1.5">⚠ {lowCount} item{lowCount !== 1 ? 's' : ''} flagged for review</p>
-            )}
-          </>
-        ) : (
-          <p className="text-text-faint text-sm">No items found. Add them manually below.</p>
+    <div className="flex flex-col gap-5">
+      <div className="px-1">
+        <h1 className="text-heading text-3xl sm:text-4xl font-extrabold tracking-tight">Review your RFQ</h1>
+        <p className="text-text-secondary text-sm sm:text-base font-medium leading-relaxed mt-3">
+          Check each line item and adjust anything that looks wrong.
+        </p>
+        <p className="text-text-muted text-sm mt-2">
+          {items.length} line item{items.length !== 1 ? 's' : ''}.
+        </p>
+        {lowCount > 0 && (
+          <p className="text-warning text-sm mt-2">
+            {lowCount} item{lowCount !== 1 ? 's' : ''} flagged for review
+          </p>
         )}
       </div>
 
-      {items.map((item, i) => (
-        <ItemCard
-          key={item.id}
-          item={item}
-          index={i}
-          onChange={(field, value) => update(item.id, field, value)}
-          onRemove={() => remove(item.id)}
-        />
-      ))}
+      <div className="rounded-2xl border border-border bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] overflow-hidden">
+        <div className="overflow-x-auto">
+          <div className="min-w-[980px]">
+            <div className="grid grid-cols-[90px_2.3fr_1.6fr_1fr_0.9fr_0.8fr_52px] gap-3 border-b border-border bg-surface-subtle px-4 py-3">
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Line item</div>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Product</div>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Specs</div>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">SKU</div>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">UOM</div>
+              <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Qty</div>
+              <div />
+            </div>
 
-      <button
-        onClick={add}
-        className="border-2 border-dashed border-brand/35 bg-brand/5 hover:bg-brand/10 hover:border-brand/60 text-text-primary hover:text-brand rounded-xl py-3 text-sm font-medium transition-colors"
-      >
-        + Add another line item
-      </button>
+            {items.length === 0 ? (
+              <div className="px-4 py-6 text-sm text-text-muted">No items found.</div>
+            ) : (
+              items.map((item, index) => (
+                <div
+                  key={item.id}
+                  className={`grid grid-cols-[90px_2.3fr_1.6fr_1fr_0.9fr_0.8fr_52px] gap-3 px-4 py-3 ${
+                    index < items.length - 1 ? 'border-b border-border-subtle' : ''
+                  }`}
+                >
+                  <div className="flex items-center">
+                    <span className="text-sm font-semibold text-text-secondary">{index + 1}</span>
+                  </div>
 
-      <div className="flex gap-3 pt-1">
-        <Button variant="secondary" onClick={onBack} className="flex-1 py-3">← Back</Button>
-        <Button onClick={onNext} disabled={items.length === 0} className="flex-1 py-3">Continue →</Button>
+                  <div className="flex items-center">
+                    <input
+                      value={item.name}
+                      onChange={(e) => update(item.id, 'name', e.target.value)}
+                      placeholder="Product name"
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      value={buildSpecSummary(item)}
+                      onChange={(e) => update(item.id, 'desc', e.target.value)}
+                      placeholder="Specs"
+                      className={inputClass}
+                    />
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      value={item.sku}
+                      onChange={(e) => update(item.id, 'sku', e.target.value)}
+                      placeholder="SKU"
+                      className={compactInputClass}
+                    />
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      value={item.uom}
+                      onChange={(e) => update(item.id, 'uom', e.target.value)}
+                      placeholder="UOM"
+                      className={compactInputClass}
+                    />
+                  </div>
+
+                  <div className="flex items-center">
+                    <input
+                      value={item.qty}
+                      onChange={(e) => update(item.id, 'qty', e.target.value)}
+                      placeholder="Qty"
+                      className={compactInputClass}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-end">
+                    <button
+                      onClick={() => remove(item.id)}
+                      className="h-9 w-9 rounded-lg border border-border text-text-muted hover:text-error hover:border-error-border hover:bg-error-bg transition-colors"
+                      aria-label={`Remove line item ${index + 1}`}
+                      type="button"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        </div>
       </div>
 
+      <div className="flex flex-col sm:flex-row gap-3">
+        <button
+          onClick={addManual}
+          className="sm:flex-1 rounded-2xl border border-border bg-white hover:bg-surface-subtle px-4 py-3.5 text-text-primary text-sm font-semibold transition-colors"
+        >
+          + Add manual item
+        </button>
+        <button
+          onClick={onBack}
+          className="sm:flex-1 rounded-2xl border border-border bg-white hover:bg-surface-subtle px-4 py-3.5 text-text-primary text-sm font-semibold transition-colors"
+        >
+          + Add manufacturer system
+        </button>
+      </div>
+
+      <div className="flex gap-3 pt-1">
+        <Button variant="secondary" onClick={onBack} className="flex-1 py-3">
+          ← Back
+        </Button>
+        <Button onClick={onNext} disabled={items.length === 0} className="flex-1 py-3">
+          Continue →
+        </Button>
+      </div>
     </div>
   )
 }

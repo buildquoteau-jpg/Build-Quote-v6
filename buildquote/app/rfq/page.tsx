@@ -80,6 +80,14 @@ export default function RFQPage() {
           desc: item.desc || '',
           uom: item.uom || '',
           qty: item.qty ? String(item.qty) : '',
+          confidence: item.confidence || 'high',
+          length_mm: item.length_mm ?? null,
+          width_mm: item.width_mm ?? null,
+          thickness_mm: item.thickness_mm ?? null,
+          height_mm: item.height_mm ?? null,
+          diameter_mm: item.diameter_mm ?? null,
+          coverage_m2: item.coverage_m2 ?? null,
+          weight_kg: item.weight_kg ?? null,
         }))
         setItems(withIds)
         setPayload(p => ({ ...p, items: withIds }))
@@ -131,7 +139,40 @@ export default function RFQPage() {
     }
   }
 
-useEffect(() => {    const loadDraftItems = async () => {      try {        const draftId = new URLSearchParams(window.location.search).get('draft');        const res = await fetch('/api/get-draft-items?draft=' + draftId);        const data = await res.json();        const mapped = (data.items || []).map((row: any) => ({          id: crypto.randomUUID(),          name: row.name || '',          sku: row.sku || '',          productId: row.component_id || '',          desc: row.description || '',          uom: row.uom || '',          qty: row.qty ? String(row.qty) : '',          confidence: 'high'        }));        if (mapped.length) {          setItems(mapped);          setPayload(p => ({ ...p, items: mapped }));          setStep(2);        }      } catch (e) {        console.error('draft load failed', e);      }    };    loadDraftItems();  }, []);
+  useEffect(() => {
+    const loadDraftItems = async () => {
+      try {
+        const draftId = new URLSearchParams(window.location.search).get('draft')
+        const res = await fetch('/api/get-draft-items?draft=' + draftId)
+        const data = await res.json()
+        const mapped = (data.items || []).map((row: any) => ({
+          id: crypto.randomUUID(),
+          name: row.name || '',
+          sku: row.sku || '',
+          productId: row.component_id || '',
+          desc: row.description || '',
+          uom: row.uom || '',
+          qty: row.qty ? String(row.qty) : '',
+          confidence: 'high',
+          length_mm: row.length_mm ?? null,
+          width_mm: row.width_mm ?? null,
+          thickness_mm: row.thickness_mm ?? null,
+          height_mm: row.height_mm ?? null,
+          diameter_mm: row.diameter_mm ?? null,
+          coverage_m2: row.coverage_m2 ?? null,
+          weight_kg: row.weight_kg ?? null,
+        }))
+        if (mapped.length) {
+          setItems(mapped)
+          setPayload(p => ({ ...p, items: mapped }))
+          setStep(2)
+        }
+      } catch (e) {
+        console.error('draft load failed', e)
+      }
+    }
+    loadDraftItems()
+  }, [])
   const handleReset = () => {
     setStep(1)
     setItems([])
@@ -141,9 +182,9 @@ useEffect(() => {    const loadDraftItems = async () => {      try {        cons
   }
 
   return (
-    <div className="min-h-screen bg-gray-900 text-white">
+    <div className="min-h-screen bg-page text-text-primary">
       <TopBar currentStep={step} />
-      <div className="max-w-2xl mx-auto px-4 py-6">
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         {step === 1 && (
           <UploadScreen
             onNext={handleParsed}
