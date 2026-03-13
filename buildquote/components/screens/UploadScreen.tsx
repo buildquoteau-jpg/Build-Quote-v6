@@ -32,39 +32,55 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
       intervalRef.current = setInterval(() => {
         setMsgIndex(i => (i + 1) % LOADING_MESSAGES.length)
       }, 2800)
-    } else {
+    } else if (intervalRef.current) {
+      clearInterval(intervalRef.current)
+    }
+
+    return () => {
       if (intervalRef.current) clearInterval(intervalRef.current)
     }
-    return () => { if (intervalRef.current) clearInterval(intervalRef.current) }
   }, [loading])
 
   const addFiles = (incoming: FileList | null) => {
     if (!incoming) return
+
     const newFiles = Array.from(incoming)
+
     setFiles(prev => {
       const combined = [...prev, ...newFiles]
       if (combined.length > MAX_FILES) {
         setError(`Maximum ${MAX_FILES} files at once.`)
         return prev
       }
+      setError('')
       return combined
     })
   }
 
-  const removeFile = (i: number) => setFiles(prev => prev.filter((_, idx) => idx !== i))
+  const removeFile = (i: number) => {
+    setFiles(prev => prev.filter((_, idx) => idx !== i))
+    setError('')
+  }
 
   const handleParse = async () => {
+    if (files.length === 0) return
+
     setLoading(true)
     setError('')
+
     try {
       const allItems: LineItem[] = []
+
       for (const file of files) {
         const formData = new FormData()
         formData.append('file', file)
+
         const res = await fetch('/api/parse', { method: 'POST', body: formData })
         const data = await res.json()
+
         if (data.items) allItems.push(...data.items)
       }
+
       onNext(allItems)
     } catch {
       setError('Something went wrong reading your file. Please try again.')
@@ -73,163 +89,226 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
     }
   }
 
+  const handleBrowseManufacturerComponents = () => {
+    const draft =
+      new URLSearchParams(window.location.search).get('draft') ||
+      localStorage.getItem('rfq_draft_id')
+
+    if (!draft) {
+      setError('Open Manufacturer Components from an RFQ draft so selected items can return here.')
+      return
+    }
+
+    const url = 'https://mfp.buildquote.com.au/?draft=' + draft
+    window.open(url, '_blank')
+  }
+
+  const hasFiles = files.length > 0
+
+  const baseCardClass =
+    'group rounded-2xl border-2 bg-white p-5 sm:p-5 text-left transition-all duration-200 shadow-[0_8px_20px_rgba(24,93,122,0.06)] hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(24,93,122,0.10)] focus:outline-none focus:ring-2 focus:ring-[rgba(24,93,122,0.18)]'
+
+  const iconClass =
+    'mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-[rgba(24,93,122,0.16)] bg-[rgba(24,93,122,0.03)] text-heading text-xl font-bold shadow-[0_6px_14px_rgba(24,93,122,0.06)]'
+
   return (
     <div className="flex flex-col gap-6">
-
-      <div>
-        <h2 className="text-text-primary text-xl font-bold">Upload your materials list</h2>
-        <p className="text-text-muted text-sm mt-1 leading-relaxed">
-          Drop your file below and BuildQuote will organise the items ready for a supplier quote request.
+      <div className="mx-auto max-w-2xl text-center">
+        <h2 className="text-heading text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+          Create your RFQ
+        </h2>
+        <p className="text-text-secondary text-base sm:text-lg mt-3 font-semibold leading-relaxed">
+          Choose how you want to start
         </p>
       </div>
 
-      <div
-        onClick={() => inputRef.current?.click()}
-        onDragOver={e => e.preventDefault()}
-        onDrop={e => { e.preventDefault(); addFiles(e.dataTransfer.files) }}
-        className={`bg-upload-bg border-2 border-dashed ${files.length > 0 ? "border-brand animate-pulse" : "border-upload-border"} hover:border-upload-hover-border hover:bg-upload-hover-bg transition-colors cursor-pointer rounded-2xl px-6 py-10 text-center`}
-      >
-        {files.length === 0 ? (
-          <>
-            <p className="text-page font-bold text-xl">Upload your list</p>
-            <p className="text-text-faint text-sm mt-1">or drag and drop your file here</p>
-            <p className="text-text-disabled text-xs mt-3 tracking-wide">PDF · Excel · Word · CSV · Photo</p>
-          </>
-        ) : (
-          <>
-            <p className="text-brand text-3xl mb-1">✓</p>
-            <p className="text-page font-bold text-xl">{files.length} file{files.length > 1 ? 's' : ''} ready</p>
-            <p className="text-text-faint text-sm mt-1">Tap below to read, or add more files</p>
-          </>
-        )}
-        <input ref={inputRef} type="file" multiple className="hidden" onChange={e => addFiles(e.target.files)} />
-      </div>
-
-      {files.length > 0 && (
-        <div className="flex flex-col gap-2">
-          {files.map((f, i) => (
-            <div key={i} className="flex items-center justify-between bg-surface border border-border rounded-xl px-4 py-3">
-              <div>
-                <p className="text-text-primary text-sm font-medium">{f.name}</p>
-                <p className="text-text-faint text-xs">{(f.size / 1024).toFixed(1)} KB</p>
-              </div>
-              <button onClick={() => removeFile(i)} className="text-text-faint hover:text-error text-lg px-2">✕</button>
-            </div>
-          ))}
-          <button
-            onClick={() => inputRef.current?.click()}
-            className="text-brand text-sm underline text-left px-1"
-          >
-            + Add another file
-          </button>
+      {error && (
+        <div className="rounded-2xl border-2 border-error-border bg-error-bg px-4 py-3">
+          <p className="text-error text-sm font-semibold">{error}</p>
         </div>
       )}
 
-      {error && <p className="text-error text-sm">{error}</p>}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <div className={`${baseCardClass} border-border shadow-[0_10px_24px_rgba(24,93,122,0.10)] hover:border-heading`}>
+          <button
+            type="button"
+            onClick={() => inputRef.current?.click()}
+            onDragOver={e => e.preventDefault()}
+            onDrop={e => {
+              e.preventDefault()
+              addFiles(e.dataTransfer.files)
+            }}
+            className="block w-full text-left"
+          >
+            <div className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] mb-1.5">
+              OPTION 1
+            </div>
 
-      <Button onClick={handleParse} disabled={files.length === 0 || loading} className="w-full py-3">
-        {files.length === 0 ? 'Upload a file to continue' : `Read my list${files.length > 1 ? 's' : ''} →`}
-      </Button>
+            <h3 className="text-heading text-xl font-extrabold tracking-tight leading-tight">
+              Upload a materials list
+            </h3>
 
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-px bg-border" />
-      <button
-        onClick={() => {
-          const draft = new URLSearchParams(window.location.search).get('draft') || localStorage.getItem('rfq_draft_id')
-          if (!draft) return
-          const url = 'https://mfp.buildquote.com.au/?draft=' + draft
-          window.open(url, '_blank')
-        }}
-        className="w-full py-3 rounded-xl border border-brand/40 text-brand text-sm font-medium hover:bg-brand/10 transition-colors"
-      >
-        Browse Manufacturer Components
-      </button>
-        <span className="text-text-faint text-xs uppercase tracking-widest">or</span>
-        <div className="flex-1 h-px bg-border" />
-      </div>
+            
+<div className="mt-5 mb-5 -mx-1 overflow-hidden rounded-xl border border-border-subtle bg-white shadow-[0_8px_20px_rgba(0,0,0,0.08)]">
+  <img
+    src="/rfq/handwritten-roof-note.jpeg"
+    alt="Example handwritten materials list"
+    className="block w-full h-auto object-contain"
+  />
+</div>
 
-      <button
-        onClick={onSkip}
-        className="w-full py-3 rounded-xl border border-border text-text-muted text-sm font-medium hover:border-border-subtle hover:text-text-secondary transition-colors"
-      >
-        I don&apos;t have a list yet — add items manually
-      </button>
+            <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
+              A photo of your handwritten list · A PDF of your BOM · A takeoff CSV
+            </p>
 
-      <div className="flex flex-col gap-4">
-        <div className="bg-surface-subtle border border-border rounded-xl p-4">
-          <p className="text-text-secondary text-xs font-bold uppercase tracking-widest mb-3">Examples of what you can upload</p>
-          <ul className="flex flex-col gap-1.5">
-            {[
-              "A builder's materials list",
-              "A Bunnings style shopping list",
-              "A spreadsheet of items",
-              "A photo of handwritten notes",
-            ].map(item => (
-              <li key={item} className="text-text-muted text-sm flex items-start gap-2">
-                <span className="text-brand mt-0.5">–</span>
-                <span>{item}</span>
-              </li>
-            ))}
-          </ul>
+            <p className="text-text-muted text-sm mt-2 font-medium leading-relaxed">
+              BuildQuote can read and organise any format.
+            </p>
+          </button>
+
+          <input
+            ref={inputRef}
+            type="file"
+            multiple
+            className="hidden"
+            onChange={e => addFiles(e.target.files)}
+          />
+
+          {hasFiles && (
+            <div className="mt-4 flex flex-col gap-2">
+              {files.map((f, i) => (
+                <div
+                  key={i}
+                  className="flex items-center justify-between rounded-xl border-2 border-border bg-surface-subtle px-3 py-2.5"
+                >
+                  <div className="min-w-0">
+                    <p className="text-text-primary text-sm font-semibold truncate">{f.name}</p>
+                    <p className="text-text-muted text-xs mt-0.5 font-medium">
+                      {(f.size / 1024).toFixed(1)} KB
+                    </p>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => removeFile(i)}
+                    className="ml-3 shrink-0 rounded-lg px-2 py-1 text-text-muted hover:text-error text-lg leading-none"
+                  >
+                    ✕
+                  </button>
+                </div>
+              ))}
+
+              <Button onClick={handleParse} disabled={loading} className="w-full py-3 text-sm mt-1">
+                {loading ? 'Reading your list...' : 'Continue with upload →'}
+              </Button>
+            </div>
+          )}
         </div>
 
-        <div className="bg-surface-subtle border border-border rounded-xl p-4">
-          <p className="text-text-secondary text-xs font-bold uppercase tracking-widest mb-3">Example list</p>
-          <div className="bg-ui-darker rounded-lg px-4 py-3 font-mono text-xs text-text-muted leading-relaxed mb-4">
-            <p>3 LVL beams 200x45</p>
-            <p>90x45 MGP10 framing timber – 24 lengths</p>
-            <p>8 sheets fibre cement 2400x1200x6 JH Flexsheet</p>
-            <p>2 boxes 14g x 100 GALV deck screws</p>
-            <p className="text-text-disabled">...</p>
-          </div>
-          <p className="text-text-secondary text-xs font-bold uppercase tracking-widest mb-3">Organised for quoting</p>
-          <div className="overflow-x-auto">
-            <table className="w-full text-xs text-left">
-              <thead>
-                <tr className="border-b border-border">
-                  <th className="text-brand font-semibold pb-2 pr-3">Item</th>
-                  <th className="text-brand font-semibold pb-2 pr-3">Size / Spec</th>
-                  <th className="text-brand font-semibold pb-2 pr-3">Unit</th>
-                  <th className="text-brand font-semibold pb-2">Qty</th>
-                </tr>
-              </thead>
-              <tbody className="text-text-muted">
-                {[
-                  ['LVL Beam', '200 x 45', 'length', '3'],
-                  ['Framing Timber', '90 x 45 MGP10', 'length', '24'],
-                  ['Fibre Cement Sheet', '2400 x 1200 x 6 JH Flexsheet', 'sheet', '8'],
-                  ['Deck Screws', '14g x 100 GALV', 'box', '2'],
-                  ['…', '', '', ''],
-                ].map((row, i) => (
-                  <tr key={i} className="border-b border-border last:border-0">
-                    <td className="py-1.5 pr-3 text-text-secondary">{row[0]}</td>
-                    <td className="py-1.5 pr-3">{row[1]}</td>
-                    <td className="py-1.5 pr-3">{row[2]}</td>
-                    <td className="py-1.5">{row[3]}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        </div>
+        <button
+          type="button"
+          onClick={handleBrowseManufacturerComponents}
+          className={`${baseCardClass} border-border hover:border-heading`}
+        >
+
+          <div className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] mb-1.5">OPTION 2</div>
+<h3 className="text-heading text-xl font-extrabold tracking-tight leading-tight max-w-[16ch]">
+            Browse manufacturer systems
+          </h3>
+
+          <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
+            Select complete product systems and components
+          </p>
+
+          <p className="text-text-muted text-sm mt-4 font-medium leading-relaxed">
+            Best when you want structured systems.
+          </p>
+        </button>
+
+        <button
+          type="button"
+          onClick={onSkip}
+          className={`${baseCardClass} border-border hover:border-heading`}
+        >
+
+          <div className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] mb-1.5">OPTION 3</div>
+<h3 className="text-heading text-xl font-extrabold tracking-tight leading-tight max-w-[13ch]">
+            Add items manually
+          </h3>
+
+          <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
+            Type or outline the materials you need
+          </p>
+
+          <p className="text-text-muted text-sm mt-4 font-medium leading-relaxed">
+            Good for quick RFQs without a file.
+          </p>
+        </button>
       </div>
+
+      <style jsx global>{`
+        .bq-note-demo {
+          position: relative;
+        }
+
+        .bq-note-line {
+          display: inline-block;
+          font-family: "Comic Sans MS", "Bradley Hand", "Marker Felt", cursive;
+          font-weight: 700;
+          letter-spacing: 0.01em;
+          transform: rotate(-1.2deg);
+          transform-origin: left center;
+          animation: bqHandLine 3.6s ease-in-out infinite;
+        }
+
+        .bq-camera {
+          animation: bqCameraPulse 3.6s ease-in-out infinite;
+        }
+
+        .bq-flash {
+          background:
+            radial-gradient(circle at 84% 20%, rgba(255,255,255,0.96) 0%, rgba(255,255,255,0.72) 12%, rgba(255,255,255,0.18) 24%, rgba(255,255,255,0) 42%);
+          opacity: 0;
+          animation: bqCameraFlash 3.6s ease-in-out infinite;
+        }
+
+        @keyframes bqHandLine {
+          0% { opacity: 0.82; transform: rotate(-1.2deg) translateY(0px); }
+          18% { opacity: 1; transform: rotate(-1.2deg) translateY(0px); }
+          50% { opacity: 1; transform: rotate(-1.2deg) translateY(0px); }
+          62% { opacity: 1; transform: rotate(-1.2deg) translateY(-0.5px); }
+          100% { opacity: 0.82; transform: rotate(-1.2deg) translateY(0px); }
+        }
+
+        @keyframes bqCameraPulse {
+          0% { transform: scale(1); }
+          52% { transform: scale(1); }
+          58% { transform: scale(0.92); }
+          66% { transform: scale(1); }
+          100% { transform: scale(1); }
+        }
+
+        @keyframes bqCameraFlash {
+          0% { opacity: 0; }
+          54% { opacity: 0; }
+          60% { opacity: 0.95; }
+          68% { opacity: 0; }
+          100% { opacity: 0; }
+        }
+      `}</style>
 
       {loading && (
-        <div className="fixed inset-0 bg-page/90 flex items-center justify-center z-50">
-          <div className="text-center px-8 max-w-xs">
-            <div className="w-12 h-12 border-4 border-brand border-t-transparent rounded-full animate-spin mx-auto mb-5"></div>
-            <p className="text-text-primary font-medium text-base leading-snug" key={msgIndex}>
+        <div className="fixed inset-0 bg-[rgba(255,255,255,0.92)] backdrop-blur-[2px] flex items-center justify-center z-50">
+          <div className="w-full max-w-sm rounded-2xl border-2 border-border bg-white px-6 py-8 text-center shadow-[0_18px_40px_rgba(24,93,122,0.16)]">
+            <div className="w-12 h-12 border-4 border-heading border-t-transparent rounded-full animate-spin mx-auto mb-5"></div>
+            <p className="text-heading font-bold text-lg tracking-tight" key={msgIndex}>
               {LOADING_MESSAGES[msgIndex]}
             </p>
-            <p className="text-text-faint text-xs mt-3">This usually takes 15–30 seconds</p>
+            <p className="text-text-secondary text-sm mt-3 font-medium">
+              This usually takes 15–30 seconds
+            </p>
           </div>
         </div>
       )}
-
-
-
-
-
     </div>
   )
 }
