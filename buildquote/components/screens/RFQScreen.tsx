@@ -61,7 +61,7 @@ export default function RFQScreen({
       <div className="px-1">
         <h1 className="text-heading text-3xl sm:text-4xl font-extrabold tracking-tight">Review your RFQ</h1>
         <p className="text-text-secondary text-sm sm:text-base font-medium leading-relaxed mt-3">
-          Check each line item and adjust anything that looks wrong.
+          Please check your items. Edit if needed.
         </p>
         <p className="text-text-muted text-sm mt-2">
           {items.length} line item{items.length !== 1 ? 's' : ''}.
@@ -79,40 +79,25 @@ export default function RFQScreen({
         </div>
       )}
 
-      {/* Mobile card layout */}
-      <div className="md:hidden flex flex-col gap-3">
+      {/* Mobile compact list */}
+      <div className="md:hidden rounded-2xl border border-border border-t-4 border-t-heading bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04)] overflow-hidden">
         {items.length === 0 ? (
-          <div className="rounded-2xl border border-border bg-white p-4 text-sm text-text-muted">No items found yet.</div>
+          <div className="p-4 text-sm text-text-muted">No items found yet.</div>
         ) : (
           items.map((item, index) => (
-            <div key={item.id} className="rounded-2xl border border-border bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-4">
-              <div className="flex items-center justify-between mb-3">
-                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Item {index + 1}</span>
-                <button
-                  onClick={() => remove(item.id)}
-                  className="h-8 w-8 rounded-lg border border-border text-text-muted hover:text-error hover:border-error-border hover:bg-error-bg transition-colors text-sm"
-                  aria-label={`Remove line item ${index + 1}`}
-                  type="button"
-                >
-                  ×
-                </button>
+            <div key={item.id} className={`flex items-center gap-3 px-4 py-3 ${index < items.length - 1 ? 'border-b border-border-subtle' : ''} ${item.confidence === 'low' ? 'bg-[rgba(245,158,11,0.06)]' : ''}`}>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-semibold text-text-primary truncate">{item.name}</p>
+                <p className="text-xs text-text-muted truncate">{[item.desc, item.sku, item.uom].filter(Boolean).join(' · ')}</p>
               </div>
-              <div className="flex flex-col gap-2.5">
-                <input value={item.name} onChange={(e) => update(item.id, 'name', e.target.value)} placeholder="Product name" className={inputClass} />
-                <input value={item.desc} onChange={(e) => update(item.id, 'desc', e.target.value)} placeholder="Specs / description" className={inputClass} />
-                <div className="grid grid-cols-3 gap-2">
-                  <input value={item.sku} onChange={(e) => update(item.id, 'sku', e.target.value)} placeholder="SKU" className={compactInputClass} />
-                  <input value={item.uom} onChange={(e) => update(item.id, 'uom', e.target.value)} placeholder="UOM" className={compactInputClass} />
-                  <input value={item.qty} onChange={(e) => update(item.id, 'qty', e.target.value)} placeholder="Qty" className={compactInputClass} />
-                </div>
-              </div>
+              <span className="text-sm font-bold text-heading shrink-0">{item.qty}</span>
+              <button onClick={() => remove(item.id)} className="shrink-0 h-7 w-7 rounded-lg text-text-muted hover:text-error hover:bg-error-bg transition-colors text-sm" aria-label={`Remove item ${index + 1}`} type="button">×</button>
             </div>
           ))
         )}
       </div>
-
       {/* Desktop table layout */}
-      <div className="hidden md:block rounded-2xl border border-border bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="hidden md:block rounded-2xl border border-border border-t-4 border-t-heading bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="overflow-x-auto">
           <div className="min-w-[980px]">
             <div className="grid grid-cols-[90px_2.3fr_1.6fr_1fr_0.9fr_0.8fr_52px] gap-3 border-b border-border bg-surface-subtle px-4 py-3">
@@ -201,36 +186,14 @@ export default function RFQScreen({
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row gap-3">
-        <button
-          onClick={onManualEntry}
-          className="sm:flex-1 rounded-2xl border border-border bg-white hover:bg-surface-subtle px-4 py-3.5 text-text-primary text-sm font-semibold transition-colors"
-          type="button"
-        >
-          Add manual line items
-        </button>
-        <button
-          onClick={handleBrowseManufacturerSystems}
-          className="sm:flex-1 rounded-2xl border border-border bg-white hover:bg-surface-subtle px-4 py-3.5 text-text-primary text-sm font-semibold transition-colors"
-          type="button"
-        >
-          Browse manufacturer systems
-        </button>
-        <button
-          onClick={onUploadList}
-          className="sm:flex-1 rounded-2xl border border-border bg-white hover:bg-surface-subtle px-4 py-3.5 text-text-primary text-sm font-semibold transition-colors"
-          type="button"
-        >
-          Upload a list
-        </button>
-      </div>
-
       <div className="flex gap-3 pt-1">
-        <Button variant="secondary" onClick={onBack} className="flex-1 py-3">
-          ← Back
+        <Button variant="secondary" onClick={onBack} className="flex-1 py-3 border-2 border-heading/20 hover:border-heading/40">
+          <span className="block text-heading">← Back</span>
+          <span className="block text-xs font-medium text-heading/60">Add extra items</span>
         </Button>
         <Button onClick={onNext} disabled={items.length === 0} className="flex-1 py-3">
-          Continue →
+          <span className="block text-white font-bold text-lg">Continue →</span>
+          <span className="block text-xs font-normal text-white/80">Add quote request details</span>
         </Button>
       </div>
     </div>
