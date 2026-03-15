@@ -132,10 +132,10 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
     <div className="flex flex-col gap-4 sm:gap-6">
       <div className="mx-auto max-w-2xl text-center">
         <h2 className="text-heading text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
-          Get prices on your materials
+          Create your quote request
         </h2>
         <p className="text-text-secondary text-sm sm:text-lg mt-2 sm:mt-3 font-semibold leading-relaxed">
-          Send a quote request to your supplier in minutes
+          Choose how to add your materials — the best way for you
         </p>
       </div>
 
@@ -146,7 +146,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
       )}
 
       <div className="grid gap-4 lg:grid-cols-3">
-        <div className={`${baseCardClass} border-border shadow-[0_10px_24px_rgba(24,93,122,0.10)] hover:border-heading`}>
+        <div className={`${baseCardClass} border-heading/30 bg-[rgba(24,93,122,0.02)]  shadow-[0_10px_24px_rgba(24,93,122,0.12)] hover:border-heading`}>
           <button
             type="button"
             onClick={() => inputRef.current?.click()}
@@ -167,14 +167,18 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
             </h3>
 
             
-<img src="/rfq/handwritten-roof-note.jpeg" alt="Example handwritten materials list" className="mt-4 mb-4 sm:mt-6 sm:mb-6 block w-full h-36 sm:h-48 object-contain rounded-lg shadow-[0_10px_18px_rgba(0,0,0,0.08)]" />
+<img src="/rfq/handwritten-roof-note.jpeg" alt="Example handwritten materials list" className="mt-4 mb-4 sm:mt-6 sm:mb-6 block w-[calc(100%+2rem)] -mx-4 h-44 sm:h-56 object-cover rounded-none shadow-none" />
 
             <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
-              A photo of your handwritten list · A PDF of your BOM · A takeoff CSV
+            <div className="flex flex-wrap gap-2 mt-3">
+              <span className="text-xs font-bold text-heading bg-[rgba(24,93,122,0.08)] px-2.5 py-1 rounded-full">Handwritten list</span>
+              <span className="text-xs font-bold text-heading bg-[rgba(24,93,122,0.08)] px-2.5 py-1 rounded-full">PDF / BOM</span>
+              <span className="text-xs font-bold text-heading bg-[rgba(24,93,122,0.08)] px-2.5 py-1 rounded-full">Takeoff CSV</span>
+            </div>
             </p>
 
             <p className="text-text-muted text-sm mt-2 font-medium leading-relaxed">
-              BuildQuote can read and organise any format.
+              Photos, PDFs, CSVs — we'll sort it out.
             </p>
           </button>
 
@@ -244,11 +248,11 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
           </div>
 
           <p className="text-text-secondary text-sm font-semibold leading-relaxed">
-            Type or outline the materials you need
+            Type what you need while you're still on site.
           </p>
 
           <p className="text-text-muted text-sm mt-2 font-medium leading-relaxed">
-            Good for quick RFQs without a file.
+            No file? No worries.
           </p>
         </button>
 
@@ -263,14 +267,14 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
             Browse manufacturer systems
           </h3>
 
-          <img src="/rfq/system_components.jpeg" alt="External cladding system example" className="mt-4 mb-4 sm:mt-6 sm:mb-6 block w-full h-36 sm:h-48 object-contain rounded-lg shadow-[0_10px_18px_rgba(0,0,0,0.08)]" />
+          <img src="/rfq/system_components.jpeg" alt="External cladding system example" className="mt-4 mb-4 sm:mt-6 sm:mb-6 block w-full h-44 sm:h-56 object-contain rounded-lg shadow-[0_10px_18px_rgba(0,0,0,0.08)]" />
 
           <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
-            Pick from cladding, roofing, and framing systems with all components included
+            Popular W.A. building systems.
           </p>
 
           <p className="text-text-muted text-sm mt-2 font-medium leading-relaxed">
-            Nothing to type — just select what you need.
+            Just tick what you need.
           </p>
         </button>
       </div>
