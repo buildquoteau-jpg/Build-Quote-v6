@@ -123,19 +123,19 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
   const hasFiles = files.length > 0
 
   const baseCardClass =
-    'group rounded-2xl border-2 bg-white p-5 sm:p-5 text-left transition-all duration-200 shadow-[0_8px_20px_rgba(24,93,122,0.06)] hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(24,93,122,0.10)] focus:outline-none focus:ring-2 focus:ring-[rgba(24,93,122,0.18)]'
+    'group rounded-2xl border-2 bg-white p-4 sm:p-5 text-left transition-all duration-200 shadow-[0_8px_20px_rgba(24,93,122,0.06)] hover:-translate-y-0.5 hover:shadow-[0_12px_28px_rgba(24,93,122,0.10)] focus:outline-none focus:ring-2 focus:ring-[rgba(24,93,122,0.18)]'
 
   const iconClass =
     'mb-4 flex h-12 w-12 items-center justify-center rounded-2xl border-2 border-[rgba(24,93,122,0.16)] bg-[rgba(24,93,122,0.03)] text-heading text-xl font-bold shadow-[0_6px_14px_rgba(24,93,122,0.06)]'
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-4 sm:gap-6">
       <div className="mx-auto max-w-2xl text-center">
-        <h2 className="text-heading text-3xl sm:text-4xl font-extrabold tracking-tight leading-tight">
-          Create your RFQ
+        <h2 className="text-heading text-2xl sm:text-4xl font-extrabold tracking-tight leading-tight">
+          Get prices on your materials
         </h2>
-        <p className="text-text-secondary text-base sm:text-lg mt-3 font-semibold leading-relaxed">
-          Choose how you want to start
+        <p className="text-text-secondary text-sm sm:text-lg mt-2 sm:mt-3 font-semibold leading-relaxed">
+          Send a quote request to your supplier in minutes
         </p>
       </div>
 
@@ -157,8 +157,9 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
             }}
             className="block w-full text-left"
           >
-            <div className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] mb-1.5">
-              OPTION 1
+            <div className="flex items-center gap-2 mb-1.5">
+              <div className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)]">OPTION 1</div>
+              <span className="text-[10px] tracking-wide font-bold text-white bg-brand px-2 py-0.5 rounded-full uppercase">Most popular</span>
             </div>
 
             <h3 className="text-heading text-xl font-extrabold tracking-tight leading-tight">
@@ -166,7 +167,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
             </h3>
 
             
-<img src="/rfq/handwritten-roof-note.jpeg" alt="Example handwritten materials list" className="mt-6 mb-6 block w-full h-52 sm:h-48 object-contain rounded-lg shadow-[0_10px_18px_rgba(0,0,0,0.08)]" />
+<img src="/rfq/handwritten-roof-note.jpeg" alt="Example handwritten materials list" className="mt-4 mb-4 sm:mt-6 sm:mb-6 block w-full h-36 sm:h-48 object-contain rounded-lg shadow-[0_10px_18px_rgba(0,0,0,0.08)]" />
 
             <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
               A photo of your handwritten list · A PDF of your BOM · A takeoff CSV
@@ -217,38 +218,16 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
 
         <button
           type="button"
-          onClick={handleBrowseManufacturerComponents}
+          onClick={onSkip}
           className={`${baseCardClass} border-border hover:border-heading`}
         >
 
           <div className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] mb-1.5">OPTION 2</div>
 <h3 className="text-heading text-xl font-extrabold tracking-tight leading-tight ">
-            Browse manufacturer systems
-          </h3>
-
-          <img src="/rfq/system_components.jpeg" alt="External cladding system example" className="mt-6 mb-6 block w-full h-52 sm:h-48 object-contain rounded-lg shadow-[0_10px_18px_rgba(0,0,0,0.08)]" />
-
-          <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
-            Select complete product systems and components
-          </p>
-
-          <p className="text-text-muted text-sm mt-4 font-medium leading-relaxed">
-            Best when you want structured systems.
-          </p>
-        </button>
-
-        <button
-          type="button"
-          onClick={onSkip}
-          className={`${baseCardClass} border-border hover:border-heading`}
-        >
-
-          <div className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] mb-1.5">OPTION 3</div>
-<h3 className="text-heading text-xl font-extrabold tracking-tight leading-tight ">
             Add items manually
           </h3>
 
-          <div className="mt-5 mb-4 rounded-xl border border-border bg-surface-subtle p-3 pointer-events-none">
+          <div className="mt-3 mb-3 sm:mt-5 sm:mb-4 rounded-xl border border-border bg-surface-subtle p-3 pointer-events-none">
             <div className="flex flex-col gap-2">
               <div className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-primary overflow-hidden whitespace-nowrap">
                 <span className="bq-typing-line1">Reinforcing mesh</span>
@@ -270,6 +249,28 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
 
           <p className="text-text-muted text-sm mt-2 font-medium leading-relaxed">
             Good for quick RFQs without a file.
+          </p>
+        </button>
+
+        <button
+          type="button"
+          onClick={handleBrowseManufacturerComponents}
+          className={`${baseCardClass} border-border hover:border-heading`}
+        >
+
+          <div className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] mb-1.5">OPTION 3</div>
+<h3 className="text-heading text-xl font-extrabold tracking-tight leading-tight ">
+            Browse manufacturer systems
+          </h3>
+
+          <img src="/rfq/system_components.jpeg" alt="External cladding system example" className="mt-4 mb-4 sm:mt-6 sm:mb-6 block w-full h-36 sm:h-48 object-contain rounded-lg shadow-[0_10px_18px_rgba(0,0,0,0.08)]" />
+
+          <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
+            Pick from cladding, roofing, and framing systems with all components included
+          </p>
+
+          <p className="text-text-muted text-sm mt-2 font-medium leading-relaxed">
+            Nothing to type — just select what you need.
           </p>
         </button>
       </div>
