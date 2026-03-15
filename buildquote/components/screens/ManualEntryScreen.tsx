@@ -248,7 +248,7 @@ export default function ManualEntryScreen({
           ← Back
         </Button>
         <Button onClick={onNext} disabled={!hasAtLeastOneNamedItem} className={`flex-1 py-3 transition-all duration-200 ${items.filter(i => i.name.trim() !== '').length >= 2 ? '' : 'opacity-60'}`}>
-          Review RFQ →
+          <span className="text-white font-bold">Review RFQ →</span>
         </Button>
       </div>
     </div>

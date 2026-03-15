@@ -169,13 +169,11 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
             
 <img src="/rfq/handwritten-roof-note.jpeg" alt="Example handwritten materials list" className="mt-4 mb-2 sm:mt-6 sm:mb-3 block w-[calc(100%+2rem)] -mx-4 h-44 sm:h-56 object-cover rounded-none shadow-none" />
 
-            <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
             <div className="flex flex-wrap gap-2 mt-3">
               <span className="text-xs font-bold text-heading bg-[rgba(24,93,122,0.08)] px-2.5 py-1 rounded-full">Handwritten list</span>
               <span className="text-xs font-bold text-heading bg-[rgba(24,93,122,0.08)] px-2.5 py-1 rounded-full">PDF / BOM</span>
               <span className="text-xs font-bold text-heading bg-[rgba(24,93,122,0.08)] px-2.5 py-1 rounded-full">Takeoff CSV</span>
             </div>
-            </p>
 
             <p className="text-text-muted text-sm mt-2 font-medium leading-relaxed">
               Photos, PDFs, CSVs — we'll sort it out.
