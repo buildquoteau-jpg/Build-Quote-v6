@@ -108,9 +108,9 @@ export default function ManualEntryScreen({
       {/* Mobile card layout */}
       <div className="md:hidden flex flex-col gap-3">
         {items.map((item, index) => (
-          <div key={item.id} className="rounded-2xl border border-border bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-4">
+          <div key={item.id} className="rounded-2xl border border-border border-l-0 bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-4">
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Item {index + 1}</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-navy border-b-2 border-teal pb-0.5">Item {index + 1}</span>
               <button
                 onClick={() => removeRow(item.id)}
                 className="h-8 w-8 rounded-lg border border-border text-text-muted hover:text-error hover:border-error-border hover:bg-error-bg transition-colors text-sm"
@@ -222,21 +222,21 @@ export default function ManualEntryScreen({
       <div className="flex flex-col sm:flex-row gap-3">
         <button
           onClick={addRow}
-          className="sm:flex-1 rounded-2xl border border-border bg-white hover:bg-surface-subtle px-4 py-3.5 text-text-primary text-sm font-semibold transition-colors"
+          className="sm:flex-1 rounded-2xl border-2 border-heading/20 border-l-[3px] border-l-teal ring-1 ring-inset ring-heading/10 bg-white hover:bg-[rgba(111,236,204,0.06)] hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(24,93,122,0.10)] px-4 py-3.5 text-heading text-sm font-bold transition-all duration-200"
           type="button"
         >
           + Add another item
         </button>
         <button
           onClick={handleBrowseManufacturerSystems}
-          className="sm:flex-1 rounded-2xl border border-border bg-white hover:bg-surface-subtle px-4 py-3.5 text-text-primary text-sm font-semibold transition-colors"
+          className="sm:flex-1 rounded-2xl border-2 border-heading/20 border-l-[3px] border-l-teal ring-1 ring-inset ring-heading/10 bg-white hover:bg-[rgba(111,236,204,0.06)] hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(24,93,122,0.10)] px-4 py-3.5 text-heading text-sm font-bold transition-all duration-200"
           type="button"
         >
           Browse manufacturer systems
         </button>
         <button
           onClick={onUploadList}
-          className="sm:flex-1 rounded-2xl border border-border bg-white hover:bg-surface-subtle px-4 py-3.5 text-text-primary text-sm font-semibold transition-colors"
+          className="sm:flex-1 rounded-2xl border-2 border-heading/20 border-l-[3px] border-l-teal ring-1 ring-inset ring-heading/10 bg-white hover:bg-[rgba(111,236,204,0.06)] hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(24,93,122,0.10)] px-4 py-3.5 text-heading text-sm font-bold transition-all duration-200"
           type="button"
         >
           Upload a list
@@ -247,7 +247,7 @@ export default function ManualEntryScreen({
         <Button variant="secondary" onClick={onBack} className="flex-1 py-3">
           ← Back
         </Button>
-        <Button onClick={onNext} disabled={!hasAtLeastOneNamedItem} className="flex-1 py-3">
+        <Button onClick={onNext} disabled={!hasAtLeastOneNamedItem} className={`flex-1 py-3 transition-all duration-200 ${items.filter(i => i.name.trim() !== '').length >= 2 ? '' : 'opacity-60'}`}>
           Review RFQ →
         </Button>
       </div>

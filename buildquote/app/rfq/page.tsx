@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react'
 import { getOrCreateDraft } from '@/lib/rfqDraft'
 import TopBar from '@/components/ui/TopBar'
 import UploadScreen from '@/components/screens/UploadScreen'
+import ManualEntryScreen from '@/components/screens/ManualEntryScreen'
 import RFQScreen from '@/components/screens/RFQScreen'
 import SendScreen from '@/components/screens/SendScreen'
 import SuccessScreen from '@/components/screens/SuccessScreen'
@@ -12,6 +13,28 @@ function generateRFQId() {
   const year = new Date().getFullYear()
   const num = Math.floor(1000 + Math.random() * 9000)
   return `RFQ-${year}-${num}`
+}
+
+function mergeItems(existing: LineItem[], incoming: LineItem[]) {
+  const seen = new Set<string>()
+  const merged: LineItem[] = []
+
+  for (const item of [...existing, ...incoming]) {
+    const key = [
+      item.name || '',
+      item.sku || '',
+      item.productId || '',
+      item.desc || '',
+      item.uom || '',
+      item.qty || '',
+    ].join('|')
+
+    if (seen.has(key)) continue
+    seen.add(key)
+    merged.push(item)
+  }
+
+  return merged
 }
 
 const defaultPayload: Omit<RFQPayload, 'rfqId'> = {
@@ -27,51 +50,44 @@ const defaultPayload: Omit<RFQPayload, 'rfqId'> = {
 }
 
 export default function RFQPage() {
-  const [step, setStep] = useState<1 | 2 | 3 | 4>(1)
+  const [step, setStep] = useState<1 | 2 | 3 | 4 | 5>(1)
   const [items, setItems] = useState<LineItem[]>([])
   const [payload, setPayload] = useState<Omit<RFQPayload, 'rfqId'>>(defaultPayload)
   const [rfqId, setRfqId] = useState('')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
 
-  useEffect(() => { window.scrollTo(0, 0) }, [step])
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [step])
 
   useEffect(() => {
     const existingDraft = new URLSearchParams(window.location.search).get('draft')
     if (existingDraft) return
 
-    getOrCreateDraft()
-      .then((id) => {
-        const url = new URL(window.location.href)
-        url.searchParams.set('draft', id)
-        window.history.replaceState({}, '', url)
-      })
-      .catch(console.error)
+    getOrCreateDraft().catch(console.error)
   }, [])
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
 
-    // Prefill supplier from directory
     const supplierName = params.get('supplier') || ''
     const supplierEmail = ''
     if (supplierName || supplierEmail) {
-      setPayload(p => ({
+      setPayload((p) => ({
         ...p,
         supplier: {
           ...p.supplier,
           supplierName,
           supplierEmail,
-        }
+        },
       }))
     }
 
-    // Prefill items from manufacturer portal — items arrive already shaped as LineItem
     const itemsParam = params.get('items')
     if (itemsParam) {
       try {
         const parsed: LineItem[] = JSON.parse(decodeURIComponent(itemsParam))
-        // Ensure every item has a unique id in case it's missing
         const withIds: LineItem[] = parsed.map((item: any) => ({
           id: item.id || crypto.randomUUID(),
           name: item.name || '',
@@ -89,10 +105,13 @@ export default function RFQPage() {
           coverage_m2: item.coverage_m2 ?? null,
           weight_kg: item.weight_kg ?? null,
         }))
-        setItems(withIds)
-        setPayload(p => ({ ...p, items: withIds }))
-        // Skip straight to review screen if items are prefilled
-        setStep(2)
+
+        setItems((prev) => {
+          const merged = mergeItems(prev, withIds)
+          setPayload((p) => ({ ...p, items: merged }))
+          return merged
+        })
+        setStep(3)
       } catch (e) {
         console.error('Failed to parse items from URL', e)
       }
@@ -100,14 +119,13 @@ export default function RFQPage() {
   }, [])
 
   const handleParsed = (parsed: LineItem[]) => {
-    setItems(parsed)
-    setPayload(p => ({ ...p, items: parsed }))
-    setStep(2)
+    const merged = mergeItems(items, parsed)
+    setItems(merged)
+    setPayload((p) => ({ ...p, items: merged }))
+    setStep(3)
   }
 
-  const handleSkip = () => {
-    setItems([])
-    setPayload(p => ({ ...p, items: [] }))
+  const handleManualEntry = () => {
     setStep(2)
   }
 
@@ -130,7 +148,7 @@ export default function RFQPage() {
       }
 
       setRfqId(id)
-      setStep(4)
+      setStep(5)
     } catch (e) {
       const msg = e instanceof Error ? e.message : 'Something went wrong sending the RFQ.'
       setSendError(msg)
@@ -162,10 +180,14 @@ export default function RFQPage() {
           coverage_m2: row.coverage_m2 ?? null,
           weight_kg: row.weight_kg ?? null,
         }))
+
         if (mapped.length) {
-          setItems(mapped)
-          setPayload(p => ({ ...p, items: mapped }))
-          setStep(2)
+          setItems((prev) => {
+            const merged = mergeItems(prev, mapped)
+            setPayload((p) => ({ ...p, items: merged }))
+            return merged
+          })
+          setStep(3)
         }
       } catch (e) {
         console.error('draft load failed', e)
@@ -173,6 +195,7 @@ export default function RFQPage() {
     }
     loadDraftItems()
   }, [])
+
   const handleReset = () => {
     setStep(1)
     setItems([])
@@ -185,31 +208,47 @@ export default function RFQPage() {
     <div className="min-h-screen bg-page text-text-primary">
       <TopBar currentStep={step} />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
-        {step === 1 && (
-          <UploadScreen
-            onNext={handleParsed}
-            onSkip={handleSkip}
-          />
-        )}
+        {step === 1 && <UploadScreen onNext={handleParsed} onSkip={handleManualEntry} />}
+
         {step === 2 && (
-          <RFQScreen
+          <ManualEntryScreen
             items={items}
-            onChange={setItems}
+            onChange={(nextItems) => {
+              setItems(nextItems)
+              setPayload((p) => ({ ...p, items: nextItems }))
+            }}
             onBack={() => setStep(1)}
             onNext={() => setStep(3)}
+            onUploadList={() => setStep(1)}
           />
         )}
+
         {step === 3 && (
+          <RFQScreen
+            items={items}
+            onChange={(nextItems) => {
+              setItems(nextItems)
+              setPayload((p) => ({ ...p, items: nextItems }))
+            }}
+            onBack={() => setStep(1)}
+            onNext={() => setStep(4)}
+            onManualEntry={() => setStep(2)}
+            onUploadList={() => setStep(1)}
+          />
+        )}
+
+        {step === 4 && (
           <SendScreen
             rfqPayload={{ ...payload, items }}
             onChange={setPayload}
-            onBack={() => setStep(2)}
+            onBack={() => setStep(3)}
             onSend={handleSend}
             sending={sending}
             sendError={sendError}
           />
         )}
-        {step === 4 && (
+
+        {step === 5 && (
           <SuccessScreen
             rfqId={rfqId}
             payload={{ ...payload, items, rfqId }}
