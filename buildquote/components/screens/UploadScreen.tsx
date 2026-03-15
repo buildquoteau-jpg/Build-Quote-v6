@@ -244,15 +244,31 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
         >
 
           <div className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] mb-1.5">OPTION 3</div>
-<h3 className="text-heading text-xl font-extrabold tracking-tight leading-tight max-w-[13ch]">
+<h3 className="text-heading text-xl font-extrabold tracking-tight leading-tight ">
             Add items manually
           </h3>
 
-          <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
+          <div className="mt-5 mb-4 rounded-xl border border-border bg-surface-subtle p-3 pointer-events-none">
+            <div className="flex flex-col gap-2">
+              <div className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-primary overflow-hidden whitespace-nowrap">
+                <span className="bq-typing-line1">Reinforcing mesh</span>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-primary overflow-hidden whitespace-nowrap">
+                  <span className="bq-typing-line2">SL82 2.4 x 6m</span>
+                </div>
+                <div className="rounded-lg border border-border bg-white px-3 py-2 text-sm text-text-muted overflow-hidden whitespace-nowrap">
+                  <span className="bq-typing-line3">Qty: 12</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <p className="text-text-secondary text-sm font-semibold leading-relaxed">
             Type or outline the materials you need
           </p>
 
-          <p className="text-text-muted text-sm mt-4 font-medium leading-relaxed">
+          <p className="text-text-muted text-sm mt-2 font-medium leading-relaxed">
             Good for quick RFQs without a file.
           </p>
         </button>
@@ -298,6 +314,38 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
           58% { transform: scale(0.92); }
           66% { transform: scale(1); }
           100% { transform: scale(1); }
+        }
+
+        .bq-typing-line1, .bq-typing-line2, .bq-typing-line3 {
+          display: inline-block;
+          overflow: hidden;
+          white-space: nowrap;
+          border-right: 2px solid var(--color-navy);
+          animation: bqTyping 2.4s steps(20, end) infinite alternate, bqBlink 0.6s step-end infinite;
+        }
+        .bq-typing-line1 {
+          max-width: 0;
+          animation: bqTypeIn 5s ease-out 0s infinite;
+        }
+        .bq-typing-line2 {
+          max-width: 0;
+          animation: bqTypeIn 5s ease-out 2.2s infinite;
+        }
+        .bq-typing-line3 {
+          max-width: 0;
+          animation: bqTypeIn 5s ease-out 3.8s infinite;
+        }
+
+        @keyframes bqTypeIn {
+          0% { max-width: 0; border-right-color: var(--color-navy); }
+          40% { max-width: 200px; border-right-color: var(--color-navy); }
+          60% { max-width: 200px; border-right-color: var(--color-navy); }
+          80% { max-width: 200px; border-right-color: transparent; }
+          100% { max-width: 200px; border-right-color: transparent; }
+        }
+
+        @keyframes bqBlink {
+          50% { border-right-color: transparent; }
         }
 
         @keyframes bqCameraFlash {
