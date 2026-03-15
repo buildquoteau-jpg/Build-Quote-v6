@@ -167,7 +167,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
             </h3>
 
             
-<img src="/rfq/handwritten-roof-note.jpeg" alt="Example handwritten materials list" className="mt-4 mb-4 sm:mt-6 sm:mb-6 block w-[calc(100%+2rem)] -mx-4 h-44 sm:h-56 object-cover rounded-none shadow-none" />
+<img src="/rfq/handwritten-roof-note.jpeg" alt="Example handwritten materials list" className="mt-4 mb-2 sm:mt-6 sm:mb-3 block w-[calc(100%+2rem)] -mx-4 h-44 sm:h-56 object-cover rounded-none shadow-none" />
 
             <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
             <div className="flex flex-wrap gap-2 mt-3">
@@ -267,14 +267,14 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
             Browse manufacturer systems
           </h3>
 
-          <img src="/rfq/system_components.jpeg" alt="External cladding system example" className="mt-4 mb-4 sm:mt-6 sm:mb-6 block w-full h-44 sm:h-56 object-contain rounded-lg shadow-[0_10px_18px_rgba(0,0,0,0.08)]" />
+          <img src="/rfq/system_components.jpeg" alt="External cladding system example" className="mt-4 mb-2 sm:mt-6 sm:mb-3 block w-full h-44 sm:h-56 object-contain rounded-lg shadow-[0_10px_18px_rgba(0,0,0,0.08)]" />
 
           <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
             Popular W.A. building systems.
           </p>
 
           <p className="text-text-muted text-sm mt-2 font-medium leading-relaxed">
-            Just tick what you need.
+            Tick what you need — done.
           </p>
         </button>
       </div>
