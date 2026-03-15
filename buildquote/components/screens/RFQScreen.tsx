@@ -1,66 +1,28 @@
 'use client'
+import { useState } from 'react'
 import Button from '../ui/Button'
 import { LineItem } from '@/lib/types'
+import { getOrCreateDraft } from '@/lib/rfqDraft'
 
 interface RFQScreenProps {
   items: LineItem[]
   onChange: (items: LineItem[]) => void
   onBack: () => void
   onNext: () => void
+  onManualEntry: () => void
+  onUploadList: () => void
 }
 
-function blankItem(): LineItem {
-  return {
-    id: crypto.randomUUID(),
-    name: '',
-    sku: '',
-    productId: '',
-    desc: '',
-    uom: '',
-    qty: '',
-    confidence: 'high',
-    length_mm: null,
-    width_mm: null,
-    thickness_mm: null,
-    height_mm: null,
-    diameter_mm: null,
-    coverage_m2: null,
-    weight_kg: null,
-  }
-}
+export default function RFQScreen({
+  items,
+  onChange,
+  onBack,
+  onNext,
+  onManualEntry,
+  onUploadList,
+}: RFQScreenProps) {
+  const [error, setError] = useState('')
 
-function formatNumber(value: number | string | null | undefined) {
-  if (value === null || value === undefined || value === '') return ''
-  const num = Number(value)
-  if (Number.isNaN(num)) return String(value)
-  return Number.isInteger(num) ? String(num) : String(num)
-}
-
-function buildSpecSummary(item: LineItem) {
-  const parts: string[] = []
-
-  const dims = [item.length_mm, item.width_mm, item.thickness_mm].filter(
-    (v) => v !== null && v !== undefined && v !== ''
-  ) as Array<number | string>
-
-  if (dims.length >= 2) {
-    parts.push(`${dims.map(formatNumber).join(' × ')} mm`)
-  } else if (item.diameter_mm !== null && item.diameter_mm !== undefined && item.diameter_mm !== '') {
-    parts.push(`${formatNumber(item.diameter_mm)} mm dia`)
-  }
-
-  if (item.coverage_m2 !== null && item.coverage_m2 !== undefined && item.coverage_m2 !== '') {
-    parts.push(`${formatNumber(item.coverage_m2)} m²`)
-  }
-
-  if (item.weight_kg !== null && item.weight_kg !== undefined && item.weight_kg !== '') {
-    parts.push(`${formatNumber(item.weight_kg)} kg`)
-  }
-
-  return parts.join(' · ')
-}
-
-export default function RFQScreen({ items, onChange, onBack, onNext }: RFQScreenProps) {
   const update = (id: string, field: keyof LineItem, value: string) => {
     onChange(
       items.map((item) =>
@@ -77,7 +39,15 @@ export default function RFQScreen({ items, onChange, onBack, onNext }: RFQScreen
 
   const remove = (id: string) => onChange(items.filter((item) => item.id !== id))
 
-  const addManual = () => onChange([...items, blankItem()])
+  const handleBrowseManufacturerSystems = async () => {
+    try {
+      setError('')
+      const draft = await getOrCreateDraft()
+      window.open('https://mfp.buildquote.com.au/?draft=' + draft, '_blank')
+    } catch (err: any) {
+      setError(err?.message || 'Could not open Manufacturer Components.')
+    }
+  }
 
   const lowCount = items.filter((i) => i.confidence === 'low').length
 
@@ -103,7 +73,46 @@ export default function RFQScreen({ items, onChange, onBack, onNext }: RFQScreen
         )}
       </div>
 
-      <div className="rounded-2xl border border-border bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] overflow-hidden">
+      {error && (
+        <div className="rounded-2xl border-2 border-error-border bg-error-bg px-4 py-3">
+          <p className="text-error text-sm font-semibold">{error}</p>
+        </div>
+      )}
+
+      {/* Mobile card layout */}
+      <div className="md:hidden flex flex-col gap-3">
+        {items.length === 0 ? (
+          <div className="rounded-2xl border border-border bg-white p-4 text-sm text-text-muted">No items found yet.</div>
+        ) : (
+          items.map((item, index) => (
+            <div key={item.id} className="rounded-2xl border border-border bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-4">
+              <div className="flex items-center justify-between mb-3">
+                <span className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Item {index + 1}</span>
+                <button
+                  onClick={() => remove(item.id)}
+                  className="h-8 w-8 rounded-lg border border-border text-text-muted hover:text-error hover:border-error-border hover:bg-error-bg transition-colors text-sm"
+                  aria-label={`Remove line item ${index + 1}`}
+                  type="button"
+                >
+                  ×
+                </button>
+              </div>
+              <div className="flex flex-col gap-2.5">
+                <input value={item.name} onChange={(e) => update(item.id, 'name', e.target.value)} placeholder="Product name" className={inputClass} />
+                <input value={item.desc} onChange={(e) => update(item.id, 'desc', e.target.value)} placeholder="Specs / description" className={inputClass} />
+                <div className="grid grid-cols-3 gap-2">
+                  <input value={item.sku} onChange={(e) => update(item.id, 'sku', e.target.value)} placeholder="SKU" className={compactInputClass} />
+                  <input value={item.uom} onChange={(e) => update(item.id, 'uom', e.target.value)} placeholder="UOM" className={compactInputClass} />
+                  <input value={item.qty} onChange={(e) => update(item.id, 'qty', e.target.value)} placeholder="Qty" className={compactInputClass} />
+                </div>
+              </div>
+            </div>
+          ))
+        )}
+      </div>
+
+      {/* Desktop table layout */}
+      <div className="hidden md:block rounded-2xl border border-border bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="overflow-x-auto">
           <div className="min-w-[980px]">
             <div className="grid grid-cols-[90px_2.3fr_1.6fr_1fr_0.9fr_0.8fr_52px] gap-3 border-b border-border bg-surface-subtle px-4 py-3">
@@ -117,7 +126,7 @@ export default function RFQScreen({ items, onChange, onBack, onNext }: RFQScreen
             </div>
 
             {items.length === 0 ? (
-              <div className="px-4 py-6 text-sm text-text-muted">No items found.</div>
+              <div className="px-4 py-6 text-sm text-text-muted">No items found yet.</div>
             ) : (
               items.map((item, index) => (
                 <div
@@ -141,7 +150,7 @@ export default function RFQScreen({ items, onChange, onBack, onNext }: RFQScreen
 
                   <div className="flex items-center">
                     <input
-                      value={buildSpecSummary(item)}
+                      value={item.desc}
                       onChange={(e) => update(item.id, 'desc', e.target.value)}
                       placeholder="Specs"
                       className={inputClass}
@@ -194,16 +203,25 @@ export default function RFQScreen({ items, onChange, onBack, onNext }: RFQScreen
 
       <div className="flex flex-col sm:flex-row gap-3">
         <button
-          onClick={addManual}
+          onClick={onManualEntry}
           className="sm:flex-1 rounded-2xl border border-border bg-white hover:bg-surface-subtle px-4 py-3.5 text-text-primary text-sm font-semibold transition-colors"
+          type="button"
         >
-          + Add manual item
+          Add manual line items
         </button>
         <button
-          onClick={onBack}
+          onClick={handleBrowseManufacturerSystems}
           className="sm:flex-1 rounded-2xl border border-border bg-white hover:bg-surface-subtle px-4 py-3.5 text-text-primary text-sm font-semibold transition-colors"
+          type="button"
         >
-          + Add manufacturer system
+          Browse manufacturer systems
+        </button>
+        <button
+          onClick={onUploadList}
+          className="sm:flex-1 rounded-2xl border border-border bg-white hover:bg-surface-subtle px-4 py-3.5 text-text-primary text-sm font-semibold transition-colors"
+          type="button"
+        >
+          Upload a list
         </button>
       </div>
 
