@@ -1,5 +1,6 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
+import { getOrCreateDraft } from '@/lib/rfqDraft'
 import Button from '../ui/Button'
 import { LineItem } from '@/lib/types'
 
@@ -69,6 +70,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
     setError('')
 
     try {
+      const draftId = await getOrCreateDraft()
       const allItems: LineItem[] = []
 
       for (const file of files) {
@@ -78,29 +80,44 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
         const res = await fetch('/api/parse', { method: 'POST', body: formData })
         const data = await res.json()
 
+        if (!res.ok) {
+          throw new Error(data?.error || 'Parse failed')
+        }
+
         if (data.items) allItems.push(...data.items)
       }
 
+      if (allItems.length > 0) {
+        const saveRes = await fetch('/api/save-draft-items', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ draftId, items: allItems }),
+        })
+
+        const saveData = await saveRes.json().catch(() => ({}))
+
+        if (!saveRes.ok) {
+          throw new Error(saveData?.error || 'Failed to save draft items')
+        }
+      }
+
       onNext(allItems)
-    } catch {
-      setError('Something went wrong reading your file. Please try again.')
+    } catch (err: any) {
+      setError(err?.message || 'Something went wrong reading your file. Please try again.')
     } finally {
       setLoading(false)
     }
   }
 
-  const handleBrowseManufacturerComponents = () => {
-    const draft =
-      new URLSearchParams(window.location.search).get('draft') ||
-      localStorage.getItem('rfq_draft_id')
-
-    if (!draft) {
-      setError('Open Manufacturer Components from an RFQ draft so selected items can return here.')
-      return
+  const handleBrowseManufacturerComponents = async () => {
+    try {
+      setError('')
+      const draft = await getOrCreateDraft()
+      const url = 'https://mfp.buildquote.com.au/?draft=' + draft
+      window.open(url, '_blank')
+    } catch (err: any) {
+      setError(err?.message || 'Could not open Manufacturer Components.')
     }
-
-    const url = 'https://mfp.buildquote.com.au/?draft=' + draft
-    window.open(url, '_blank')
   }
 
   const hasFiles = files.length > 0
@@ -149,13 +166,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
             </h3>
 
             
-<div className="mt-5 mb-5 -mx-1 overflow-hidden rounded-xl border border-border-subtle bg-white shadow-[0_8px_20px_rgba(0,0,0,0.08)]">
-  <img
-    src="/rfq/handwritten-roof-note.jpeg"
-    alt="Example handwritten materials list"
-    className="block w-full h-auto object-contain"
-  />
-</div>
+<img src="/rfq/handwritten-roof-note.jpeg" alt="Example handwritten materials list" className="mt-6 mb-6 block w-full h-52 sm:h-48 object-contain rounded-lg shadow-[0_10px_18px_rgba(0,0,0,0.08)]" />
 
             <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
               A photo of your handwritten list · A PDF of your BOM · A takeoff CSV
@@ -211,9 +222,11 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
         >
 
           <div className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] mb-1.5">OPTION 2</div>
-<h3 className="text-heading text-xl font-extrabold tracking-tight leading-tight max-w-[16ch]">
+<h3 className="text-heading text-xl font-extrabold tracking-tight leading-tight ">
             Browse manufacturer systems
           </h3>
+
+          <img src="/rfq/system_components.jpeg" alt="External cladding system example" className="mt-6 mb-6 block w-full h-52 sm:h-48 object-contain rounded-lg shadow-[0_10px_18px_rgba(0,0,0,0.08)]" />
 
           <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
             Select complete product systems and components
