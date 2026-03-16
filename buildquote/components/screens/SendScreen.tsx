@@ -240,22 +240,22 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
           <Input label="ABN / ACN" value={rfqPayload.builder.abn} onChange={v => setBuilder('abn', v)} />
           <div className="flex flex-col sm:flex-row gap-3">
             <div className="flex flex-col gap-1 flex-1 min-w-0">
-              <label className="text-xs text-text-muted font-medium uppercase tracking-wide">Phone</label>
+              <label className="text-xs text-text-secondary font-semibold uppercase tracking-wide">Phone</label>
               <input
                 type="tel"
                 value={rfqPayload.builder.phone}
                 onChange={e => setBuilder('phone', e.target.value)}
-                className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary placeholder-text-disabled focus:outline-none focus:border-brand transition-colors w-full max-w-full box-border text-sm"
+                className="bg-white border border-border rounded-lg px-3 py-2 text-text-primary placeholder-text-muted focus:outline-none focus:border-brand transition-colors w-full max-w-full box-border text-sm"
               />
               {phoneError && <p className="text-error text-xs">{phoneError}</p>}
             </div>
             <div className="flex flex-col gap-1 flex-1 min-w-0">
-              <label className="text-xs text-text-muted font-medium uppercase tracking-wide">Email</label>
+              <label className="text-xs text-text-secondary font-semibold uppercase tracking-wide">Email</label>
               <input
                 type="email"
                 value={rfqPayload.builder.email}
                 onChange={e => setBuilder('email', e.target.value)}
-                className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary placeholder-text-disabled focus:outline-none focus:border-brand transition-colors w-full max-w-full box-border text-sm"
+                className="bg-white border border-border rounded-lg px-3 py-2 text-text-primary placeholder-text-muted focus:outline-none focus:border-brand transition-colors w-full max-w-full box-border text-sm"
               />
               {builderEmailError && <p className="text-error text-xs">{builderEmailError}</p>}
             </div>
@@ -265,13 +265,13 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
         <Card className="flex flex-col gap-3 w-full overflow-hidden">
           <SectionLabel>Supplier Details</SectionLabel>
           <div className="relative" ref={supplierInputRef}>
-            <label className="text-text-muted text-xs uppercase tracking-widest block mb-1">Supplier Name</label>
+            <label className="text-text-secondary text-xs font-semibold uppercase tracking-widest block mb-1">Supplier Name</label>
             <input
               value={supplierQuery}
               onChange={e => handleSupplierNameChange(e.target.value)}
               onFocus={() => { if (!selectedFromList && supplierQuery.length >= 2) setShowSuggestions(true) }}
               placeholder="Start typing a supplier name..."
-              className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary placeholder-text-muted focus:outline-none focus:border-brand w-full max-w-full box-border text-sm"
+              className="bg-white border border-border rounded-lg px-3 py-2 text-text-primary placeholder-text-muted focus:outline-none focus:border-brand w-full max-w-full box-border text-sm"
             />
             {showSuggestions && filteredSuppliers.length > 0 && (
               <div className="absolute z-50 left-0 right-0 top-full mt-1 bg-ui-dark border border-border-subtle rounded-lg overflow-hidden shadow-xl max-h-64 overflow-y-auto">
@@ -294,23 +294,23 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
           )}
           {isSandbox ? (
             <div className="flex flex-col gap-1">
-              <label className="text-text-muted text-xs uppercase tracking-widest block">Supplier Email</label>
+              <label className="text-text-secondary text-xs font-semibold uppercase tracking-widest block">Supplier Email</label>
               <input
                 value={rfqPayload.builder.email}
                 readOnly
-                className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-muted w-full max-w-full box-border text-sm"
+                className="bg-white border border-border rounded-lg px-3 py-2 text-text-secondary w-full max-w-full box-border text-sm"
               />
             </div>
           ) : (
             <Input label="Supplier Email" value={rfqPayload.supplier.supplierEmail} onChange={v => setSupplier('supplierEmail', v)} type="email" />
           )}
           <div className="flex flex-col gap-1">
-            <label className="text-text-muted text-xs uppercase tracking-widest block">Account Number</label>
+            <label className="text-text-secondary text-xs font-semibold uppercase tracking-widest block">Account Number</label>
             <input
               value={rfqPayload.supplier.accountNumber}
               onChange={e => setSupplier('accountNumber', e.target.value)}
               placeholder="Your trade account number if known"
-              className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary placeholder-text-muted focus:outline-none focus:border-brand w-full max-w-full box-border text-sm"
+              className="bg-white border border-border rounded-lg px-3 py-2 text-text-primary placeholder-text-muted focus:outline-none focus:border-brand w-full max-w-full box-border text-sm"
             />
           </div>
         </Card>
@@ -335,13 +335,13 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
             </>
           )}
           <div className="flex flex-col gap-1">
-            <label className="text-text-muted text-xs uppercase tracking-widest block">Date Required</label>
+            <label className="text-text-secondary text-xs font-semibold uppercase tracking-widest block">Date Required</label>
             <input
               type="date"
               min={today}
               value={rfqPayload.dateRequired}
               onChange={e => { const v = e.target.value; if (v >= today) onChange({ ...rfqPayload, dateRequired: v }) }}
-              className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-brand box-border text-sm w-48"
+              className="bg-white border border-border rounded-lg px-3 py-2 text-text-primary focus:outline-none focus:border-brand box-border text-sm w-48"
             />
             <p className="text-text-faint text-xs mt-1">Approximate date these goods will be required on site</p>
           </div>
@@ -354,7 +354,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
             onChange={e => onChange({ ...rfqPayload, message: e.target.value })}
             placeholder="Any additional notes for the supplier..."
             rows={4}
-            className="bg-ui border border-border-subtle rounded-lg px-3 py-2 text-text-primary placeholder-text-muted focus:outline-none focus:border-brand w-full max-w-full box-border resize-none text-sm"
+            className="bg-white border border-border rounded-lg px-3 py-2 text-text-primary placeholder-text-muted focus:outline-none focus:border-brand w-full max-w-full box-border resize-none text-sm"
           />
         </Card>
 
