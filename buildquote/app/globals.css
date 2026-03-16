@@ -15,7 +15,7 @@
 
   /* --- New BuildQuote palette --- */
   --color-navy:            #185D7A;
-  --color-teal:            #6FECCC;
+  --color-teal:            #4FCBB0;
 
   /* --- Page backgrounds (now light) --- */
   --color-page:            #ffffff;
@@ -51,7 +51,7 @@
   --color-heading:         #185D7A;
 
   /* --- Accent --- */
-  --color-accent:          #6FECCC;
+  --color-accent:          #4FCBB0;
 
   /* --- Semantic --- */
   --color-error:           #ef4444;
