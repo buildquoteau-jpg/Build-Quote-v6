@@ -7,7 +7,7 @@ import { getOrCreateDraft } from '@/lib/rfqDraft'
 interface RFQScreenProps {
   items: LineItem[]
   onChange: (items: LineItem[]) => void
-  onBack: () => void
+  onBack?: () => void
   onNext: () => void
   onManualEntry: () => void
   onUploadList: () => void

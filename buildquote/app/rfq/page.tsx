@@ -173,19 +173,6 @@ export default function RFQPage() {
             onUploadList={() => setStep(1)}
           />
         )}
-
-        {step === 3 && (
-          <RFQScreen
-            items={items}
-            onChange={(nextItems) => {
-              setItems(nextItems)
-              setPayload((p) => ({ ...p, items: nextItems }))
-            }}
-            /* onBack removed */
-            onNext={() => setStep(4)}
-            onManualEntry={() => setStep(2)}
-            onUploadList={() => setStep(1)}
-          />
         )}
 
         {step === 4 && (
