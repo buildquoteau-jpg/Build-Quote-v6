@@ -197,8 +197,8 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
                 </div>
               ))}
 
-              <Button onClick={handleParse} disabled={loading} className="w-full py-3 text-sm mt-1">
-                {loading ? 'Reading your list...' : 'Continue with upload →'}
+              <Button onClick={handleParse} disabled={loading} className="w-full py-3 text-sm mt-1 animate-[bqButtonPulse_2s_ease-in-out_infinite]">
+                {loading ? 'Reading your list...' : 'Read my list'}
               </Button>
             </div>
           )}
