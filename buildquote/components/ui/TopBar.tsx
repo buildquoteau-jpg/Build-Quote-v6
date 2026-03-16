@@ -21,7 +21,7 @@ export default function TopBar({ currentStep, onStepClick }: TopBarProps) {
             <span className="text-heading">Build</span>
             <span className="text-brand">Quote</span>
           </span>
-          <span className="text-text-secondary text-[10px] sm:text-xs leading-tight font-medium hidden sm:block">
+          <span className="text-text-secondary text-xs sm:text-sm leading-tight font-semibold ">
             Request for Quotation, Made Simple
           </span>
         </a>
@@ -29,8 +29,8 @@ export default function TopBar({ currentStep, onStepClick }: TopBarProps) {
           {steps.map(({ n, label }) => (
             <button
               type="button"
-              onClick={() => n < currentStep && onStepClick?.(n)}
-              disabled={n >= currentStep}
+              onClick={() => n !== currentStep && onStepClick?.(n)}
+              disabled={n === currentStep}
               key={n}
               className={`flex items-center justify-center gap-1 w-7 h-7 sm:w-auto sm:h-auto sm:px-2 sm:py-1 rounded-full text-xs font-medium transition-colors ${
                 n === currentStep
