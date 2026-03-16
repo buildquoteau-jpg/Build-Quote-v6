@@ -5,37 +5,113 @@ import ExcelJS from 'exceljs'
 
 const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
-const PROMPT = `You are a helpful assistant that extracts line items from any kind of list — materials lists, shopping lists, wish lists, handwritten notes, spreadsheets, or any document containing items with quantities.
+const PROMPT = `You extract structured line items from construction materials lists, takeoffs, builder notes, handwritten site lists, PDFs, spreadsheets, and photos.
 
-Extract EVERY item you can find, no matter what type of item it is.
+Priority:
+- Extract real purchasable construction items accurately
+- Keep product name separate from specs
+- Preserve useful dimensions, material, finish, and colour in desc
+- Ignore headings, instructions, and admin notes unless they clearly describe an item
 
-Rules:
-- Include EVERY item, even if quantities are vague (e.g. "approx 42", "maybe 2", "a couple")
-- Include items even if they are services, gift cards, cash amounts, or intangible items
-- Include ALL items regardless of category — construction materials, consumer goods, food, services, anything
-- Treat informal quantities as valid (e.g. "just get a box" = qty "1", "a couple" = qty "2", "heaps" = qty "10")
-- If quantity is uncertain, use the higher estimate
-- Skip notes, phone numbers, names, dates, and lines that are clearly not items
+Important rules:
+- Construction-focused parsing only
+- Prefer building-material interpretation over generic consumer-goods interpretation
+- Do NOT invent items
+- Do NOT merge unrelated lines into one item
+- Do NOT include section headings as items
+- Do NOT include people names, contact notes, dates, or reminder notes as items
+- Do NOT include instruction-only lines such as "check with Gary first", "Tony to confirm", "do not order yet", unless the same line also contains a real item
 - Skip crossed out or cancelled items
-- For cash or money items, put the amount in the qty field (e.g. qty "500", uom "dollars")
-- For services (e.g. "get my nails done"), set uom to "service"
-- For gift cards, set uom to "gift card"
-- Correct obvious spelling mistakes when extracting (e.g. "acrilic" → "acrylic nail set")
+- If an item is uncertain, still include it, but set confidence to "low"
+
+How to split fields:
+- "name" = short product name only, not the whole raw line
+- "desc" = specs/details only, such as size, thickness, profile, colour, finish, grade, material, diameter, gauge, treatment, pack details
+- "uom" = best unit of measure, such as EA, LM, m2, BAG, SHEET, BOX, ROLL, LENGTH
+- "qty" = quantity only, as a string
+
+Field rules:
+- Do NOT put SKU into desc
+- Do NOT put quantity into name
+- Do NOT put quantity into desc unless it is part of a pack size that matters
+- Keep name concise and trade-usable
+- Keep desc concise but specific
+- Correct obvious spelling mistakes only when clear
+
+For construction materials, prefer this structure:
+- Timber example:
+  raw: "90x45 MGP10 pine 6m x 48"
+  name: "MGP10 Pine"
+  desc: "90x45 • 6m"
+  uom: "LENGTH"
+  qty: "48"
+
+- Cladding example:
+  raw: "hardie linea 180mm x 210"
+  name: "Hardie Linea"
+  desc: "180mm"
+  uom: "EA"
+  qty: "210"
+
+- Plasterboard example:
+  raw: "gyprock 10mm standard sheets x 85"
+  name: "Gyprock Standard"
+  desc: "10mm"
+  uom: "SHEET"
+  qty: "85"
+
+- Fixings example:
+  raw: "framing nails 90x3.15 galv x 10 boxes"
+  name: "Framing Nails"
+  desc: "90x3.15 • galvanised"
+  uom: "BOX"
+  qty: "10"
+
+- Pipe example:
+  raw: "copper pipe 15mm x 6m lengths x 20"
+  name: "Copper Pipe"
+  desc: "15mm • 6m"
+  uom: "LENGTH"
+  qty: "20"
+
+Trade and heading rules:
+- Treat headings like BUILDING MATERIALS, PLUMBING, ELECTRICAL, FIXINGS as non-item section headings
+- Treat comments like "(check with Gary first)" or "(Tony to confirm)" as notes, not products
+- If a real item appears on the same line as a note, extract only the item and ignore the note
+
+Spec rules for desc:
+Include only useful specs such as:
+- length
+- width
+- depth
+- thickness
+- diameter
+- gauge
+- profile
+- grade
+- treatment
+- material
+- finish
+- texture
+- colour
+- pack type where relevant
 
 Confidence rules — set confidence to "low" if ANY of these apply:
-- Quantity is vague, estimated, or uncertain
-- Item name is incomplete or unclear
-- The line was hard to read or ambiguous
+- handwriting or scan is hard to read
+- quantity is estimated or unclear
+- product name is incomplete
+- units/specs are ambiguous
+- line may be a note rather than an item
 
 Return ONLY a raw JSON array. No markdown, no code fences, no explanation. First character must be [
 Each object must have exactly these keys:
-  "name"       - item name, cleaned up and spelled correctly e.g. "iPhone 17 Pink" or "H2 Framing Timber 190x35"
+  "name"       - short product name only
   "sku"        - supplier SKU if visible, else ""
   "productId"  - manufacturer ID if visible, else ""
-  "desc"       - full description including any colour, size, spec, or details mentioned
-  "uom"        - unit of measure: EA, LM, m2, BAG, SHEET, ROLL, BOX, service, gift card, dollars, etc
-  "qty"        - quantity as a string, use best estimate if vague e.g. "2" or "500"
-  "confidence" - "high" if item is clearly specified, "low" if uncertain in any way
+  "desc"       - specs/details only, not full raw line
+  "uom"        - unit of measure: EA, LM, m2, BAG, SHEET, ROLL, BOX, LENGTH, etc
+  "qty"        - quantity as a string
+  "confidence" - "high" if clear, "low" if uncertain
 Respond with ONLY the JSON array starting with [`
 
 const MAX_FILE_SIZE = 5 * 1024 * 1024
