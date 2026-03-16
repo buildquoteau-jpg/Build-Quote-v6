@@ -173,7 +173,6 @@ export default function RFQPage() {
             onUploadList={() => setStep(1)}
           />
         )}
-        )}
 
         {step === 4 && (
           <SendScreen
