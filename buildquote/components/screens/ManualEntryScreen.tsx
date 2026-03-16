@@ -7,7 +7,7 @@ import { getOrCreateDraft } from '@/lib/rfqDraft'
 interface ManualEntryScreenProps {
   items: LineItem[]
   onChange: (items: LineItem[]) => void
-  onBack: () => void
+  onBack?: () => void
   onNext: () => void
   onUploadList: () => void
 }
