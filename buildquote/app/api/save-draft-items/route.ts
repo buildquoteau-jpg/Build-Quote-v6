@@ -5,8 +5,14 @@ export async function POST(req: Request) {
   try {
     const { draftId, items } = await req.json();
 
-    if (!draftId || !Array.isArray(items) || items.length === 0) {
+    if (!draftId || !Array.isArray(items)) {
       return NextResponse.json({ error: "Missing draftId or items" }, { status: 400 });
+    }
+
+    // If empty items array, just clear the draft
+    if (items.length === 0) {
+      await supabase.from("rfq_draft_items").delete().eq("draft_id", draftId);
+      return NextResponse.json({ success: true });
     }
 
     const rows = items.map((item: any) => ({

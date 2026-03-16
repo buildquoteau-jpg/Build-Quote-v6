@@ -68,61 +68,12 @@ export default function RFQPage() {
     getOrCreateDraft().catch(console.error)
   }, [])
 
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search)
-
-    const supplierName = params.get('supplier') || ''
-    const supplierEmail = ''
-    if (supplierName || supplierEmail) {
-      setPayload((p) => ({
-        ...p,
-        supplier: {
-          ...p.supplier,
-          supplierName,
-          supplierEmail,
-        },
-      }))
-    }
-
-    const itemsParam = params.get('items')
-    if (itemsParam) {
-      try {
-        const parsed: LineItem[] = JSON.parse(decodeURIComponent(itemsParam))
-        const withIds: LineItem[] = parsed.map((item: any) => ({
-          id: item.id || crypto.randomUUID(),
-          name: item.name || '',
-          sku: item.sku || '',
-          productId: item.productId || '',
-          desc: item.desc || '',
-          uom: item.uom || '',
-          qty: item.qty ? String(item.qty) : '',
-          confidence: item.confidence || 'high',
-          length_mm: item.length_mm ?? null,
-          width_mm: item.width_mm ?? null,
-          thickness_mm: item.thickness_mm ?? null,
-          height_mm: item.height_mm ?? null,
-          diameter_mm: item.diameter_mm ?? null,
-          coverage_m2: item.coverage_m2 ?? null,
-          weight_kg: item.weight_kg ?? null,
-        }))
-
-        setItems((prev) => {
-          const merged = mergeItems(prev, withIds)
-          setPayload((p) => ({ ...p, items: merged }))
-          return merged
-        })
-        setStep(3)
-      } catch (e) {
-        console.error('Failed to parse items from URL', e)
-      }
-    }
-  }, [])
 
   const handleParsed = (parsed: LineItem[]) => {
     const merged = mergeItems(items, parsed)
     setItems(merged)
     setPayload((p) => ({ ...p, items: merged }))
-    setStep(3)
+    setStep(2)
   }
 
   const handleManualEntry = () => {
@@ -187,7 +138,7 @@ export default function RFQPage() {
             setPayload((p) => ({ ...p, items: merged }))
             return merged
           })
-          setStep(3)
+          setStep(2)
         }
       } catch (e) {
         console.error('draft load failed', e)
@@ -206,7 +157,7 @@ export default function RFQPage() {
 
   return (
     <div className="min-h-screen bg-page text-text-primary">
-      <TopBar currentStep={step} />
+      <TopBar currentStep={step} onStepClick={(s) => setStep(s as 1 | 2 | 3 | 4 | 5)} />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         {step === 1 && <UploadScreen onNext={handleParsed} onSkip={handleManualEntry} />}
 
@@ -217,8 +168,8 @@ export default function RFQPage() {
               setItems(nextItems)
               setPayload((p) => ({ ...p, items: nextItems }))
             }}
-            onBack={() => setStep(1)}
-            onNext={() => setStep(3)}
+            /* onBack removed */
+            onNext={() => setStep(4)}
             onUploadList={() => setStep(1)}
           />
         )}
@@ -230,7 +181,7 @@ export default function RFQPage() {
               setItems(nextItems)
               setPayload((p) => ({ ...p, items: nextItems }))
             }}
-            onBack={() => setStep(1)}
+            /* onBack removed */
             onNext={() => setStep(4)}
             onManualEntry={() => setStep(2)}
             onUploadList={() => setStep(1)}
@@ -241,7 +192,7 @@ export default function RFQPage() {
           <SendScreen
             rfqPayload={{ ...payload, items }}
             onChange={setPayload}
-            onBack={() => setStep(3)}
+            onBack={() => setStep(2)}
             onSend={handleSend}
             sending={sending}
             sendError={sendError}

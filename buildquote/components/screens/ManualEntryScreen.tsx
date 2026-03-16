@@ -32,6 +32,21 @@ function blankItem(): LineItem {
   }
 }
 
+function findDuplicates(items: LineItem[]): Set<string> {
+  const seen = new Map<string, string[]>()
+  for (const item of items) {
+    if (!item.name.trim()) continue
+    const key = [item.name.trim().toLowerCase(), item.sku?.trim().toLowerCase() || ''].join('|')
+    if (!seen.has(key)) seen.set(key, [])
+    seen.get(key)!.push(item.id)
+  }
+  const dupeIds = new Set<string>()
+  for (const ids of seen.values()) {
+    if (ids.length > 1) ids.forEach(id => dupeIds.add(id))
+  }
+  return dupeIds
+}
+
 export default function ManualEntryScreen({
   items,
   onChange,
@@ -40,6 +55,24 @@ export default function ManualEntryScreen({
   onUploadList,
 }: ManualEntryScreenProps) {
   const [error, setError] = useState('')
+  const duplicateIds = findDuplicates(items)
+
+  const handleClearAll = async () => {
+    if (!confirm('Clear all items and start over? This cannot be undone.')) return
+    onChange([blankItem()])
+    try {
+      const draftId = new URLSearchParams(window.location.search).get('draft')
+      if (draftId) {
+        await fetch('/api/save-draft-items', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ draftId, items: [] }),
+        })
+      }
+    } catch (e) {
+      console.error('Failed to clear draft', e)
+    }
+  }
 
   useEffect(() => {
     if (items.length === 0) {
@@ -97,6 +130,18 @@ export default function ManualEntryScreen({
         <p className="text-text-secondary text-sm sm:text-base font-medium leading-relaxed mt-3">
           Add product name, specs, and quantity.
         </p>
+        <div className="flex items-center gap-3 mt-3">
+          {duplicateIds.size > 0 && (
+            <div className="rounded-xl border-2 border-amber-300 bg-amber-50 px-3 py-2 text-amber-800 text-xs font-semibold flex-1">
+              ⚠️ Possible duplicates detected — check highlighted rows
+            </div>
+          )}
+          {items.length > 1 && items.some(i => i.name.trim()) && (
+            <button type="button" onClick={handleClearAll} className="text-xs text-error font-semibold hover:underline shrink-0">
+              Clear all & start over
+            </button>
+          )}
+        </div>
       </div>
 
       {error && (
@@ -151,7 +196,7 @@ export default function ManualEntryScreen({
               <div
                 key={item.id}
                 className={`grid grid-cols-[90px_2.3fr_1.6fr_1fr_0.9fr_0.8fr_52px] gap-3 px-4 py-3 ${
-                  index < items.length - 1 ? 'border-b border-border-subtle' : ''
+                  index < items.length - 1 ? 'border-b border-border-subtle' : ''} ${item.confidence === 'low' || duplicateIds.has(item.id) ? 'bg-amber-50 border-l-4 border-l-amber-400' : ''
                 }`}
               >
                 <div className="flex items-center">
@@ -225,30 +270,27 @@ export default function ManualEntryScreen({
           className="sm:flex-1 rounded-2xl border-2 border-heading/20 border-l-[3px] border-l-teal ring-1 ring-inset ring-heading/10 bg-white hover:bg-[rgba(111,236,204,0.06)] hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(24,93,122,0.10)] px-4 py-3.5 text-heading text-sm font-bold transition-all duration-200"
           type="button"
         >
-          + Add another item
+          <span className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] block">OPTION 1</span> Upload a list
         </button>
         <button
           onClick={handleBrowseManufacturerSystems}
           className="sm:flex-1 rounded-2xl border-2 border-heading/20 border-l-[3px] border-l-teal ring-1 ring-inset ring-heading/10 bg-white hover:bg-[rgba(111,236,204,0.06)] hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(24,93,122,0.10)] px-4 py-3.5 text-heading text-sm font-bold transition-all duration-200"
           type="button"
         >
-          Browse manufacturer systems
+          <span className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] block">OPTION 2</span> Browse manufacturer systems
         </button>
         <button
-          onClick={onUploadList}
+          onClick={addRow}
           className="sm:flex-1 rounded-2xl border-2 border-heading/20 border-l-[3px] border-l-teal ring-1 ring-inset ring-heading/10 bg-white hover:bg-[rgba(111,236,204,0.06)] hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(24,93,122,0.10)] px-4 py-3.5 text-heading text-sm font-bold transition-all duration-200"
           type="button"
         >
-          Upload a list
+          <span className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] block">OPTION 3</span> Add items manually
         </button>
       </div>
 
       <div className="flex gap-3 pt-1">
-        <Button variant="secondary" onClick={onBack} className="flex-1 py-3">
-          ← Back
-        </Button>
-        <Button onClick={onNext} disabled={!hasAtLeastOneNamedItem} className={`flex-1 py-3 transition-all duration-200 ${items.filter(i => i.name.trim() !== '').length >= 2 ? '' : 'opacity-60'}`}>
-          <span className="text-white font-bold">Review RFQ →</span>
+<Button onClick={onNext} disabled={!hasAtLeastOneNamedItem} className={`flex-1 py-3 transition-all duration-200 ${items.filter(i => i.name.trim() !== '').length >= 2 ? '' : 'opacity-60'}`}>
+          <span className="text-white font-bold">Continue — add quote details →</span>
         </Button>
       </div>
     </div>
