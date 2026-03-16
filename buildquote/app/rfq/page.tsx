@@ -56,10 +56,52 @@ export default function RFQPage() {
   const [rfqId, setRfqId] = useState('')
   const [sending, setSending] = useState(false)
   const [sendError, setSendError] = useState('')
+  const [draftLoaded, setDraftLoaded] = useState(false)
+  const [initialLoading, setInitialLoading] = useState(true)
 
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [step])
+
+  // Auto-save items to draft whenever they change
+  useEffect(() => {
+    if (!draftLoaded) return
+    if (items.length === 0) return
+    const timeout = setTimeout(async () => {
+      try {
+        const draftId = new URLSearchParams(window.location.search).get('draft')
+        if (!draftId) return
+        await fetch('/api/save-draft-items', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ draftId, items }),
+        })
+      } catch (e) {
+        console.error('Auto-save draft failed', e)
+      }
+    }, 1000)
+    return () => clearTimeout(timeout)
+  }, [items, draftLoaded])
+
+  // Auto-save items to draft whenever they change
+  useEffect(() => {
+    if (!draftLoaded) return
+    if (items.length === 0) return
+    const timeout = setTimeout(async () => {
+      try {
+        const draftId = new URLSearchParams(window.location.search).get('draft')
+        if (!draftId) return
+        await fetch('/api/save-draft-items', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ draftId, items }),
+        })
+      } catch (e) {
+        console.error('Auto-save draft failed', e)
+      }
+    }, 1000)
+    return () => clearTimeout(timeout)
+  }, [items, draftLoaded])
 
   useEffect(() => {
     const existingDraft = new URLSearchParams(window.location.search).get('draft')
@@ -140,8 +182,12 @@ export default function RFQPage() {
           })
           setStep(2)
         }
+        setDraftLoaded(true)
+        setInitialLoading(false)
       } catch (e) {
         console.error('draft load failed', e)
+        setDraftLoaded(true)
+        setInitialLoading(false)
       }
     }
     loadDraftItems()
@@ -159,6 +205,11 @@ export default function RFQPage() {
     <div className="min-h-screen bg-page text-text-primary">
       <TopBar currentStep={step} onStepClick={(s) => setStep(s as 1 | 2 | 3 | 4 | 5)} />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
+        {initialLoading ? (
+          <div className="flex items-center justify-center py-20">
+            <div className="text-text-secondary text-sm font-medium">Loading your quote...</div>
+          </div>
+        ) : (<>
         {step === 1 && <UploadScreen onNext={handleParsed} onSkip={handleManualEntry} />}
 
         {step === 2 && (
@@ -189,9 +240,9 @@ export default function RFQPage() {
           <SuccessScreen
             rfqId={rfqId}
             payload={{ ...payload, items, rfqId }}
-            onReset={handleReset}
           />
         )}
+        </>)}
       </div>
     </div>
   )
