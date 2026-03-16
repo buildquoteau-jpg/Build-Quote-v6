@@ -47,6 +47,16 @@ function findDuplicates(items: LineItem[]): Set<string> {
   return dupeIds
 }
 
+function buildSpecs(item: LineItem): string {
+  const parts: string[] = []
+  if (item.length_mm) parts.push(item.length_mm + 'mm L')
+  if (item.width_mm) parts.push(item.width_mm + 'mm W')
+  if (item.thickness_mm) parts.push(item.thickness_mm + 'mm T')
+  if (item.height_mm) parts.push(item.height_mm + 'mm H')
+  if (item.diameter_mm) parts.push(item.diameter_mm + 'mm dia')
+  return parts.length ? parts.join(' × ') : item.desc || ''
+}
+
 export default function ManualEntryScreen({
   items,
   onChange,
@@ -167,7 +177,7 @@ export default function ManualEntryScreen({
             </div>
             <div className="flex flex-col gap-2.5">
               <input value={item.name} onChange={(e) => update(item.id, 'name', e.target.value)} placeholder="Product name" className={inputClass} />
-              <input value={item.desc} onChange={(e) => update(item.id, 'desc', e.target.value)} placeholder="Specs / description" className={inputClass} />
+              <input value={buildSpecs(item) || item.desc} onChange={(e) => update(item.id, 'desc', e.target.value)} placeholder="Specs / description" className={inputClass} />
               <div className="grid grid-cols-3 gap-2">
                 <input value={item.sku} onChange={(e) => update(item.id, 'sku', e.target.value)} placeholder="SKU" className={compactInputClass} />
                 <input value={item.uom} onChange={(e) => update(item.id, 'uom', e.target.value)} placeholder="UOM" className={compactInputClass} />
@@ -182,7 +192,7 @@ export default function ManualEntryScreen({
       <div className="hidden md:block rounded-2xl border border-border bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="overflow-x-auto">
           <div className="min-w-[980px]">
-            <div className="grid grid-cols-[90px_2.3fr_1.6fr_1fr_0.9fr_0.8fr_52px] gap-3 border-b border-border bg-surface-subtle px-4 py-3">
+            <div className="grid grid-cols-[50px_2.5fr_2fr_0.8fr_0.7fr_0.6fr_40px] gap-3 border-b border-border bg-surface-subtle px-4 py-3">
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Line item</div>
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Product</div>
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Specs</div>
@@ -195,7 +205,7 @@ export default function ManualEntryScreen({
             {items.map((item, index) => (
               <div
                 key={item.id}
-                className={`grid grid-cols-[90px_2.3fr_1.6fr_1fr_0.9fr_0.8fr_52px] gap-3 px-4 py-3 ${
+                className={`grid grid-cols-[50px_2.5fr_2fr_0.8fr_0.7fr_0.6fr_40px] gap-3 px-4 py-3 ${
                   index < items.length - 1 ? 'border-b border-border-subtle' : ''} ${item.confidence === 'low' || duplicateIds.has(item.id) ? 'bg-amber-50 border-l-4 border-l-amber-400' : ''
                 }`}
               >
@@ -214,7 +224,7 @@ export default function ManualEntryScreen({
 
                 <div className="flex items-center">
                   <input
-                    value={item.desc}
+                    value={buildSpecs(item) || item.desc}
                     onChange={(e) => update(item.id, 'desc', e.target.value)}
                     placeholder="Specs"
                     className={inputClass}

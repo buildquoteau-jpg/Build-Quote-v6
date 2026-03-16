@@ -11,7 +11,7 @@ export default function Toggle({ value, onChange }: ToggleProps) {
           onClick={() => onChange(option)}
           className={`px-4 py-2 text-sm font-medium capitalize transition-colors ${
             value === option
-              ? 'bg-brand text-text-primary'
+              ? 'bg-brand text-white'
               : 'bg-ui text-text-muted hover:bg-ui-hover'
           }`}
         >

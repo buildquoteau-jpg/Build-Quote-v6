@@ -45,6 +45,43 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
   const [previewLoading, setPreviewLoading] = useState(false)
   const [previewError, setPreviewError] = useState('')
 
+  // Load saved builder details from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('bq_builder_details')
+      if (saved) {
+        const builder = JSON.parse(saved)
+        if (builder.builderName || builder.company || builder.phone || builder.email) {
+          onChange({
+            ...rfqPayload,
+            builder: {
+              ...rfqPayload.builder,
+              builderName: rfqPayload.builder.builderName || builder.builderName || '',
+              company: rfqPayload.builder.company || builder.company || '',
+              abn: rfqPayload.builder.abn || builder.abn || '',
+              phone: rfqPayload.builder.phone || builder.phone || '',
+              email: rfqPayload.builder.email || builder.email || '',
+            },
+          })
+        }
+      }
+    } catch (e) {
+      console.error('Failed to load builder details', e)
+    }
+  }, [])
+
+  // Save builder details to localStorage when they change
+  useEffect(() => {
+    try {
+      const { builderName, company, abn, phone, email } = rfqPayload.builder
+      if (builderName || company || phone || email) {
+        localStorage.setItem('bq_builder_details', JSON.stringify({ builderName, company, abn, phone, email }))
+      }
+    } catch (e) {
+      console.error('Failed to save builder details', e)
+    }
+  }, [rfqPayload.builder])
+
   const phoneError = validatePhone(rfqPayload.builder.phone)
   const builderEmailError = validateEmail(rfqPayload.builder.email)
 
@@ -187,7 +224,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
             <button
               onClick={() => { closePreview(); setShowConfirm(true) }}
               disabled={sending || !rfqPayload.builder.email}
-              className="flex-1 py-3 rounded-xl bg-brand hover:bg-brand-hover disabled:opacity-40 text-text-primary font-semibold text-sm transition-colors"
+              className="flex-1 py-3 rounded-xl bg-brand hover:bg-brand-hover disabled:opacity-40 text-white font-semibold text-sm transition-colors"
             >
               {sending ? 'Sending...' : 'Send RFQ →'}
             </button>
@@ -389,7 +426,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
               <button
                 onClick={() => { setShowConfirm(false); onSend() }}
                 disabled={!termsConfirmed || sending}
-                className="flex-1 bg-brand hover:bg-brand-hover disabled:opacity-40 disabled:cursor-not-allowed text-text-primary text-sm font-bold py-3 rounded-xl transition-colors"
+                className="flex-1 bg-brand hover:bg-brand-hover disabled:opacity-40 disabled:cursor-not-allowed text-white text-sm font-bold py-3 rounded-xl transition-colors"
               >
                 {sending ? 'Sending...' : 'Send Quote Request'}
               </button>

@@ -240,6 +240,7 @@ export default function RFQPage() {
           <SuccessScreen
             rfqId={rfqId}
             payload={{ ...payload, items, rfqId }}
+            onReset={handleReset}
           />
         )}
         </>)}
