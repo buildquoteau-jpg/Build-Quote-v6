@@ -85,8 +85,14 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
         }
 
         if (data.items) allItems.push(...data.items)
+      if (allItems.length === 0) {
+        throw new Error('We couldn\'t find any items in your file. Tips: make sure your list is clearly written, one item per line, with quantities if possible. Photos work best in good lighting with clear handwriting.')
+      }
       }
 
+      if (allItems.length === 0) {
+        throw new Error('We could not find any items in your file. Tips: make sure your list is clearly written with one item per line. Photos work best in good lighting with clear handwriting.')
+      }
       if (allItems.length > 0) {
         const saveRes = await fetch('/api/save-draft-items', {
           method: 'POST',
@@ -103,7 +109,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
 
       onNext(allItems)
     } catch (err: any) {
-      setError(err?.message || 'Something went wrong reading your file. Please try again.')
+      setError(err?.message || 'Something went wrong reading your file. Try a clearer photo or a different file format (PDF, CSV, or image).')
     } finally {
       setLoading(false)
     }
