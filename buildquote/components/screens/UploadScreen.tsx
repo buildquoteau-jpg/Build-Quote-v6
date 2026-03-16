@@ -197,8 +197,8 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
                 </div>
               ))}
 
-              <Button onClick={handleParse} disabled={loading} className="w-full py-3 text-sm mt-1">
-                {loading ? 'Reading your list...' : 'Continue with upload →'}
+              <Button onClick={handleParse} disabled={loading} className="w-full py-3 text-sm mt-1 animate-[bqButtonPulse_2s_ease-in-out_infinite]">
+                {loading ? 'Reading your list...' : 'Read my list'}
               </Button>
             </div>
           )}
@@ -293,6 +293,12 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
           60% { opacity: 0.95; }
           68% { opacity: 0; }
           100% { opacity: 0; }
+        }
+
+        @keyframes bqButtonPulse {
+          0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(249,115,22,0.5); }
+          50% { transform: scale(1.03); box-shadow: 0 0 16px 4px rgba(249,115,22,0.35); }
+          100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(249,115,22,0.5); }
         }
       `}</style>
 
