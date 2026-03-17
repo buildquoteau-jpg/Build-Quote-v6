@@ -61,14 +61,14 @@ export default function RFQScreen({
       <div className="px-1">
         <h1 className="text-heading text-3xl sm:text-4xl font-extrabold tracking-tight">Review your RFQ</h1>
         <p className="text-text-secondary text-sm sm:text-base font-medium leading-relaxed mt-3">
-          Please check your items. Edit if needed.
+          Please check a few items before sending. A couple of handwritten quantities may need a quick look.
         </p>
         <p className="text-text-muted text-sm mt-2">
           {items.length} line item{items.length !== 1 ? 's' : ''}.
         </p>
         {lowCount > 0 && (
           <p className="text-warning text-sm mt-2">
-            {lowCount} item{lowCount !== 1 ? 's' : ''} flagged for review
+            {lowCount} item{lowCount !== 1 ? 's' : ''} {lowCount === 1 ? 'needs' : 'need'} a quick check
           </p>
         )}
       </div>

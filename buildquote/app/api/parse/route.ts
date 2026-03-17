@@ -254,6 +254,24 @@ function extractQty(value: unknown, uom: string, desc: string): string {
   return ''
 }
 
+
+function hasAmbiguousHandwrittenQty(name: string, desc: string, qty: string, uom: string): boolean {
+  const q = String(qty || '').trim()
+  const n = String(name || '').toLowerCase()
+  const d = String(desc || '').toLowerCase()
+  const unit = String(uom || '').toUpperCase()
+
+  if (!q || !/^\d{2}$/.test(q)) return false
+  if (unit && !['LENGTH', 'LM', 'EA', ''].includes(unit)) return false
+
+  const hasLength = /\b\d+(?:\.\d+)?\s*m\b/i.test(d)
+  const hasDimensions = /\b\d{2,4}\s*[x×]\s*\d{2,4}\b/i.test(d)
+  const timberLike = /\b(?:h\d|f\d|mgp|lvl|pine|post|stud|joist|beam|timber)\b/i.test(`${n} ${d}`)
+  const ambiguousPair = /\b(?:12|22|32|42|52|62|72|82|92)\b/.test(q)
+
+  return ambiguousPair && hasLength && (hasDimensions || timberLike)
+}
+
 function cleanupDesc(desc: string, qty: string): string {
   let next = (desc || '').replace(/[•|]+/g, ' • ').replace(/\s+/g, ' ').trim()
   next = next.replace(/(?:^|\s)x\s*\d+(?:\.\d+)?\s*(?:lm|l\.m\.?|lineal|lengths?|boxes?|bags?|rolls?|sheets?|ea)?$/i, '').trim()
@@ -295,6 +313,11 @@ function normaliseParsedItem(item: any) {
 
   desc = cleanupDesc(desc, qty)
 
+  const confidence =
+    item?.confidence === 'low' || hasAmbiguousHandwrittenQty(name, desc, qty, uom)
+      ? 'low'
+      : 'high'
+
   return {
     id: randomUUID(),
     name,
@@ -303,7 +326,7 @@ function normaliseParsedItem(item: any) {
     desc,
     uom,
     qty,
-    confidence: item?.confidence === 'low' ? 'low' : 'high',
+    confidence,
   }
 }
 
