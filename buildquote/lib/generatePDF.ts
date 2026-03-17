@@ -5,7 +5,7 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
   const { builder, supplier, items, delivery, siteAddress, siteSuburb, dateRequired, message, rfqId } = payload
 
   const doc = await PDFDocument.create()
-  const page = doc.addPage([595, 842]) // A4
+  let page = doc.addPage([595, 842]) // A4
   const { width, height } = page.getSize()
 
   const bold = await doc.embedFont(StandardFonts.HelveticaBold)
@@ -17,68 +17,81 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
   const white = rgb(1, 1, 1)
   const lightgrey = rgb(0.97, 0.98, 0.98)
 
-  let y = height
+  const drawFooter = (targetPage: any) => {
+    targetPage.drawRectangle({ x: 0, y: 0, width, height: 56, color: lightgrey })
+    targetPage.drawText('DISCLAIMER: BuildQuote assists with structuring material quote requests only. It does not make engineering, compliance,', {
+      x: 32, y: 44, size: 6.5, font: regular, color: rgb(0.55, 0.55, 0.58)
+    })
+    targetPage.drawText('quantity, or suitability decisions. All items, quantities and specifications must be reviewed and confirmed by the builder', {
+      x: 32, y: 34, size: 6.5, font: regular, color: rgb(0.55, 0.55, 0.58)
+    })
+    targetPage.drawText('and relevant professionals before ordering. BuildQuote accepts no liability for errors, omissions, or AI parsing inaccuracies.', {
+      x: 32, y: 24, size: 6.5, font: regular, color: rgb(0.55, 0.55, 0.58)
+    })
+    targetPage.drawText(`RFQ Reference: ${rfqId}   |   Sent: ${new Date().toLocaleDateString('en-AU')}   |   buildquote.com.au`, {
+      x: 32, y: 10, size: 7, font: regular, color: grey
+    })
+  }
 
-  // Header — clean, no dark banner, company as hero
-  const companyDisplay = (builder.company || builder.builderName || 'Builder').substring(0, 42)
-  page.drawText(companyDisplay, { x: 32, y: height - 36, size: 22, font: bold, color: dark })
-  page.drawText('REQUEST FOR QUOTATION', { x: 32, y: height - 54, size: 9, font: bold, color: orange })
-  page.drawRectangle({ x: 32, y: height - 59, width: 190, height: 2, color: orange })
-  page.drawText(rfqId, { x: width - 140, y: height - 36, size: 9, font: bold, color: orange })
-  const dateStr = new Date().toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })
-  page.drawText(dateStr, { x: width - 140, y: height - 50, size: 8, font: regular, color: grey })
-  page.drawRectangle({ x: 32, y: height - 68, width: width - 64, height: 1, color: rgb(0.88, 0.88, 0.88) })
+  const createPageShell = (page: any) => {
+    let y = height
 
-  y = height - 90
+    const companyDisplay = (builder.company || builder.builderName || 'Builder').substring(0, 42)
+    page.drawText(companyDisplay, { x: 32, y: height - 36, size: 22, font: bold, color: dark })
+    page.drawText('REQUEST FOR QUOTATION', { x: 32, y: height - 54, size: 9, font: bold, color: orange })
+    page.drawRectangle({ x: 32, y: height - 59, width: 190, height: 2, color: orange })
+    page.drawText(rfqId, { x: width - 140, y: height - 36, size: 9, font: bold, color: orange })
+    const dateStr = new Date().toLocaleDateString('en-AU', { day: '2-digit', month: 'short', year: 'numeric' })
+    page.drawText(dateStr, { x: width - 140, y: height - 50, size: 8, font: regular, color: grey })
+    page.drawRectangle({ x: 32, y: height - 68, width: width - 64, height: 1, color: rgb(0.88, 0.88, 0.88) })
 
-  // FROM / TO
-  page.drawText('FROM', { x: 32, y, size: 8, font: bold, color: orange })
-  page.drawText('TO', { x: 300, y, size: 8, font: bold, color: orange })
-  y -= 16
-  page.drawText(builder.builderName, { x: 32, y, size: 11, font: bold, color: dark })
-  page.drawText(supplier.supplierName, { x: 300, y, size: 11, font: bold, color: dark })
-  y -= 14
-  page.drawText(builder.company, { x: 32, y, size: 10, font: regular, color: grey })
-  if (supplier.accountNumber) page.drawText(`Account: ${supplier.accountNumber}`, { x: 300, y, size: 10, font: regular, color: grey })
-  y -= 12
-  page.drawText(`ABN: ${builder.abn}`, { x: 32, y, size: 10, font: regular, color: grey })
-  if (supplier.supplierEmail) page.drawText(supplier.supplierEmail, { x: 300, y, size: 9, font: regular, color: grey })
-  y -= 12
-  page.drawText(builder.phone, { x: 32, y, size: 10, font: regular, color: grey })
-  y -= 12
-  page.drawText(builder.email, { x: 32, y, size: 10, font: regular, color: grey })
+    y = height - 90
 
-  y -= 20
+    page.drawText('FROM', { x: 32, y, size: 8, font: bold, color: orange })
+    page.drawText('TO', { x: 300, y, size: 8, font: bold, color: orange })
+    y -= 16
+    page.drawText(builder.builderName, { x: 32, y, size: 11, font: bold, color: dark })
+    page.drawText(supplier.supplierName, { x: 300, y, size: 11, font: bold, color: dark })
+    y -= 14
+    page.drawText(builder.company, { x: 32, y, size: 10, font: regular, color: grey })
+    if (supplier.accountNumber) page.drawText(`Account: ${supplier.accountNumber}`, { x: 300, y, size: 10, font: regular, color: grey })
+    y -= 12
+    page.drawText(`ABN: ${builder.abn}`, { x: 32, y, size: 10, font: regular, color: grey })
+    if (supplier.supplierEmail) page.drawText(supplier.supplierEmail, { x: 300, y, size: 9, font: regular, color: grey })
+    y -= 12
+    page.drawText(builder.phone, { x: 32, y, size: 10, font: regular, color: grey })
+    y -= 12
+    page.drawText(builder.email, { x: 32, y, size: 10, font: regular, color: grey })
 
-  // Delivery bar
-  page.drawRectangle({ x: 32, y: y - 24, width: width - 64, height: 40, color: lightgrey })
-  const projectRef = payload.projectReference ? `  |  Ref: ${payload.projectReference}` : ''
-  const deliveryLine = delivery === 'delivery'
-    ? `Delivery${siteAddress ? ': ' + siteAddress : ''}${siteSuburb ? ', ' + siteSuburb : ''}`
-    : 'Store Pick-up'
-  const dateLine = `Date Required: ${dateRequired || 'ASAP'}${projectRef}`
-  page.drawText(deliveryLine.substring(0, 95), {
-    x: 40, y: y + 2, size: 9, font: regular, color: grey
-  })
-  page.drawText(dateLine.substring(0, 95), {
-    x: 40, y: y - 10, size: 9, font: regular, color: grey
-  })
-  y -= 42
+    y -= 20
 
-  // Line items header
-  y -= 16
-  page.drawText('LINE ITEMS', { x: 32, y, size: 8, font: bold, color: orange })
-  y -= 14
+    page.drawRectangle({ x: 32, y: y - 24, width: width - 64, height: 40, color: lightgrey })
+    const projectRef = payload.projectReference ? `  |  Ref: ${payload.projectReference}` : ''
+    const deliveryLine = delivery === 'delivery'
+      ? `Delivery${siteAddress ? ': ' + siteAddress : ''}${siteSuburb ? ', ' + siteSuburb : ''}`
+      : 'Store Pick-up'
+    const dateLine = `Date Required: ${dateRequired || 'ASAP'}${projectRef}`
+    page.drawText(deliveryLine.substring(0, 95), { x: 40, y: y + 2, size: 9, font: regular, color: grey })
+    page.drawText(dateLine.substring(0, 95), { x: 40, y: y - 10, size: 9, font: regular, color: grey })
+    y -= 42
 
-  // Table header
-  page.drawRectangle({ x: 32, y: y - 8, width: width - 64, height: 20, color: dark })
-  page.drawText('#', { x: 38, y: y - 2, size: 8, font: bold, color: white })
-  page.drawText('Product Name', { x: 58, y: y - 2, size: 8, font: bold, color: white })
-  page.drawText('Description / Spec', { x: 210, y: y - 2, size: 8, font: bold, color: white })
-  page.drawText('SKU', { x: 390, y: y - 2, size: 8, font: bold, color: white })
-  page.drawText('UOM', { x: 455, y: y - 2, size: 8, font: bold, color: white })
-  page.drawText('Qty', { x: 505, y: y - 2, size: 8, font: bold, color: white })
-  y -= 22
+    y -= 16
+    page.drawText('LINE ITEMS', { x: 32, y, size: 8, font: bold, color: orange })
+    y -= 14
+
+    page.drawRectangle({ x: 32, y: y - 8, width: width - 64, height: 20, color: dark })
+    page.drawText('#', { x: 38, y: y - 2, size: 8, font: bold, color: white })
+    page.drawText('Product Name', { x: 58, y: y - 2, size: 8, font: bold, color: white })
+    page.drawText('Description / Spec', { x: 210, y: y - 2, size: 8, font: bold, color: white })
+    page.drawText('SKU', { x: 390, y: y - 2, size: 8, font: bold, color: white })
+    page.drawText('UOM', { x: 455, y: y - 2, size: 8, font: bold, color: white })
+    page.drawText('Qty', { x: 505, y: y - 2, size: 8, font: bold, color: white })
+    y -= 22
+
+    return y
+  }
+
+  let y = createPageShell(page)
 
   // Table rows
   const wrapText = (text: string, maxChars: number): string[] => {
@@ -99,10 +112,16 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
   }
 
   items.forEach((item, i) => {
-    if (y < 80) return
     const nameLines = wrapText(item.name || '', 24).slice(0, 3)
     const descLines = item.desc ? wrapText(item.desc, 28).slice(0, 3) : ['']
     const rowHeight = Math.max(18, Math.max(nameLines.length, descLines.length) * 11 + 8)
+
+    if (y - rowHeight < 72) {
+      drawFooter(page)
+      page = doc.addPage([595, 842])
+      y = createPageShell(page)
+    }
+
     const bg = i % 2 === 0 ? white : lightgrey
 
     page.drawRectangle({ x: 32, y: y - rowHeight + 10, width: width - 64, height: rowHeight, color: bg })
@@ -161,20 +180,7 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
     y -= 8
   }
 
-  // Footer
-  page.drawRectangle({ x: 0, y: 0, width, height: 56, color: lightgrey })
-  page.drawText('DISCLAIMER: BuildQuote assists with structuring material quote requests only. It does not make engineering, compliance,', {
-    x: 32, y: 44, size: 6.5, font: regular, color: rgb(0.55, 0.55, 0.58)
-  })
-  page.drawText('quantity, or suitability decisions. All items, quantities and specifications must be reviewed and confirmed by the builder', {
-    x: 32, y: 34, size: 6.5, font: regular, color: rgb(0.55, 0.55, 0.58)
-  })
-  page.drawText('and relevant professionals before ordering. BuildQuote accepts no liability for errors, omissions, or AI parsing inaccuracies.', {
-    x: 32, y: 24, size: 6.5, font: regular, color: rgb(0.55, 0.55, 0.58)
-  })
-  page.drawText(`RFQ Reference: ${rfqId}   |   Sent: ${new Date().toLocaleDateString('en-AU')}   |   buildquote.com.au`, {
-    x: 32, y: 10, size: 7, font: regular, color: grey
-  })
+  drawFooter(page)
 
   const pdfBytes = await doc.save()
   return Buffer.from(pdfBytes)

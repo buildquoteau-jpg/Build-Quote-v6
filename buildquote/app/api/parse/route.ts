@@ -18,6 +18,8 @@ Important rules:
 - Prefer building-material interpretation over generic consumer-goods interpretation
 - Do NOT invent items
 - Do NOT merge unrelated lines into one item
+- Do NOT drop real items just because they are handwritten, abbreviated, rough, or missing punctuation
+- Extract EVERY plausible purchasable construction line item you can see, even when messy
 - Do NOT include section headings as items
 - Do NOT include people names, contact notes, dates, or reminder notes as items
 - Do NOT include instruction-only lines such as "check with Gary first", "Tony to confirm", "do not order yet", unless the same line also contains a real item
@@ -73,6 +75,27 @@ For construction materials, prefer this structure:
   desc: "15mm • 6m"
   uom: "LENGTH"
   qty: "20"
+
+- Handwritten timber example:
+  raw: "H2 190 x 35 - 2 @ 3.6m"
+  name: "H2 Pine"
+  desc: "190x35 • 3.6m"
+  uom: "LENGTH"
+  qty: "2"
+
+- Post example:
+  raw: "H4 100 x 100 F7 pine post x 6 @ 2.7m or 3.0m"
+  name: "F7 Pine Post"
+  desc: "H4 • 100mm x 100mm • 2.7m or 3.0m"
+  uom: "LENGTH"
+  qty: "6"
+
+- Quantity parsing example:
+  raw: "gutters 150mm quad SG x 561lm"
+  name: "Gutters"
+  desc: "150mm • quad SG"
+  uom: "LM"
+  qty: "561"
 
 Trade and heading rules:
 - Treat headings like BUILDING MATERIALS, PLUMBING, ELECTRICAL, FIXINGS as non-item section headings
@@ -153,7 +176,7 @@ async function parsePDFWithOpenAI(buffer: Buffer, filename: string): Promise<str
   const response = await Promise.race([
     client.responses.create({
       model: 'gpt-4o',
-      max_output_tokens: 4096,
+      max_output_tokens: 8192,
       input: [
         {
           role: 'user',
@@ -174,6 +197,92 @@ async function parsePDFWithOpenAI(buffer: Buffer, filename: string): Promise<str
   ]) as OpenAI.Responses.Response
 
   return response.output_text ?? ''
+}
+
+
+function normaliseUOM(value: string): string {
+  const v = (value || '').trim().toUpperCase()
+  if (!v) return ''
+  if (['EACH', 'PCS', 'PC', 'UNIT'].includes(v)) return 'EA'
+  if (['LM', 'L/M', 'LIN M', 'LINEAL METRE', 'LINEAR METRE', 'LINEAR METRES', 'LINEAL METRES'].includes(v)) return 'LM'
+  if (['M2', 'SQM', 'M²', 'SQ M'].includes(v)) return 'm2'
+  if (['SHEETS'].includes(v)) return 'SHEET'
+  if (['BOXES'].includes(v)) return 'BOX'
+  if (['ROLLS'].includes(v)) return 'ROLL'
+  if (['LENGTHS'].includes(v)) return 'LENGTH'
+  if (['BAGS'].includes(v)) return 'BAG'
+  return v
+}
+
+function extractQty(value: unknown, uom: string, desc: string): string {
+  const raw = String(value ?? '').trim()
+  if (!raw) {
+    const fromDesc = desc.match(/(?:^|\b|x\s*)(\d+(?:\.\d+)?)(?=\s*(?:lm|l\.m\.?|lineal|lengths?|boxes?|bags?|rolls?|sheets?|ea)\b)/i)
+    return fromDesc ? fromDesc[1] : ''
+  }
+
+  const clean = raw.replace(/,/g, '').trim()
+  const direct = clean.match(/^\d+(?:\.\d+)?$/)
+  if (direct) return direct[0]
+
+  const attached = clean.match(/(\d+(?:\.\d+)?)(?=\s*(?:lm|l\.m\.?|lineal|lengths?|boxes?|bags?|rolls?|sheets?|ea)\b)/i)
+  if (attached) return attached[1]
+
+  const first = clean.match(/\d+(?:\.\d+)?/)
+  return first ? first[0] : ''
+}
+
+function cleanupDesc(desc: string, qty: string): string {
+  let next = (desc || '').replace(/[•|]+/g, ' • ').replace(/\s+/g, ' ').trim()
+  next = next.replace(/(?:^|\s)x\s*\d+(?:\.\d+)?\s*(?:lm|l\.m\.?|lineal|lengths?|boxes?|bags?|rolls?|sheets?|ea)?$/i, '').trim()
+  if (qty) {
+    next = next.replace(new RegExp(`(?:^|\\s)x?\\s*${qty}(?:\\.0+)?\\s*(?:lm|l\\.m\\.?|lineal|lengths?|boxes?|bags?|rolls?|sheets?|ea)?$`, 'i'), '').trim()
+  }
+  next = next.replace(/^[-–—,:;•\s]+|[-–—,:;•\s]+$/g, '').trim()
+  next = next.replace(/\s*•\s*/g, ' • ')
+  return next
+}
+
+function inferUOM(name: string, desc: string, current: string): string {
+  const u = normaliseUOM(current)
+  if (u) return u
+  const hay = `${name} ${desc}`.toLowerCase()
+  if (/(sheet|plywood|plasterboard|gyprock|mdf)/.test(hay)) return 'SHEET'
+  if (/(box|screw|nail|bolt|washer|bracket|anchor)/.test(hay)) return 'BOX'
+  if (/(roll|cable|wire)/.test(hay)) return 'ROLL'
+  if (/(pipe|gutter|flashing|trimdek|trim|moulding)/.test(hay)) return 'LM'
+  if (/(pine|lvl|post|beam|joist|stud|timber|length)/.test(hay)) return 'LENGTH'
+  if (/(batts?|bag)/.test(hay)) return 'BAG'
+  return 'EA'
+}
+
+function normaliseParsedItem(item: any) {
+  let name = String(item?.name || '').replace(/\s+/g, ' ').trim()
+  let sku = String(item?.sku || '').trim()
+  let productId = String(item?.productId || '').trim()
+  let desc = String(item?.desc || '').replace(/\s+/g, ' ').trim()
+  let qty = extractQty(item?.qty, String(item?.uom || ''), desc)
+  let uom = inferUOM(name, desc, String(item?.uom || ''))
+
+  if (/^simpson$/i.test(name) && sku) {
+    desc = cleanupDesc([desc, sku].filter(Boolean).join(' • '), qty)
+    sku = ''
+  }
+
+  if (/^specs?$/i.test(desc)) desc = ''
+
+  desc = cleanupDesc(desc, qty)
+
+  return {
+    id: randomUUID(),
+    name,
+    sku,
+    productId,
+    desc,
+    uom,
+    qty,
+    confidence: item?.confidence === 'low' ? 'low' : 'high',
+  }
 }
 
 function getParseErrorResponse(error: unknown): NextResponse | null {
@@ -258,7 +367,7 @@ export async function POST(req: NextRequest) {
           content: [
             {
               type: 'image_url',
-              image_url: { url: `data:${file.type};base64,${base64}` },
+              image_url: { url: `data:${file.type};base64,${base64}`, detail: 'high' },
             },
             { type: 'text', text: PROMPT },
           ],
@@ -290,16 +399,8 @@ export async function POST(req: NextRequest) {
 
       const result = items
         .filter((item: any) => item && typeof item.name === 'string' && item.name.trim() !== '')
-        .map((item: any) => ({
-          id: randomUUID(),
-          name: item.name || '',
-          sku: item.sku || '',
-          productId: item.productId || '',
-          desc: item.desc || '',
-          uom: item.uom || '',
-          qty: item.qty ? String(item.qty) : '',
-          confidence: item.confidence === 'low' ? 'low' : 'high',
-        }))
+        .map(normaliseParsedItem)
+        .filter((item: any) => item.name)
 
       return NextResponse.json({ items: result })
     } else if (['.xlsx', '.xls'].includes(ext)) {
@@ -336,7 +437,7 @@ export async function POST(req: NextRequest) {
     const completion = await Promise.race([
       client.chat.completions.create({
         model: 'gpt-4o',
-        max_tokens: 4096,
+        max_tokens: 8192,
         messages,
       }),
       new Promise((_, reject) =>
@@ -370,16 +471,8 @@ export async function POST(req: NextRequest) {
 
     const result = items
       .filter((item: any) => item && typeof item.name === 'string' && item.name.trim() !== '')
-      .map((item: any) => ({
-        id: randomUUID(),
-        name: item.name || '',
-        sku: item.sku || '',
-        productId: item.productId || '',
-        desc: item.desc || '',
-        uom: item.uom || '',
-        qty: item.qty ? String(item.qty) : '',
-        confidence: item.confidence === 'low' ? 'low' : 'high',
-      }))
+      .map(normaliseParsedItem)
+      .filter((item: any) => item.name)
 
     return NextResponse.json({ items: result })
 
