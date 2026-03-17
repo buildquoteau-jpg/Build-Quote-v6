@@ -151,7 +151,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
         </div>
       )}
 
-      <div className="grid gap-4 lg:grid-cols-3">
+      <div className="grid gap-6 max-w-4xl mx-auto grid-cols-1 md:grid-cols-2">
         <div className={`${baseCardClass} border-heading/30 bg-[rgba(24,93,122,0.02)]  shadow-[0_10px_24px_rgba(24,93,122,0.12)] hover:border-heading`}>
           <button
             type="button"
@@ -259,28 +259,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
             No file? No worries.
           </p>
         </button>
-
-        <button
-          type="button"
-          onClick={handleBrowseManufacturerComponents}
-          className={`${baseCardClass} border-border hover:border-heading`}
-        >
-
-          <div className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] mb-1.5">OPTION 3</div>
-<h3 className="text-heading text-xl font-extrabold tracking-tight leading-tight ">
-            Browse manufacturer systems
-          </h3>
-
-          <img src="/rfq/system_components.jpeg" alt="External cladding system example" className="mt-4 mb-2 sm:mt-6 sm:mb-3 block w-full h-44 sm:h-56 object-contain rounded-lg shadow-[0_10px_18px_rgba(0,0,0,0.08)]" />
-
-          <p className="text-text-secondary text-sm mt-3 font-semibold leading-relaxed">
-            Popular W.A. building systems.
-          </p>
-
-          <p className="text-text-muted text-sm mt-2 font-medium leading-relaxed">
-            Tick what you need — done.
-          </p>
-        </button>
+        {/* Manufacturer systems temporarily hidden until draft merge is stable */}
       </div>
 
       <style jsx global>{`

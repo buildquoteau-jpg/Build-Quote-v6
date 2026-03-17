@@ -100,7 +100,7 @@ export default function RFQScreen({
       <div className="hidden md:block rounded-2xl border border-border border-t-4 border-t-heading bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="overflow-x-auto">
           <div className="min-w-[980px]">
-            <div className="grid grid-cols-[90px_2.3fr_1.6fr_1fr_0.9fr_0.8fr_52px] gap-3 border-b border-border bg-surface-subtle px-4 py-3">
+            <div className="grid grid-cols-[90px_1.9fr_2.1fr_1fr_0.9fr_0.8fr_52px] gap-3 border-b border-border bg-surface-subtle px-4 py-3">
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Line item</div>
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Product</div>
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Specs</div>
@@ -116,7 +116,7 @@ export default function RFQScreen({
               items.map((item, index) => (
                 <div
                   key={item.id}
-                  className={`grid grid-cols-[90px_2.3fr_1.6fr_1fr_0.9fr_0.8fr_52px] gap-3 px-4 py-3 ${
+                  className={`grid grid-cols-[90px_1.9fr_2.1fr_1fr_0.9fr_0.8fr_52px] gap-3 px-4 py-3 ${
                     index < items.length - 1 ? 'border-b border-border-subtle' : ''
                   }`}
                 >
@@ -133,12 +133,13 @@ export default function RFQScreen({
                     />
                   </div>
 
-                  <div className="flex items-center">
-                    <input
+                  <div className="flex items-start py-1">
+                    <textarea
                       value={item.desc}
                       onChange={(e) => update(item.id, 'desc', e.target.value)}
                       placeholder="Specs"
-                      className={inputClass}
+                      rows={2}
+                      className={`${inputClass} min-h-[56px] resize-y whitespace-normal leading-snug py-3`}
                     />
                   </div>
 

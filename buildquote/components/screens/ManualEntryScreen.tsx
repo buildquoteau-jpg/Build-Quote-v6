@@ -282,13 +282,7 @@ export default function ManualEntryScreen({
         >
           <span className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] block">OPTION 1</span> Upload a list
         </button>
-        <button
-          onClick={handleBrowseManufacturerSystems}
-          className="sm:flex-1 rounded-2xl border-2 border-heading/20 border-l-[3px] border-l-teal ring-1 ring-inset ring-heading/10 bg-white hover:bg-[rgba(111,236,204,0.06)] hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(24,93,122,0.10)] px-4 py-3.5 text-heading text-sm font-bold transition-all duration-200"
-          type="button"
-        >
-          <span className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] block">OPTION 2</span> Browse manufacturer systems
-        </button>
+        {/* Manufacturer systems temporarily hidden until draft merge is stable */}
         <button
           onClick={addRow}
           className="sm:flex-1 rounded-2xl border-2 border-heading/20 border-l-[3px] border-l-teal ring-1 ring-inset ring-heading/10 bg-white hover:bg-[rgba(111,236,204,0.06)] hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(24,93,122,0.10)] px-4 py-3.5 text-heading text-sm font-bold transition-all duration-200"
