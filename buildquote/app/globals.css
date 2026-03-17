@@ -89,3 +89,46 @@ body {
   animation: scroll 25s linear infinite;
   width: max-content;
 }
+
+@keyframes bq-water-flow {
+  0% { background-position: 0% 50%; }
+  100% { background-position: 200% 50%; }
+}
+
+.bq-flow-border {
+  background: linear-gradient(
+    90deg,
+    rgba(62,124,89,0.10) 0%,
+    rgba(68,92,112,0.18) 20%,
+    rgba(122,170,184,0.95) 35%,
+    rgba(68,92,112,0.18) 50%,
+    rgba(62,124,89,0.10) 65%,
+    rgba(122,170,184,0.95) 80%,
+    rgba(68,92,112,0.18) 90%,
+    rgba(62,124,89,0.10) 100%
+  );
+  background-size: 200% 100%;
+  animation: bq-water-flow 3.2s linear infinite;
+}
+
+.bq-community-cta {
+  position: relative;
+  overflow: hidden;
+}
+
+.bq-community-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    100deg,
+    transparent 0%,
+    rgba(122,170,184,0.00) 35%,
+    rgba(122,170,184,0.22) 50%,
+    rgba(122,170,184,0.00) 65%,
+    transparent 100%
+  );
+  background-size: 220% 100%;
+  animation: bq-water-flow 2.8s linear infinite;
+  pointer-events: none;
+}
