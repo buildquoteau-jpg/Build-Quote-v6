@@ -48,7 +48,7 @@ function findDuplicates(items: LineItem[]): Set<string> {
   }
   const dupeIds = new Set<string>()
   for (const ids of seen.values()) {
-    if (ids.length > 1) ids.forEach(id => dupeIds.add(id))
+    if (ids.length > 1) ids.forEach((id) => dupeIds.add(id))
   }
   return dupeIds
 }
@@ -72,6 +72,7 @@ export default function ManualEntryScreen({
 }: ManualEntryScreenProps) {
   const [error, setError] = useState('')
   const duplicateIds = findDuplicates(items)
+  const lowCount = items.filter((item) => item.confidence === 'low').length
 
   const handleClearAll = async () => {
     if (!confirm('Clear all items and start over? This cannot be undone.')) return
@@ -146,14 +147,30 @@ export default function ManualEntryScreen({
         <p className="text-text-secondary text-sm sm:text-base font-medium leading-relaxed mt-3">
           Add product name, specs, and quantity.
         </p>
+        <p className="text-text-muted text-sm mt-2">
+          {items.length} line item{items.length !== 1 ? 's' : ''}.
+        </p>
+
+        {(lowCount > 0 || duplicateIds.size > 0) && (
+          <div className="mt-3 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+            <p className="text-sm font-medium text-amber-900">
+              Please check a few items before continuing. Some quantities or duplicate-looking rows may need a quick look.
+            </p>
+            <p className="text-xs text-amber-800 mt-1">
+              {lowCount > 0 ? `${lowCount} item${lowCount !== 1 ? 's' : ''} ${lowCount === 1 ? 'needs' : 'need'} review.` : ''}
+              {lowCount > 0 && duplicateIds.size > 0 ? ' ' : ''}
+              {duplicateIds.size > 0 ? 'Possible duplicates are highlighted.' : ''}
+            </p>
+          </div>
+        )}
+
         <div className="flex items-center gap-3 mt-3">
-          {duplicateIds.size > 0 && (
-            <div className="rounded-xl border-2 border-amber-300 bg-amber-50 px-3 py-2 text-amber-800 text-xs font-semibold flex-1">
-              ⚠️ Possible duplicates detected — check highlighted rows
-            </div>
-          )}
-          {items.length > 1 && items.some(i => i.name.trim()) && (
-            <button type="button" onClick={handleClearAll} className="text-xs text-error font-semibold hover:underline shrink-0">
+          {items.length > 1 && items.some((i) => i.name.trim()) && (
+            <button
+              type="button"
+              onClick={handleClearAll}
+              className="text-xs text-error font-semibold hover:underline shrink-0"
+            >
               Clear all & start over
             </button>
           )}
@@ -166,12 +183,20 @@ export default function ManualEntryScreen({
         </div>
       )}
 
-      {/* Mobile card layout */}
       <div className="md:hidden flex flex-col gap-3">
         {items.map((item, index) => (
-          <div key={item.id} className="rounded-2xl border border-border border-l-0 bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-4">
+          <div
+            key={item.id}
+            className={`rounded-2xl border bg-white shadow-[0_4px_12px_rgba(0,0,0,0.04)] p-4 ${
+              item.confidence === 'low' || duplicateIds.has(item.id)
+                ? 'border-amber-300 bg-amber-50/40'
+                : 'border-border'
+            }`}
+          >
             <div className="flex items-center justify-between mb-3">
-              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-navy border-b-2 border-teal pb-0.5">Item {index + 1}</span>
+              <span className="text-xs font-semibold uppercase tracking-[0.18em] text-navy border-b-2 border-teal pb-0.5">
+                Item {index + 1}
+              </span>
               <button
                 onClick={() => removeRow(item.id)}
                 className="h-8 w-8 rounded-lg border border-border text-text-muted hover:text-error hover:border-error-border hover:bg-error-bg transition-colors text-sm"
@@ -181,24 +206,54 @@ export default function ManualEntryScreen({
                 ×
               </button>
             </div>
+
             <div className="flex flex-col gap-2.5">
-              <input value={item.name} onChange={(e) => update(item.id, 'name', e.target.value)} placeholder="Product name" className={inputClass} />
-              <input value={buildSpecs(item) || item.desc} onChange={(e) => update(item.id, 'desc', e.target.value)} placeholder="Specs / description" className={inputClass} />
+              <input
+                value={item.name}
+                title={item.name || ''}
+                onChange={(e) => update(item.id, 'name', e.target.value)}
+                placeholder="Product name"
+                className={inputClass}
+              />
+              <input
+                value={buildSpecs(item) || item.desc}
+                title={buildSpecs(item) || item.desc || ''}
+                onChange={(e) => update(item.id, 'desc', e.target.value)}
+                placeholder="Specs / description"
+                className={inputClass}
+              />
               <div className="grid grid-cols-3 gap-2">
-                <input value={item.sku} onChange={(e) => update(item.id, 'sku', e.target.value)} placeholder="SKU" className={compactInputClass} />
-                <input value={item.uom} onChange={(e) => update(item.id, 'uom', e.target.value)} placeholder="UOM" className={compactInputClass} />
-                <input value={item.qty} onChange={(e) => update(item.id, 'qty', e.target.value)} placeholder="Qty" className={compactInputClass} />
+                <input
+                  value={item.sku}
+                  title={item.sku || ''}
+                  onChange={(e) => update(item.id, 'sku', e.target.value)}
+                  placeholder="SKU"
+                  className={compactInputClass}
+                />
+                <input
+                  value={item.uom}
+                  title={item.uom || ''}
+                  onChange={(e) => update(item.id, 'uom', e.target.value)}
+                  placeholder="UOM"
+                  className={compactInputClass}
+                />
+                <input
+                  value={item.qty}
+                  title={item.qty || ''}
+                  onChange={(e) => update(item.id, 'qty', e.target.value)}
+                  placeholder="Qty"
+                  className={compactInputClass}
+                />
               </div>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Desktop table layout */}
-      <div className="hidden md:block rounded-2xl border border-border bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] overflow-hidden">
+      <div className="hidden md:block rounded-2xl border border-border border-t-4 border-t-heading bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] overflow-hidden">
         <div className="overflow-x-auto">
-          <div className="min-w-[980px]">
-            <div className="grid grid-cols-[50px_2.5fr_2fr_0.8fr_0.7fr_0.6fr_40px] gap-3 border-b border-border bg-surface-subtle px-4 py-3">
+          <div className="min-w-[1080px]">
+            <div className="grid grid-cols-[56px_2.2fr_2fr_0.8fr_0.75fr_0.6fr_44px] gap-3 border-b border-border bg-surface-subtle px-4 py-3">
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Line item</div>
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Product</div>
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Specs</div>
@@ -211,9 +266,9 @@ export default function ManualEntryScreen({
             {items.map((item, index) => (
               <div
                 key={item.id}
-                className={`grid grid-cols-[50px_2.5fr_2fr_0.8fr_0.7fr_0.6fr_40px] gap-3 px-4 py-3 ${
-                  index < items.length - 1 ? 'border-b border-border-subtle' : ''} ${item.confidence === 'low' || duplicateIds.has(item.id) ? 'bg-amber-50 border-l-4 border-l-amber-400' : ''
-                }`}
+                className={`grid grid-cols-[56px_2.2fr_2fr_0.8fr_0.75fr_0.6fr_44px] gap-3 px-4 py-3 ${
+                  index < items.length - 1 ? 'border-b border-border-subtle' : ''
+                } ${item.confidence === 'low' || duplicateIds.has(item.id) ? 'bg-amber-50 border-l-4 border-l-amber-400' : ''}`}
               >
                 <div className="flex items-center">
                   <span className="text-sm font-semibold text-text-secondary">{index + 1}</span>
@@ -222,24 +277,29 @@ export default function ManualEntryScreen({
                 <div className="flex items-center">
                   <input
                     value={item.name}
+                    title={item.name || ''}
                     onChange={(e) => update(item.id, 'name', e.target.value)}
                     placeholder="Product name"
                     className={inputClass}
                   />
                 </div>
 
-                <div className="flex items-center">
-                  <input
+                <div className="flex items-start py-1">
+                  <textarea
+                    style={{ wordBreak: 'break-word' }}
                     value={buildSpecs(item) || item.desc}
+                    title={buildSpecs(item) || item.desc || ''}
                     onChange={(e) => update(item.id, 'desc', e.target.value)}
                     placeholder="Specs"
-                    className={inputClass}
+                    rows={2}
+                    className={`${inputClass} min-h-[56px] resize-y whitespace-normal leading-snug py-3`}
                   />
                 </div>
 
                 <div className="flex items-center">
                   <input
                     value={item.sku}
+                    title={item.sku || ''}
                     onChange={(e) => update(item.id, 'sku', e.target.value)}
                     placeholder="SKU"
                     className={compactInputClass}
@@ -249,6 +309,7 @@ export default function ManualEntryScreen({
                 <div className="flex items-center">
                   <input
                     value={item.uom}
+                    title={item.uom || ''}
                     onChange={(e) => update(item.id, 'uom', e.target.value)}
                     placeholder="UOM"
                     className={compactInputClass}
@@ -258,6 +319,7 @@ export default function ManualEntryScreen({
                 <div className="flex items-center">
                   <input
                     value={item.qty}
+                    title={item.qty || ''}
                     onChange={(e) => update(item.id, 'qty', e.target.value)}
                     placeholder="Qty"
                     className={compactInputClass}
@@ -286,20 +348,26 @@ export default function ManualEntryScreen({
           className="sm:flex-1 rounded-2xl border-2 border-heading/20 border-l-[3px] border-l-teal ring-1 ring-inset ring-heading/10 bg-white hover:bg-[rgba(111,236,204,0.06)] hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(24,93,122,0.10)] px-4 py-3.5 text-heading text-sm font-bold transition-all duration-200"
           type="button"
         >
-          <span className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] block">OPTION 1</span> Upload a list
+          <span className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] block">OPTION 1</span>
+          Upload a list
         </button>
-        {/* Manufacturer systems temporarily hidden until draft merge is stable */}
+
         <button
           onClick={addRow}
           className="sm:flex-1 rounded-2xl border-2 border-heading/20 border-l-[3px] border-l-teal ring-1 ring-inset ring-heading/10 bg-white hover:bg-[rgba(111,236,204,0.06)] hover:-translate-y-0.5 hover:shadow-[0_6px_16px_rgba(24,93,122,0.10)] px-4 py-3.5 text-heading text-sm font-bold transition-all duration-200"
           type="button"
         >
-          <span className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] block">OPTION 3</span> Add items manually
+          <span className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] block">OPTION 3</span>
+          Add items manually
         </button>
       </div>
 
       <div className="flex gap-3 pt-1">
-<Button onClick={onNext} disabled={!hasAtLeastOneNamedItem} className={`flex-1 py-3 transition-all duration-200 ${items.filter(i => i.name.trim() !== '').length >= 2 ? '' : 'opacity-60'}`}>
+        <Button
+          onClick={onNext}
+          disabled={!hasAtLeastOneNamedItem}
+          className={`flex-1 py-3 transition-all duration-200 ${items.filter((i) => i.name.trim() !== '').length >= 1 ? '' : 'opacity-60'}`}
+        >
           <span className="text-white font-bold">Continue — add quote details →</span>
         </Button>
       </div>
