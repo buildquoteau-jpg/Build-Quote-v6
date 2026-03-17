@@ -15,11 +15,26 @@ function generateRFQId() {
   return `RFQ-${year}-${num}`
 }
 
+function isMeaningfulItem(item: LineItem) {
+  return Boolean(
+    item.name?.trim() ||
+    item.sku?.trim() ||
+    item.productId?.trim() ||
+    item.desc?.trim() ||
+    item.uom?.trim() ||
+    item.qty?.trim()
+  )
+}
+
+function normaliseItems(items: LineItem[]) {
+  return items.filter(isMeaningfulItem)
+}
+
 function mergeItems(existing: LineItem[], incoming: LineItem[]) {
   const seen = new Set<string>()
   const merged: LineItem[] = []
 
-  for (const item of [...existing, ...incoming]) {
+  for (const item of normaliseItems([...existing, ...incoming])) {
     const key = [
       item.name || '',
       item.sku || '',
@@ -61,16 +76,16 @@ export default function RFQPage() {
 
   async function saveDraft(items: LineItem[]) {
     try {
-      const draftId = new URLSearchParams(window.location.search).get("draft");
-      if (!draftId) return;
+      const draftId = new URLSearchParams(window.location.search).get('draft')
+      if (!draftId) return
 
-      await fetch("/api/save-draft-items", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ draftId, items }),
-      });
+      await fetch('/api/save-draft-items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ draftId, items: normaliseItems(items) }),
+      })
     } catch (e) {
-      console.error("Draft save failed", e);
+      console.error('Draft save failed', e)
     }
   }
 
@@ -150,12 +165,11 @@ export default function RFQPage() {
           weight_kg: row.weight_kg ?? null,
         }))
 
-        if (mapped.length) {
-          setItems((prev) => {
-            const merged = mergeItems(prev, mapped)
-            setPayload((p) => ({ ...p, items: merged }))
-            return merged
-          })
+        const cleaned = normaliseItems(mapped)
+
+        if (cleaned.length) {
+          setItems(cleaned)
+          setPayload((p) => ({ ...p, items: cleaned }))
           setStep(2)
         }
         setDraftLoaded(true)
@@ -169,6 +183,13 @@ export default function RFQPage() {
     loadDraftItems()
   }, [])
 
+  const navigateToStep = async (nextStep: 1 | 2 | 3 | 4 | 5) => {
+    if (step === 2) {
+      await saveDraft(items)
+    }
+    setStep(nextStep)
+  }
+
   const handleReset = () => {
     setStep(1)
     setItems([])
@@ -179,7 +200,7 @@ export default function RFQPage() {
 
   return (
     <div className="min-h-screen bg-page text-text-primary">
-      <TopBar currentStep={step} onStepClick={(s) => setStep(s as 1 | 2 | 3 | 4 | 5)} />
+      <TopBar currentStep={step} onStepClick={(s) => { void navigateToStep(s as 1 | 2 | 3 | 4 | 5) }} />
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-8 sm:py-10">
         {initialLoading ? (
           <div className="flex items-center justify-center py-20">

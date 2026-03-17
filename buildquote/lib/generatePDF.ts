@@ -51,15 +51,19 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
   y -= 20
 
   // Delivery bar
-  page.drawRectangle({ x: 32, y: y - 10, width: width - 64, height: 24, color: lightgrey })
+  page.drawRectangle({ x: 32, y: y - 24, width: width - 64, height: 40, color: lightgrey })
   const projectRef = payload.projectReference ? `  |  Ref: ${payload.projectReference}` : ''
   const deliveryLine = delivery === 'delivery'
-    ? `Delivery${siteAddress ? ': ' + siteAddress : ''}${siteSuburb ? ', ' + siteSuburb : ''}   |   Date: ${dateRequired || 'ASAP'}${projectRef}`
-    : `Store Pick-up   |   Date: ${dateRequired || 'ASAP'}${projectRef}`
-  page.drawText(deliveryLine.substring(0, 90), {
-    x: 40, y: y - 4, size: 9, font: regular, color: grey
+    ? `Delivery${siteAddress ? ': ' + siteAddress : ''}${siteSuburb ? ', ' + siteSuburb : ''}`
+    : 'Store Pick-up'
+  const dateLine = `Date Required: ${dateRequired || 'ASAP'}${projectRef}`
+  page.drawText(deliveryLine.substring(0, 95), {
+    x: 40, y: y + 2, size: 9, font: regular, color: grey
   })
-  y -= 28
+  page.drawText(dateLine.substring(0, 95), {
+    x: 40, y: y - 10, size: 9, font: regular, color: grey
+  })
+  y -= 42
 
   // Line items header
   y -= 16
@@ -70,9 +74,10 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
   page.drawRectangle({ x: 32, y: y - 8, width: width - 64, height: 20, color: dark })
   page.drawText('#', { x: 38, y: y - 2, size: 8, font: bold, color: white })
   page.drawText('Product Name', { x: 58, y: y - 2, size: 8, font: bold, color: white })
-  page.drawText('SKU', { x: 290, y: y - 2, size: 8, font: bold, color: white })
-  page.drawText('UOM', { x: 370, y: y - 2, size: 8, font: bold, color: white })
-  page.drawText('Qty', { x: 430, y: y - 2, size: 8, font: bold, color: white })
+  page.drawText('Description / Spec', { x: 210, y: y - 2, size: 8, font: bold, color: white })
+  page.drawText('SKU', { x: 390, y: y - 2, size: 8, font: bold, color: white })
+  page.drawText('UOM', { x: 455, y: y - 2, size: 8, font: bold, color: white })
+  page.drawText('Qty', { x: 505, y: y - 2, size: 8, font: bold, color: white })
   y -= 22
 
   // Table rows
@@ -95,21 +100,26 @@ export async function generatePDFBuffer(payload: RFQPayload): Promise<Buffer> {
 
   items.forEach((item, i) => {
     if (y < 80) return
-    const nameLines = wrapText(item.name, 36)
-    const descLines = item.desc ? wrapText(item.desc, 36).slice(0, 3) : []
-    const rowHeight = Math.max(18, (nameLines.length + descLines.length) * 11 + 8)
+    const nameLines = wrapText(item.name || '', 24).slice(0, 3)
+    const descLines = item.desc ? wrapText(item.desc, 28).slice(0, 3) : ['']
+    const rowHeight = Math.max(18, Math.max(nameLines.length, descLines.length) * 11 + 8)
     const bg = i % 2 === 0 ? white : lightgrey
+
     page.drawRectangle({ x: 32, y: y - rowHeight + 10, width: width - 64, height: rowHeight, color: bg })
     page.drawText(`${i + 1}`, { x: 38, y: y - 2, size: 8, font: regular, color: grey })
+
     nameLines.forEach((line, li) => {
       page.drawText(line, { x: 58, y: y - 2 - li * 11, size: 8, font: regular, color: dark })
     })
+
     descLines.forEach((line, li) => {
-      page.drawText(line, { x: 58, y: y - 2 - (nameLines.length + li) * 11, size: 7, font: regular, color: grey })
+      if (!line) return
+      page.drawText(line, { x: 210, y: y - 2 - li * 11, size: 7, font: regular, color: grey })
     })
-    page.drawText(item.sku.substring(0, 12), { x: 290, y: y - 2, size: 8, font: regular, color: grey })
-    page.drawText(item.uom.substring(0, 8), { x: 370, y: y - 2, size: 8, font: regular, color: grey })
-    page.drawText(item.qty.substring(0, 8), { x: 430, y: y - 2, size: 8, font: regular, color: grey })
+
+    page.drawText((item.sku || '').substring(0, 10), { x: 390, y: y - 2, size: 8, font: regular, color: grey })
+    page.drawText((item.uom || '').substring(0, 6), { x: 455, y: y - 2, size: 8, font: regular, color: grey })
+    page.drawText((item.qty || '').substring(0, 8), { x: 505, y: y - 2, size: 8, font: regular, color: grey })
     y -= rowHeight
   })
 

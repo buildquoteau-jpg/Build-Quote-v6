@@ -29,14 +29,13 @@ export function generateCSVString(payload: RFQPayload): string {
     ['Project Reference', projectReference || ''],
     [],
     ['LINE ITEMS'],
-    ['#', 'Product Name', 'SKU', 'Product ID', 'Description/Specs', 'Unit of Measure', 'Quantity'],
+    ['#', 'Product Name', 'SKU', 'Description/Specs', 'Unit of Measure', 'Quantity'],
   ]
 
   const itemRows = items.map((item, i) => [
     String(i + 1),
     item.name,
     item.sku,
-    item.productId,
     item.desc,
     item.uom,
     item.qty,

@@ -44,6 +44,12 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
   const [previewUrl, setPreviewUrl] = useState<string | null>(null)
   const [previewLoading, setPreviewLoading] = useState(false)
   const [previewError, setPreviewError] = useState('')
+  const [addressQuery, setAddressQuery] = useState(rfqPayload.siteAddress || '')
+  const [addressResults, setAddressResults] = useState<Array<{ display_name: string; address?: any }>>([])
+  const [addressLoading, setAddressLoading] = useState(false)
+  const [addressError, setAddressError] = useState('')
+  const [manualAddressEntry, setManualAddressEntry] = useState(false)
+  const [addressSelected, setAddressSelected] = useState(false)
 
   // Load saved builder details from localStorage
   useEffect(() => {
@@ -81,6 +87,120 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
       console.error('Failed to save builder details', e)
     }
   }, [rfqPayload.builder])
+
+  // Restore send-screen details if user leaves and comes back
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('bq_send_screen_details')
+      if (!saved) return
+      const parsed = JSON.parse(saved)
+      onChange({
+        ...rfqPayload,
+        builder: { ...rfqPayload.builder, ...(parsed.builder || {}) },
+        supplier: { ...rfqPayload.supplier, ...(parsed.supplier || {}) },
+        delivery: parsed.delivery ?? rfqPayload.delivery,
+        dateRequired: parsed.dateRequired ?? rfqPayload.dateRequired,
+        message: parsed.message ?? rfqPayload.message,
+        projectReference: parsed.projectReference ?? rfqPayload.projectReference,
+        siteAddress: parsed.siteAddress ?? rfqPayload.siteAddress,
+        siteSuburb: parsed.siteSuburb ?? rfqPayload.siteSuburb,
+        sendToSupplier: parsed.sendToSupplier ?? rfqPayload.sendToSupplier,
+        sendCopyToSelf: parsed.sendCopyToSelf ?? rfqPayload.sendCopyToSelf,
+      })
+    } catch (e) {
+      console.error('Failed to restore send screen details', e)
+    }
+  }, [])
+
+  // Persist send-screen details while editing
+  useEffect(() => {
+    try {
+      localStorage.setItem('bq_send_screen_details', JSON.stringify({
+        builder: rfqPayload.builder,
+        supplier: rfqPayload.supplier,
+        delivery: rfqPayload.delivery,
+        dateRequired: rfqPayload.dateRequired,
+        message: rfqPayload.message,
+        projectReference: rfqPayload.projectReference,
+        siteAddress: rfqPayload.siteAddress,
+        siteSuburb: rfqPayload.siteSuburb,
+        sendToSupplier: rfqPayload.sendToSupplier,
+        sendCopyToSelf: rfqPayload.sendCopyToSelf,
+      }))
+    } catch (e) {
+      console.error('Failed to persist send screen details', e)
+    }
+  }, [rfqPayload])
+
+  useEffect(() => {
+    const q = addressQuery.trim()
+    if (rfqPayload.delivery !== 'delivery') return
+    if (manualAddressEntry) return
+    if (addressSelected) return
+    if (q.length < 5) {
+      setAddressResults([])
+      setAddressError('')
+      return
+    }
+
+    const controller = new AbortController()
+    const timeout = setTimeout(async () => {
+      try {
+        setAddressLoading(true)
+        setAddressError('')
+        const res = await fetch(
+          `https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=au&limit=5&q=${encodeURIComponent(q)}`,
+          {
+            signal: controller.signal,
+            headers: { Accept: 'application/json' },
+          }
+        )
+
+        if (!res.ok) throw new Error('Address lookup failed')
+        const data = await res.json()
+        setAddressResults(Array.isArray(data) ? data : [])
+      } catch (e: any) {
+        if (e?.name === 'AbortError') return
+        setAddressResults([])
+        setAddressError('Could not look up address right now.')
+      } finally {
+        setAddressLoading(false)
+      }
+    }, 350)
+
+    return () => {
+      controller.abort()
+      clearTimeout(timeout)
+    }
+  }, [addressQuery, rfqPayload.delivery, manualAddressEntry, addressSelected])
+
+  const selectAddressResult = (result: { display_name: string; address?: any }) => {
+    const a = result.address || {}
+    const streetParts = [
+      a.house_number,
+      a.road || a.street || a.pedestrian || a.footway,
+    ].filter(Boolean)
+    const suburb =
+      a.suburb ||
+      a.town ||
+      a.city_district ||
+      a.city ||
+      a.village ||
+      a.hamlet ||
+      ''
+
+    const street = streetParts.join(' ').trim() || result.display_name
+
+    setAddressQuery(street)
+    setAddressResults([])
+    setManualAddressEntry(false)
+
+    onChange({
+      ...rfqPayload,
+      siteAddress: street,
+      siteSuburb: suburb,
+    } as any)
+  }
 
   const phoneError = validatePhone(rfqPayload.builder.phone)
   const builderEmailError = validateEmail(rfqPayload.builder.email)
@@ -199,6 +319,10 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
       },
     })
   }, [isSandbox, rfqPayload.builder.email])
+
+  useEffect(() => {
+    setAddressQuery(rfqPayload.siteAddress || '')
+  }, [rfqPayload.siteAddress])
 
   return (
     <>
@@ -330,8 +454,72 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
           <Toggle value={rfqPayload.delivery} onChange={v => onChange({ ...rfqPayload, delivery: v })} />
           {rfqPayload.delivery === 'delivery' && (
             <>
-              <Input label="Street Address" value={rfqPayload.siteAddress || ''} onChange={v => onChange({ ...rfqPayload, siteAddress: v })} placeholder="e.g. 14 Karrinyup Road" />
-              <Input label="Suburb" value={(rfqPayload as any).siteSuburb || ''} onChange={v => onChange({ ...rfqPayload, siteSuburb: v } as any)} placeholder="e.g. Dunsborough" />
+              <div className="flex flex-col gap-2">
+                <label className="text-text-secondary text-xs font-semibold uppercase tracking-widest block">Address Lookup</label>
+                <input
+                  type="text"
+                  value={addressQuery}
+                  onChange={e => {
+                    setManualAddressEntry(false)
+                    setAddressSelected(false)
+                    setAddressQuery(e.target.value)
+                    onChange({ ...rfqPayload, siteAddress: e.target.value } as any)
+                  }}
+                  placeholder="Start typing site address..."
+                  className="bg-white border border-border rounded-lg px-3 py-2 text-text-primary placeholder-text-muted focus:outline-none focus:border-brand box-border text-sm"
+                />
+                {addressLoading && <p className="text-text-faint text-xs">Looking up address…</p>}
+                {addressError && <p className="text-error text-xs">{addressError}</p>}
+
+                {!manualAddressEntry && addressResults.length > 0 && (
+                  <div className="rounded-lg border border-border bg-white overflow-hidden">
+                    {addressResults.map((result, index) => (
+                      <button
+                        key={result.display_name + index}
+                        type="button"
+                        onClick={() => selectAddressResult(result)}
+                        className="w-full text-left px-3 py-2 text-sm hover:bg-surface border-b last:border-b-0 border-border-subtle"
+                      >
+                        {result.display_name}
+                      </button>
+                    ))}
+                  </div>
+                )}
+
+                {!manualAddressEntry && addressQuery.trim().length >= 5 && !addressLoading && addressResults.length === 0 && (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
+                    <p className="text-amber-900 text-xs font-medium mb-2">Address not found.</p>
+                    <button
+                      type="button"
+                      onClick={() => setManualAddressEntry(true)}
+                      className="text-sm font-semibold text-brand hover:underline"
+                    >
+                      Add Street / lot number manually
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {manualAddressEntry && (
+                <Input
+                  label="Street / Lot Number Manually"
+                  value={rfqPayload.siteAddress || ''}
+                  onChange={v => {
+                    setManualAddressEntry(true)
+                    setAddressSelected(false)
+                    setAddressQuery(v)
+                    onChange({ ...rfqPayload, siteAddress: v } as any)
+                  }}
+                  placeholder="e.g. Lot 12 Caves Road"
+                />
+              )}
+
+              <Input
+                label="Suburb"
+                value={(rfqPayload as any).siteSuburb || ''}
+                onChange={v => onChange({ ...rfqPayload, siteSuburb: v } as any)}
+                placeholder="e.g. Dunsborough"
+              />
             </>
           )}
           <div className="flex flex-col gap-1">
