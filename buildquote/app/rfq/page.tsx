@@ -66,34 +66,6 @@ export default function RFQPage() {
   // Auto-save items to draft whenever they change
   useEffect(() => {
     if (!draftLoaded) return
-    if (items.length === 0) return
-    const timeout = setTimeout(async () => {
-      try {
-        const draftId = new URLSearchParams(window.location.search).get('draft')
-        if (!draftId) return
-        await fetch('/api/save-draft-items', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ draftId, items }),
-        })
-      } catch (e) {
-        console.error('Auto-save draft failed', e)
-      }
-    }, 1000)
-    return () => clearTimeout(timeout)
-  }, [items, draftLoaded])
-
-  // Auto-save items to draft whenever they change
-  useEffect(() => {
-    if (!draftLoaded) return
-    if (items.length === 0) return
-    const timeout = setTimeout(async () => {
-      try {
-        const draftId = new URLSearchParams(window.location.search).get('draft')
-        if (!draftId) return
-        await fetch('/api/save-draft-items', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ draftId, items }),
         })
       } catch (e) {
