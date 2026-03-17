@@ -36,7 +36,13 @@ function findDuplicates(items: LineItem[]): Set<string> {
   const seen = new Map<string, string[]>()
   for (const item of items) {
     if (!item.name.trim()) continue
-    const key = [item.name.trim().toLowerCase(), item.sku?.trim().toLowerCase() || ''].join('|')
+    const key = [
+      item.name.trim().toLowerCase(),
+      item.desc?.trim().toLowerCase() || '',
+      item.sku?.trim().toLowerCase() || '',
+      item.uom?.trim().toLowerCase() || '',
+      item.qty?.trim().toLowerCase() || '',
+    ].join('|')
     if (!seen.has(key)) seen.set(key, [])
     seen.get(key)!.push(item.id)
   }

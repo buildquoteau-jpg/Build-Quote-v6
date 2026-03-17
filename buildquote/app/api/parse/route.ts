@@ -119,6 +119,21 @@ Include only useful specs such as:
 - colour
 - pack type where relevant
 
+
+- Quantity notation rule (CRITICAL):
+  If a line contains patterns like:
+    "2 @ 3.6m"
+    "6 @ 2.7m"
+    "1 @ 3.6m"
+  Then:
+    - qty = number BEFORE @
+    - length/dimension AFTER @ goes into desc
+    - NEVER combine or concatenate numbers (e.g. do NOT turn "1 @ 3.6m" into 12)
+
+- Handwritten spacing rule:
+  Treat spaces, dots, or smudges between numbers as separators — do NOT merge digits
+
+
 Confidence rules — set confidence to "low" if ANY of these apply:
 - handwriting or scan is hard to read
 - quantity is estimated or unclear
@@ -216,20 +231,27 @@ function normaliseUOM(value: string): string {
 
 function extractQty(value: unknown, uom: string, desc: string): string {
   const raw = String(value ?? '').trim()
-  if (!raw) {
-    const fromDesc = desc.match(/(?:^|\b|x\s*)(\d+(?:\.\d+)?)(?=\s*(?:lm|l\.m\.?|lineal|lengths?|boxes?|bags?|rolls?|sheets?|ea)\b)/i)
-    return fromDesc ? fromDesc[1] : ''
+  const clean = raw.replace(/,/g, '').trim()
+  const descText = String(desc || '').trim()
+
+  if (clean) {
+    const direct = clean.match(/^\d+(?:\.\d+)?$/)
+    if (direct) return direct[0]
+
+    const attached = clean.match(/(\d+(?:\.\d+)?)(?=\s*(?:lm|l\.m\.?|lineal|lengths?|boxes?|bags?|rolls?|sheets?|ea)\b)/i)
+    if (attached) return attached[1]
+
+    const first = clean.match(/\d+(?:\.\d+)?/)
+    if (first) return first[0]
   }
 
-  const clean = raw.replace(/,/g, '').trim()
-  const direct = clean.match(/^\d+(?:\.\d+)?$/)
-  if (direct) return direct[0]
+  const timberAtPattern = descText.match(/(?:^|\s)(\d+(?:\.\d+)?)\s*@\s*\d+(?:\.\d+)?m\b/i)
+  if (timberAtPattern) return timberAtPattern[1]
 
-  const attached = clean.match(/(\d+(?:\.\d+)?)(?=\s*(?:lm|l\.m\.?|lineal|lengths?|boxes?|bags?|rolls?|sheets?|ea)\b)/i)
-  if (attached) return attached[1]
+  const fromDesc = descText.match(/(?:^|\b|x\s*)(\d+(?:\.\d+)?)(?=\s*(?:lm|l\.m\.?|lineal|lengths?|boxes?|bags?|rolls?|sheets?|ea)\b)/i)
+  if (fromDesc) return fromDesc[1]
 
-  const first = clean.match(/\d+(?:\.\d+)?/)
-  return first ? first[0] : ''
+  return ''
 }
 
 function cleanupDesc(desc: string, qty: string): string {

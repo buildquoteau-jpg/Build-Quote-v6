@@ -87,8 +87,8 @@ export default function RFQScreen({
           items.map((item, index) => (
             <div key={item.id} className={`flex items-center gap-3 px-4 py-3 ${index < items.length - 1 ? 'border-b border-border-subtle' : ''} ${item.confidence === 'low' ? 'bg-[rgba(245,158,11,0.06)]' : ''}`}>
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-semibold text-text-primary truncate">{item.name}</p>
-                <p className="text-xs text-text-muted truncate">{[item.desc, item.sku, item.uom].filter(Boolean).join(' · ')}</p>
+                <p className="text-sm font-semibold text-text-primary break-words whitespace-normal">{item.name}</p>
+                <p className="text-xs text-text-muted break-words whitespace-normal">{[item.desc, item.sku, item.uom].filter(Boolean).join(' · ')}</p>
               </div>
               <span className="text-sm font-bold text-heading shrink-0">{item.qty}</span>
               <button onClick={() => remove(item.id)} className="shrink-0 h-7 w-7 rounded-lg text-text-muted hover:text-error hover:bg-error-bg transition-colors text-sm" aria-label={`Remove item ${index + 1}`} type="button">×</button>
@@ -98,9 +98,9 @@ export default function RFQScreen({
       </div>
       {/* Desktop table layout */}
       <div className="hidden md:block rounded-2xl border border-border border-t-4 border-t-heading bg-white shadow-[0_8px_24px_rgba(0,0,0,0.05)] overflow-hidden">
-        <div className="overflow-x-auto">
-          <div className="min-w-[980px]">
-            <div className="grid grid-cols-[90px_1.9fr_2.1fr_1fr_0.9fr_0.8fr_52px] gap-3 border-b border-border bg-surface-subtle px-4 py-3">
+        <div className="overflow-x-auto md:overflow-x-hidden">
+          <div className="min-w-0">
+            <div className="grid grid-cols-[72px_minmax(180px,1.2fr)_minmax(240px,1.8fr)_110px_105px_92px_44px] gap-3 border-b border-border bg-surface-subtle px-4 py-3">
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Line item</div>
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Product</div>
               <div className="text-xs font-semibold uppercase tracking-[0.18em] text-text-muted">Specs</div>
@@ -116,7 +116,7 @@ export default function RFQScreen({
               items.map((item, index) => (
                 <div
                   key={item.id}
-                  className={`grid grid-cols-[90px_1.9fr_2.1fr_1fr_0.9fr_0.8fr_52px] gap-3 px-4 py-3 ${
+                  className={`grid grid-cols-[72px_minmax(180px,1.2fr)_minmax(240px,1.8fr)_110px_105px_92px_44px] gap-3 px-4 py-3 ${
                     index < items.length - 1 ? 'border-b border-border-subtle' : ''
                   }`}
                 >
@@ -129,12 +129,12 @@ export default function RFQScreen({
                       value={item.name}
                       onChange={(e) => update(item.id, 'name', e.target.value)}
                       placeholder="Product name"
-                      className={inputClass}
+                      className={`${inputClass} w-full min-w-0`}
                     />
                   </div>
 
                   <div className="flex items-start py-1">
-                    <textarea
+                    <textarea style={{wordBreak: 'break-word'}}
                       value={item.desc}
                       onChange={(e) => update(item.id, 'desc', e.target.value)}
                       placeholder="Specs"
@@ -148,7 +148,7 @@ export default function RFQScreen({
                       value={item.sku}
                       onChange={(e) => update(item.id, 'sku', e.target.value)}
                       placeholder="SKU"
-                      className={compactInputClass}
+                      className={`${compactInputClass} w-full min-w-0`}
                     />
                   </div>
 
@@ -157,7 +157,7 @@ export default function RFQScreen({
                       value={item.uom}
                       onChange={(e) => update(item.id, 'uom', e.target.value)}
                       placeholder="UOM"
-                      className={compactInputClass}
+                      className={`${compactInputClass} w-full min-w-0`}
                     />
                   </div>
 
@@ -166,7 +166,7 @@ export default function RFQScreen({
                       value={item.qty}
                       onChange={(e) => update(item.id, 'qty', e.target.value)}
                       placeholder="Qty"
-                      className={compactInputClass}
+                      className={`${compactInputClass} w-full min-w-0`}
                     />
                   </div>
 
