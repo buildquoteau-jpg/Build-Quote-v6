@@ -486,6 +486,17 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
 
                 {!manualAddressEntry && addressResults.length > 0 && (
                   <div className="rounded-lg border border-border bg-white overflow-hidden">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setManualAddressEntry(true)
+                        setAddressSelected(false)
+                        onChange({ ...rfqPayload, siteAddress: addressQuery } as any)
+                      }}
+                      className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-surface border-b border-border-subtle"
+                    >
+                      Use entered address: {addressQuery}
+                    </button>
                     {addressResults.map((result, index) => (
                       <button
                         key={result.display_name + index}
