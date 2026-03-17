@@ -59,21 +59,25 @@ export default function RFQPage() {
   const [draftLoaded, setDraftLoaded] = useState(false)
   const [initialLoading, setInitialLoading] = useState(true)
 
+  async function saveDraft(items: LineItem[]) {
+    try {
+      const draftId = new URLSearchParams(window.location.search).get("draft");
+      if (!draftId) return;
+
+      await fetch("/api/save-draft-items", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ draftId, items }),
+      });
+    } catch (e) {
+      console.error("Draft save failed", e);
+    }
+  }
+
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [step])
 
-  // Auto-save items to draft whenever they change
-  useEffect(() => {
-    if (!draftLoaded) return
-          body: JSON.stringify({ draftId, items }),
-        })
-      } catch (e) {
-        console.error('Auto-save draft failed', e)
-      }
-    }, 1000)
-    return () => clearTimeout(timeout)
-  }, [items, draftLoaded])
 
   useEffect(() => {
     const existingDraft = new URLSearchParams(window.location.search).get('draft')
@@ -83,11 +87,11 @@ export default function RFQPage() {
   }, [])
 
 
-  const handleParsed = (parsed: LineItem[]) => {
+  const handleParsed = async (parsed: LineItem[]) => {
     const merged = mergeItems(items, parsed)
     setItems(merged)
     setPayload((p) => ({ ...p, items: merged }))
-    setStep(2)
+    await saveDraft(merged); setStep(2)
   }
 
   const handleManualEntry = () => {
@@ -192,8 +196,8 @@ export default function RFQPage() {
               setPayload((p) => ({ ...p, items: nextItems }))
             }}
             /* onBack removed */
-            onNext={() => setStep(4)}
-            onUploadList={() => setStep(1)}
+            onNext={async () => { await saveDraft(items); setStep(4); }}
+            onUploadList={async () => { await saveDraft(items); setStep(1); }}
           />
         )}
 
