@@ -94,6 +94,17 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
       const saved = localStorage.getItem('bq_send_screen_details')
       if (!saved) return
       const parsed = JSON.parse(saved)
+      const restoredSiteAddress = parsed.siteAddress ?? rfqPayload.siteAddress
+      let restoredSiteSuburb = parsed.siteSuburb ?? rfqPayload.siteSuburb
+
+      if (
+        restoredSiteSuburb &&
+        restoredSiteAddress &&
+        restoredSiteSuburb.trim() === restoredSiteAddress.trim()
+      ) {
+        restoredSiteSuburb = ''
+      }
+
       onChange({
         ...rfqPayload,
         builder: { ...rfqPayload.builder, ...(parsed.builder || {}) },
@@ -102,8 +113,8 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
         dateRequired: parsed.dateRequired ?? rfqPayload.dateRequired,
         message: parsed.message ?? rfqPayload.message,
         projectReference: parsed.projectReference ?? rfqPayload.projectReference,
-        siteAddress: parsed.siteAddress ?? rfqPayload.siteAddress,
-        siteSuburb: parsed.siteSuburb ?? rfqPayload.siteSuburb,
+        siteAddress: restoredSiteAddress,
+        siteSuburb: restoredSiteSuburb,
         sendToSupplier: parsed.sendToSupplier ?? rfqPayload.sendToSupplier,
         sendCopyToSelf: parsed.sendCopyToSelf ?? rfqPayload.sendCopyToSelf,
       })
@@ -180,6 +191,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
       a.house_number,
       a.road || a.street || a.pedestrian || a.footway,
     ].filter(Boolean)
+
     const suburb =
       a.suburb ||
       a.town ||
@@ -194,6 +206,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
     setAddressQuery(street)
     setAddressResults([])
     setManualAddressEntry(false)
+    setAddressSelected(true)
 
     onChange({
       ...rfqPayload,
@@ -491,7 +504,11 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
                     <p className="text-amber-900 text-xs font-medium mb-2">Address not found.</p>
                     <button
                       type="button"
-                      onClick={() => setManualAddressEntry(true)}
+                      onClick={() => {
+                        setManualAddressEntry(true)
+                        setAddressSelected(false)
+                        onChange({ ...rfqPayload, siteAddress: '' } as any)
+                      }}
                       className="text-sm font-semibold text-brand hover:underline"
                     >
                       Add Street / lot number manually
@@ -507,7 +524,6 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
                   onChange={v => {
                     setManualAddressEntry(true)
                     setAddressSelected(false)
-                    setAddressQuery(v)
                     onChange({ ...rfqPayload, siteAddress: v } as any)
                   }}
                   placeholder="e.g. Lot 12 Caves Road"
