@@ -1,5 +1,11 @@
 'use client'
 import { useState, useRef, useEffect } from 'react'
+
+declare global {
+  interface Window {
+    google?: any
+  }
+}
 import Card from '../ui/Card'
 import Input from '../ui/Input'
 import Button from '../ui/Button'
@@ -45,11 +51,12 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
   const [previewLoading, setPreviewLoading] = useState(false)
   const [previewError, setPreviewError] = useState('')
   const [addressQuery, setAddressQuery] = useState(rfqPayload.siteAddress || '')
-  const [addressResults, setAddressResults] = useState<Array<{ display_name: string; address?: any }>>([])
   const [addressLoading, setAddressLoading] = useState(false)
   const [addressError, setAddressError] = useState('')
   const [manualAddressEntry, setManualAddressEntry] = useState(false)
   const [addressSelected, setAddressSelected] = useState(false)
+  const addressInputRef = useRef<HTMLInputElement | null>(null)
+  const googleAutocompleteRef = useRef<any>(null)
 
   // Load saved builder details from localStorage
   useEffect(() => {
@@ -144,76 +151,87 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
   }, [rfqPayload])
 
   useEffect(() => {
-    const q = addressQuery.trim()
     if (rfqPayload.delivery !== 'delivery') return
     if (manualAddressEntry) return
-    if (addressSelected) return
-    if (q.length < 5) {
-      setAddressResults([])
-      setAddressError('')
+
+    const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY
+    if (!key) {
+      setAddressError('Google Maps API key is missing.')
       return
     }
 
-    const controller = new AbortController()
-    const timeout = setTimeout(async () => {
-      try {
-        setAddressLoading(true)
+    const setupAutocomplete = () => {
+      if (!addressInputRef.current || !window.google?.maps?.places) return
+      if (googleAutocompleteRef.current) return
+
+      googleAutocompleteRef.current = new window.google.maps.places.Autocomplete(addressInputRef.current, {
+        componentRestrictions: { country: 'au' },
+        fields: ['address_components', 'formatted_address'],
+        types: ['address'],
+      })
+
+      googleAutocompleteRef.current.addListener('place_changed', () => {
+        const place = googleAutocompleteRef.current?.getPlace()
+        const comps = place?.address_components || []
+
+        const findComp = (type: string) =>
+          comps.find((c: any) => Array.isArray(c.types) && c.types.includes(type))
+
+        const streetNumber = findComp('street_number')?.long_name || ''
+        const route = findComp('route')?.long_name || ''
+        const suburb =
+          findComp('locality')?.long_name ||
+          findComp('sublocality')?.long_name ||
+          findComp('administrative_area_level_2')?.long_name ||
+          ''
+
+        const street = [streetNumber, route].filter(Boolean).join(' ').trim() || place?.formatted_address || ''
+
+        setAddressQuery(street)
         setAddressError('')
-        const res = await fetch(
-          `https://nominatim.openstreetmap.org/search?format=jsonv2&countrycodes=au&limit=5&q=${encodeURIComponent(q)}`,
-          {
-            signal: controller.signal,
-            headers: { Accept: 'application/json' },
-          }
-        )
+        setManualAddressEntry(false)
+        setAddressSelected(true)
 
-        if (!res.ok) throw new Error('Address lookup failed')
-        const data = await res.json()
-        setAddressResults(Array.isArray(data) ? data : [])
-      } catch (e: any) {
-        if (e?.name === 'AbortError') return
-        setAddressResults([])
-        setAddressError('Could not look up address right now.')
-      } finally {
-        setAddressLoading(false)
-      }
-    }, 350)
-
-    return () => {
-      controller.abort()
-      clearTimeout(timeout)
+        onChange({
+          ...rfqPayload,
+          siteAddress: street,
+          siteSuburb: suburb,
+        } as any)
+      })
     }
-  }, [addressQuery, rfqPayload.delivery, manualAddressEntry, addressSelected])
 
-  const selectAddressResult = (result: { display_name: string; address?: any }) => {
-    const a = result.address || {}
-    const streetParts = [
-      a.house_number,
-      a.road || a.street || a.pedestrian || a.footway,
-    ].filter(Boolean)
+    if (window.google?.maps?.places) {
+      setupAutocomplete()
+      return
+    }
 
-    const suburb =
-      a.suburb ||
-      a.town ||
-      a.city_district ||
-      a.city ||
-      a.village ||
-      a.hamlet ||
-      ''
+    const existing = document.querySelector('script[data-google-maps="true"]') as HTMLScriptElement | null
+    if (existing) {
+      existing.addEventListener('load', setupAutocomplete)
+      return () => existing.removeEventListener('load', setupAutocomplete)
+    }
 
-    const street = streetParts.join(' ').trim() || result.display_name
+    setAddressLoading(true)
+    setAddressError('')
 
-    setAddressQuery(street)
-    setAddressResults([])
-    setManualAddressEntry(false)
-    setAddressSelected(true)
+    const script = document.createElement('script')
+    script.src = `https://maps.googleapis.com/maps/api/js?key=${key}&libraries=places`
+    script.async = true
+    script.defer = true
+    script.setAttribute('data-google-maps', 'true')
+    script.onload = () => {
+      setAddressLoading(false)
+      setupAutocomplete()
+    }
+    script.onerror = () => {
+      setAddressLoading(false)
+      setAddressError('Could not load Google address lookup.')
+    }
+    document.head.appendChild(script)
 
-    onChange({
-      ...rfqPayload,
-      siteAddress: street,
-      siteSuburb: suburb,
-    } as any)
-  }
+    return () => {}
+  }, [rfqPayload.delivery, manualAddressEntry])
+
 
   const phoneError = validatePhone(rfqPayload.builder.phone)
   const builderEmailError = validateEmail(rfqPayload.builder.email)
@@ -470,6 +488,7 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
               <div className="flex flex-col gap-2">
                 <label className="text-text-secondary text-xs font-semibold uppercase tracking-widest block">Address Lookup</label>
                 <input
+                  ref={addressInputRef}
                   type="text"
                   value={addressQuery}
                   onChange={e => {
@@ -481,44 +500,17 @@ export default function SendScreen({ rfqPayload, onChange, onBack, onSend, sendi
                   placeholder="Start typing site address..."
                   className="bg-white border border-border rounded-lg px-3 py-2 text-text-primary placeholder-text-muted focus:outline-none focus:border-brand box-border text-sm"
                 />
-                {addressLoading && <p className="text-text-faint text-xs">Looking up address…</p>}
+                {addressLoading && <p className="text-text-faint text-xs">Loading Google address lookup…</p>}
                 {addressError && <p className="text-error text-xs">{addressError}</p>}
 
-                {!manualAddressEntry && addressResults.length > 0 && (
-                  <div className="rounded-lg border border-border bg-white overflow-hidden">
+                {!manualAddressEntry && (
+                  <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
                     <button
                       type="button"
                       onClick={() => {
                         setManualAddressEntry(true)
                         setAddressSelected(false)
                         onChange({ ...rfqPayload, siteAddress: addressQuery } as any)
-                      }}
-                      className="w-full text-left px-3 py-2 text-sm font-medium hover:bg-surface border-b border-border-subtle"
-                    >
-                      Use entered address: {addressQuery}
-                    </button>
-                    {addressResults.map((result, index) => (
-                      <button
-                        key={result.display_name + index}
-                        type="button"
-                        onClick={() => selectAddressResult(result)}
-                        className="w-full text-left px-3 py-2 text-sm hover:bg-surface border-b last:border-b-0 border-border-subtle"
-                      >
-                        {result.display_name}
-                      </button>
-                    ))}
-                  </div>
-                )}
-
-                {!manualAddressEntry && addressQuery.trim().length >= 5 && !addressLoading && addressResults.length === 0 && (
-                  <div className="rounded-lg border border-amber-200 bg-amber-50 px-3 py-2">
-                    <p className="text-amber-900 text-xs font-medium mb-2">Address not found.</p>
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setManualAddressEntry(true)
-                        setAddressSelected(false)
-                        onChange({ ...rfqPayload, siteAddress: '' } as any)
                       }}
                       className="text-sm font-semibold text-brand hover:underline"
                     >
