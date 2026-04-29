@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Barlow, Barlow_Condensed } from "next/font/google";
 import "./globals.css";
 import { Analytics } from "@vercel/analytics/next";
+import { GlobalNav } from "@/components/GlobalNav";
 
 const barlow = Barlow({
   variable: "--font-barlow",
@@ -52,6 +53,7 @@ export default function RootLayout({
         className={`${barlow.variable} ${barlowCondensed.variable} antialiased`}
       >
         <div className="w-full">
+          <GlobalNav />
           {children}
           <Analytics />
         </div>
