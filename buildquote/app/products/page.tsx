@@ -1,7 +1,7 @@
 // Products page — embeds the NewTech Wood widget
 // Update NTW_WIDGET_TOKEN with the token from your mfp.buildquote.com.au admin panel
 
-const NTW_WIDGET_TOKEN = 'YOUR_NTW_TOKEN_HERE'
+const NTW_WIDGET_TOKEN = '46bf60e90389a49e3e1f0610084e375f'
 
 export default function ProductsPage() {
   return (
