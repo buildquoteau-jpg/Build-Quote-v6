@@ -119,10 +119,10 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
     try {
       setError('')
       const draft = await getOrCreateDraft()
-      const url = 'https://mfp.buildquote.com.au/?draft=' + draft
+      const url = 'https://mfp.buildquote.com.au/manufacturers?draft=' + draft
       window.open(url, '_blank')
     } catch (err: any) {
-      setError(err?.message || 'Could not open Manufacturer Components.')
+      setError(err?.message || 'Could not open Manufacturer Portal.')
     }
   }
 
@@ -151,7 +151,7 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
         </div>
       )}
 
-      <div className="grid gap-6 max-w-4xl mx-auto grid-cols-1 md:grid-cols-2">
+      <div className="grid gap-6 max-w-5xl mx-auto grid-cols-1 md:grid-cols-2 lg:grid-cols-3">
         <div className={`${baseCardClass} border-heading/30 bg-[rgba(24,93,122,0.02)]  shadow-[0_10px_24px_rgba(24,93,122,0.12)] hover:border-heading`}>
           <button
             type="button"
@@ -259,7 +259,52 @@ export default function UploadScreen({ onNext, onSkip }: UploadScreenProps) {
             No file? No worries.
           </p>
         </button>
-        {/* Manufacturer systems temporarily hidden until draft merge is stable */}
+        {/* Option 3 — Browse manufacturer portal */}
+        <button
+          type="button"
+          onClick={handleBrowseManufacturerComponents}
+          className={`${baseCardClass} border-border hover:border-heading`}
+        >
+          <div className="text-[10px] tracking-[0.2em] font-semibold text-[var(--color-accent)] mb-1.5">OPTION 3</div>
+          <h3 className="text-heading text-xl font-extrabold tracking-tight leading-tight">
+            Browse manufacturer systems
+          </h3>
+
+          {/* Mini card grid preview */}
+          <div className="mt-3 mb-3 sm:mt-5 sm:mb-4 rounded-xl border border-border bg-surface-subtle p-3 pointer-events-none">
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { cat: 'Cladding',  bg: '#dbeafe', tc: '#1e40af', label: 'Weathertex' },
+                { cat: 'Decking',   bg: '#d1fae5', tc: '#065f46', label: 'NewTechWood' },
+                { cat: 'Lining',    bg: '#ede9fe', tc: '#5b21b6', label: 'James Hardie' },
+                { cat: 'Flooring',  bg: '#d1fae5', tc: '#065f46', label: 'BGC' },
+              ].map((c) => (
+                <div
+                  key={c.label}
+                  className="rounded-lg border border-border bg-white p-2"
+                >
+                  <span
+                    className="inline-block text-[9px] font-bold px-1.5 py-0.5 rounded-full mb-1"
+                    style={{ background: c.bg, color: c.tc }}
+                  >
+                    {c.cat}
+                  </span>
+                  <div className="text-[11px] font-semibold text-text-primary leading-tight truncate">
+                    {c.label}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <p className="text-text-secondary text-sm font-semibold leading-relaxed">
+            Browse systems from leading AU manufacturers.
+          </p>
+
+          <p className="text-text-muted text-sm mt-2 font-medium leading-relaxed">
+            Select components and add directly to your quote.
+          </p>
+        </button>
       </div>
 
       <style jsx global>{`
