@@ -1,16 +1,10 @@
 import { supabase } from "@/lib/supabase";
 
+// Draft ID comes only from the URL. No localStorage fallback — a new page
+// visit without a ?draft= param always means a clean session.
 export function getDraftIdFromBrowser(): string | null {
   if (typeof window === "undefined") return null;
-
-  const fromUrl = new URLSearchParams(window.location.search).get("draft");
-  if (fromUrl) {
-    localStorage.setItem("rfq_draft_id", fromUrl);
-    return fromUrl;
-  }
-
-  const fromStorage = localStorage.getItem("rfq_draft_id");
-  return fromStorage || null;
+  return new URLSearchParams(window.location.search).get("draft");
 }
 
 export async function getOrCreateDraft(): Promise<string> {
@@ -31,8 +25,6 @@ export async function getOrCreateDraft(): Promise<string> {
   const draftId = data.id;
 
   if (typeof window !== "undefined") {
-    localStorage.setItem("rfq_draft_id", draftId);
-
     const url = new URL(window.location.href);
     url.searchParams.set("draft", draftId);
     window.history.replaceState({}, "", url.toString());

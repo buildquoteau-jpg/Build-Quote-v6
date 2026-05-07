@@ -145,6 +145,11 @@ export default function RFQPage() {
     const loadDraftItems = async () => {
       try {
         const draftId = new URLSearchParams(window.location.search).get('draft')
+        if (!draftId) {
+          setDraftLoaded(true)
+          setInitialLoading(false)
+          return
+        }
         const res = await fetch('/api/get-draft-items?draft=' + draftId)
         const data = await res.json()
         const mapped = (data.items || []).map((row: any) => ({
@@ -196,6 +201,10 @@ export default function RFQPage() {
     setPayload(defaultPayload)
     setRfqId('')
     setSendError('')
+    // Strip draft from URL so the next session starts clean
+    const url = new URL(window.location.href)
+    url.searchParams.delete('draft')
+    window.history.replaceState({}, '', url.toString())
   }
 
   return (

@@ -89,6 +89,10 @@ export default function ManualEntryScreen({
     } catch (e) {
       console.error('Failed to clear draft', e)
     }
+    // Remove draft from URL so the next session starts clean
+    const url = new URL(window.location.href)
+    url.searchParams.delete('draft')
+    window.history.replaceState({}, '', url.toString())
   }
 
   useEffect(() => {
