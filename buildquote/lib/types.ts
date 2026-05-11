@@ -9,11 +9,15 @@ export interface LineItem {
   confidence?: 'high' | 'low'
   length_mm?: number | string | null
   width_mm?: number | string | null
-  thickness_mm?: number | string | null
   height_mm?: number | string | null
+  thickness_mm?: number | string | null
+  depth_mm?: number | string | null
+  gauge_mm?: number | string | null
   diameter_mm?: number | string | null
-  coverage_m2?: number | string | null
+  roll_m?: number | string | null
   weight_kg?: number | string | null
+  pieces?: number | string | null
+  coverage_m2?: number | string | null
 }
 
 export interface BuilderDetails {

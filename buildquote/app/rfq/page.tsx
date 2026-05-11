@@ -163,11 +163,15 @@ export default function RFQPage() {
           confidence: 'high',
           length_mm: row.length_mm ?? null,
           width_mm: row.width_mm ?? null,
-          thickness_mm: row.thickness_mm ?? null,
           height_mm: row.height_mm ?? null,
+          thickness_mm: row.thickness_mm ?? null,
+          depth_mm: row.depth_mm ?? null,
+          gauge_mm: row.gauge_mm ?? null,
           diameter_mm: row.diameter_mm ?? null,
-          coverage_m2: row.coverage_m2 ?? null,
+          roll_m: row.roll_m ?? null,
           weight_kg: row.weight_kg ?? null,
+          pieces: row.pieces ?? null,
+          coverage_m2: row.coverage_m2 ?? null,
         }))
 
         const cleaned = normaliseItems(mapped)

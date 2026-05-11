@@ -24,11 +24,15 @@ function blankItem(): LineItem {
     confidence: 'high',
     length_mm: null,
     width_mm: null,
-    thickness_mm: null,
     height_mm: null,
+    thickness_mm: null,
+    depth_mm: null,
+    gauge_mm: null,
     diameter_mm: null,
-    coverage_m2: null,
+    roll_m: null,
     weight_kg: null,
+    pieces: null,
+    coverage_m2: null,
   }
 }
 
@@ -55,12 +59,17 @@ function findDuplicates(items: LineItem[]): Set<string> {
 
 function buildSpecs(item: LineItem): string {
   const parts: string[] = []
-  if (item.length_mm) parts.push(item.length_mm + 'mm L')
+  if (item.height_mm) parts.push(item.height_mm + 'mm H')
   if (item.width_mm) parts.push(item.width_mm + 'mm W')
   if (item.thickness_mm) parts.push(item.thickness_mm + 'mm T')
-  if (item.height_mm) parts.push(item.height_mm + 'mm H')
+  if (item.length_mm) parts.push(item.length_mm + 'mm L')
+  if (item.depth_mm) parts.push(item.depth_mm + 'mm D')
+  if (item.gauge_mm) parts.push(item.gauge_mm + 'mm gauge')
   if (item.diameter_mm) parts.push(item.diameter_mm + 'mm dia')
-  return parts.length ? parts.join(' × ') : item.desc || ''
+  if (item.roll_m) parts.push('roll ' + item.roll_m + 'm')
+  if (item.weight_kg) parts.push(item.weight_kg + 'kg')
+  if (item.pieces) parts.push(item.pieces + ' pcs')
+  return parts.length ? parts.join(' · ') : item.desc || ''
 }
 
 export default function ManualEntryScreen({

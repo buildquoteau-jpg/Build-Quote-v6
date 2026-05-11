@@ -32,6 +32,17 @@ export async function POST(req: Request) {
       description: item.desc || '',
       uom: item.uom || '',
       qty: normaliseQty(item.qty),
+      length_mm: item.length_mm ?? null,
+      width_mm: item.width_mm ?? null,
+      height_mm: item.height_mm ?? null,
+      thickness_mm: item.thickness_mm ?? null,
+      depth_mm: item.depth_mm ?? null,
+      gauge_mm: item.gauge_mm ?? null,
+      diameter_mm: item.diameter_mm ?? null,
+      roll_m: item.roll_m ?? null,
+      weight_kg: item.weight_kg ?? null,
+      pieces: item.pieces ?? null,
+      coverage_m2: item.coverage_m2 ?? null,
     }));
 
     const { error } = await supabase
