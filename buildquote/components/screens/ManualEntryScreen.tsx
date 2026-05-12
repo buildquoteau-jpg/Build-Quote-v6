@@ -229,8 +229,8 @@ export default function ManualEntryScreen({
                 className={inputClass}
               />
               <input
-                value={buildSpecs(item) || item.desc}
-                title={buildSpecs(item) || item.desc || ''}
+                value={item.desc || buildSpecs(item)}
+                title={item.desc || buildSpecs(item) || ''}
                 onChange={(e) => update(item.id, 'desc', e.target.value)}
                 placeholder="Specs / description"
                 className={inputClass}
@@ -300,8 +300,8 @@ export default function ManualEntryScreen({
                 <div className="flex items-start py-1">
                   <textarea
                     style={{ wordBreak: 'break-word' }}
-                    value={buildSpecs(item) || item.desc}
-                    title={buildSpecs(item) || item.desc || ''}
+                    value={item.desc || buildSpecs(item)}
+                    title={item.desc || buildSpecs(item) || ''}
                     onChange={(e) => update(item.id, 'desc', e.target.value)}
                     placeholder="Specs"
                     rows={2}
